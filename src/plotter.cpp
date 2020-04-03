@@ -7,6 +7,8 @@
 
 #include "plotter.hpp"
 
+#include <functional>
+#include <iostream>
 #include <fstream>
 
 #include <fmt/format.h>
@@ -24,14 +26,11 @@ namespace spl
         auto sink = std::ofstream{destination};
         // TODO: check if file is good
         // assume: _xs.begin() != _xs.end();
-        auto const [x_min, x_max] = std::minmax_element(_xs.begin(), _xs.end());
-        auto const [y_min, y_may] = std::minmax_element(_ys.begin(), _ys.end());
-        auto const xs = _xs | rvw::transform(std::bind_front(&plotter::rescale, this, *x_min, *x_max, _width));
-        auto const ys = _ys | rvw::transform(std::bind_front(&plotter::rescale, this, *y_min, *y_may, _height));
-
+        
         auto buffer = std::vector<uint8_t>(_width * _height * 3, 0xFF);
+        auto vectors = get_plot_points();
 
-        for (auto const [x, y] : rvw::zip(xs, ys)) {
+        for (auto const [x, y] : vectors) {
             auto const base_offset = (x + y * _width) * 3;
             buffer.at(base_offset + 0) = 0x00;
             buffer.at(base_offset + 1) = 0x00;
@@ -51,6 +50,60 @@ namespace spl
 
         return true;
     }
+
+    void plotter::show() const
+    {
+
+        sf::RenderWindow window(sf::VideoMode(_width, _height), "titolo");
+        sf::VertexArray vertexes{sf::LineStrip};
+        
+        auto points = get_plot_points();
+        for (auto [x, y] : points)
+        {
+            sf::Vertex point;
+            point.position = sf::Vector2f(x, _height-y);
+            point.color = sf::Color::Blue;
+            vertexes.append(point);
+        }
+
+        while (window.isOpen())
+        {
+            sf::Event event;
+            while (window.pollEvent(event))
+            {
+                if (event.type == sf::Event::Closed)
+                {
+                    window.close();
+                }
+                if (event.type == sf::Event::KeyPressed)
+                {
+                    if (event.key.code == sf::Keyboard::Escape)
+                    {
+                        window.close();
+                    }
+                    if (event.key.code == sf::Keyboard::S)
+                    {
+                        std::cout << "saved\n";
+                    }
+                }
+            }
+
+            window.clear(sf::Color::White);
+            window.draw(vertexes);
+            window.display();
+        }
+    }
+
+    auto plotter::get_plot_points() const
+            -> std::vector<std::pair<int, int>>
+    {
+        namespace rvw = ranges::views;
+        auto const [x_min, x_max] = std::minmax_element(_xs.begin(), _xs.end());
+        auto const [y_min, y_may] = std::minmax_element(_ys.begin(), _ys.end());
+        auto const xs = _xs | rvw::transform(std::bind_front(&plotter::rescale, this, *x_min, *x_max, _width));
+        auto const ys = _ys | rvw::transform(std::bind_front(&plotter::rescale, this, *y_min, *y_may, _height));
+
+        return rvw::zip(xs, ys) | ranges::to<std::vector<std::pair<int, int>>>;
+
+    }
 } // namespace spl
-
-

@@ -8,9 +8,11 @@
 #ifndef PLOTTER_HPP
 #define PLOTTER_HPP
 
+#include <filesystem>
 #include <cstdint>
 #include <vector>
-#include <filesystem>
+
+#include <SFML/Graphics.hpp>
 
 namespace spl
 {
@@ -22,7 +24,7 @@ namespace spl
         {}
         plotter(uint_fast32_t w, uint_fast32_t h) : plotter{w, h, {}, {}} {}
 
-        void display();
+        void show() const;
         bool save_as_pmm(std::filesystem::path const &) const; // default to PMM
         // maybe: std::string as_pmm_string() const;
     private:
@@ -40,6 +42,10 @@ namespace spl
         {
             return _border + (length - 2 * _border) / (max - min) * (x - min);
         }
+
+        auto get_plot_points() const -> std::vector<std::pair<int, int>>;
+
+        // sf::RenderTexture;
 
     };
 } // namespace spl
