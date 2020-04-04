@@ -55,7 +55,10 @@ namespace spl
     {
 
         sf::RenderWindow window(sf::VideoMode(_width, _height), "titolo");
-        sf::VertexArray vertexes{sf::LinesStrip};
+        sf::VertexArray axes;
+
+        sf::VertexArray vertexes{sf::LinesStrip};   // TODO: aggiungere la possibilità di cambiare primitiva
+        axes.setPrimitiveType(sf::Lines);           // per poter fare linee tratteggiate, cerchi, tratto punto, ecc
         
         auto points = get_plot_points();
         for (auto [x, y] : points)
@@ -66,8 +69,22 @@ namespace spl
             vertexes.append(point);
         }
 
-        sf::VertexArray axes;
-        axes.setPrimitiveType(sf::Lines);
+        // TODO: abbellire sta roba, aggiungere le misure sugli assi
+
+        auto const [x_min, x_max] = std::minmax_element(_xs.begin(), _xs.end());
+        auto const [y_min, y_may] = std::minmax_element(_ys.begin(), _ys.end());
+        auto const x = plotter::rescale(*x_min, *x_max, _width, 0.);
+        auto const y = plotter::rescale(*y_min, *y_may, _height, 0.);
+        sf::Vertex vert;
+        vert.color = sf::Color::Black;
+        vert.position = sf::Vector2f(x,_border);
+        axes.append(vert);
+        vert.position = sf::Vector2f(x,_height-_border);
+        axes.append(vert);
+        vert.position = sf::Vector2f(_border,y);
+        axes.append(vert);
+        vert.position = sf::Vector2f(_width-_border,y);
+        axes.append(vert);
 
         while (window.isOpen())
         {
@@ -91,12 +108,13 @@ namespace spl
                         texture.clear(sf::Color::White);
                         texture.draw(vertexes);
                         texture.getTexture().copyToImage().saveToFile("plot.png");
-                        std::cout << "plot saved" << std::endl;
+                        std::cout << "plot saved" << std::endl; // TODO: aggiungere un testo su schermo
                     }
                 }
             }
 
             window.clear(sf::Color::White);
+            window.draw(axes);
             window.draw(vertexes);
             window.display();
         }

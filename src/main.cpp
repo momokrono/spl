@@ -14,7 +14,7 @@
 int main()
 {
     namespace rvw = ranges::views;
-    auto xs = rvw::linear_distribute(0., 2*3.1415, 620) | ranges::to_vector; //std::vector<double>{};
+    auto xs = rvw::linear_distribute(- 3.1415, 3.1415, 620) | ranges::to_vector; //std::vector<double>{};
     auto ys = xs | rvw::transform([](auto x) { return std::sin(x); }) | ranges::to_vector;
 
     auto plot = spl::plotter{640, 480, xs, ys /* altri dati */};
