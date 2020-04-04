@@ -55,7 +55,7 @@ namespace spl
     {
 
         sf::RenderWindow window(sf::VideoMode(_width, _height), "titolo");
-        sf::VertexArray vertexes{sf::LineStrip};
+        sf::VertexArray vertexes{sf::LinesStrip};
         
         auto points = get_plot_points();
         for (auto [x, y] : points)
@@ -65,6 +65,9 @@ namespace spl
             point.color = sf::Color::Blue;
             vertexes.append(point);
         }
+
+        sf::VertexArray axes;
+        axes.setPrimitiveType(sf::Lines);
 
         while (window.isOpen())
         {
@@ -83,7 +86,12 @@ namespace spl
                     }
                     if (event.key.code == sf::Keyboard::S)
                     {
-                        std::cout << "saved\n";
+                        sf::RenderTexture texture;
+                        texture.create(_width, _height);
+                        texture.clear(sf::Color::White);
+                        texture.draw(vertexes);
+                        texture.getTexture().copyToImage().saveToFile("plot.png");
+                        std::cout << "plot saved" << std::endl;
                     }
                 }
             }
