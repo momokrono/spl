@@ -58,7 +58,7 @@ namespace spl
         sf::VertexArray axes;
 
         sf::VertexArray vertexes{sf::LinesStrip};   // TODO: aggiungere la possibilità di cambiare primitiva
-        axes.setPrimitiveType(sf::Lines);           // per poter fare linee tratteggiate, cerchi, tratto punto, ecc
+        axes.setPrimitiveType(sf::Lines);           // teper poter fare linee tratteggiate, cerchi, tratto punto, ecc
         
         auto points = get_plot_points();
         for (auto [x, y] : points)
@@ -106,8 +106,9 @@ namespace spl
                         sf::RenderTexture texture;
                         texture.create(_width, _height);
                         texture.clear(sf::Color::White);
+                        texture.draw(axes);
                         texture.draw(vertexes);
-                        texture.getTexture().copyToImage().saveToFile("plot.png");
+                        texture.getTexture().copyToImage().saveToFile("plot.png"); // TODO: cin >> nome, tipo di file
                         std::cout << "plot saved" << std::endl; // TODO: aggiungere un testo su schermo
                     }
                 }
