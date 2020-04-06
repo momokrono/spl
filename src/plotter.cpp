@@ -84,9 +84,9 @@ namespace spl
         label.setCharacterSize(10);
 
         auto const [x_min, x_max] = std::minmax_element(_xs.begin(), _xs.end());
-        auto const [y_min, y_may] = std::minmax_element(_ys.begin(), _ys.end());
+        auto const [y_min, y_max] = std::minmax_element(_ys.begin(), _ys.end());
         auto const x = plotter::rescale(*x_min, *x_max, _width, 0.);
-        auto const y = plotter::rescale(*y_min, *y_may, _height, 0.);
+        auto const y = plotter::rescale(*y_min, *y_max, _height, 0.);
         sf::Vertex vert;
         vert.color = sf::Color::Black;
         // asse x
@@ -101,23 +101,27 @@ namespace spl
         axes.append(vert);
         // qui ci sono i segnetti sugli assi, 10 per asse
         // TODO: numero modificabile? diverso per x e y? aggiungere le misure
-        for (auto i{_border}; i <= _width-_border; i+=(_width-2*_border)/10)
+        for (auto n{0}; n <= 10; ++n)
         {
+            auto i = _border + (_width-2*_border)*n/10;
+            auto t = *x_min + (*x_max-*x_min)*n/10;
             vert.position = sf::Vector2f(i, y+4);
             axes.append(vert);
             vert.position = sf::Vector2f(i, y-4);
             axes.append(vert);
-            label.setString(fmt::format("{}", i)); // TODO: inserire qui il numero su R della mia funzione, non i pixel, nel vettore _xs
+            label.setString(fmt::format("{:.2}", t)); // TODO: inserire qui il numero su R della mia funzione, non i pixel, nel vettore _xs
             label.setPosition(sf::Vector2f(i, y)); // questo è ok
             labels.push_back(label);
         }
-        for (auto j{_border}; j <= _height-_border; j+=(_height-2*_border)/10)
+        for (auto m{0};  m<= 10; ++m)
         {
+            auto j = _border + (_height-2*_border)*m/10;
+            auto t = *y_max + (*y_min-*y_max)*m/10;
             vert.position = sf::Vector2f(x+4, j);
             axes.append(vert);
-            vert.position = sf::Vector2f(x-5, j);
+            vert.position = sf::Vector2f(x-4, j);
             axes.append(vert);
-            label.setString(fmt::format("{}", j)); // TODO: come sopra, vettore _ys
+            label.setString(fmt::format("{:.2}", t)); // TODO: come sopra, vettore _ys
             label.setPosition(sf::Vector2f(x, j)); // questo è ok
             labels.push_back(label);
         }
@@ -143,7 +147,7 @@ namespace spl
                         sf::RenderTexture texture;
                         texture.create(_width, _height);
                         texture.clear(sf::Color::White);
-                        auto reflect = [&](sf::Vertex v){
+                        auto reflect = [](sf::Vertex & v){
                                 v.position.y = -v.position.y;
                         };
                         auto ax = axes;
@@ -156,7 +160,7 @@ namespace spl
                         {
                             reflect(ax[i]);
                         }
-                        // auto axs = axes | rvw::transform([](auto v){reflect(v);});
+                        // auto axs = axes | rvw::transform([](auto & v){reflect(v);});
                         texture.draw(ax);
                         texture.draw(vx);
                         for (auto & l : labels)
@@ -185,9 +189,9 @@ namespace spl
     {
         namespace rvw = ranges::views;
         auto const [x_min, x_max] = std::minmax_element(_xs.begin(), _xs.end());
-        auto const [y_min, y_may] = std::minmax_element(_ys.begin(), _ys.end());
+        auto const [y_min, y_max] = std::minmax_element(_ys.begin(), _ys.end());
         auto const xs = _xs | rvw::transform(std::bind_front(&plotter::rescale, this, *x_min, *x_max, _width));
-        auto const ys = _ys | rvw::transform(std::bind_front(&plotter::rescale, this, *y_min, *y_may, _height));
+        auto const ys = _ys | rvw::transform(std::bind_front(&plotter::rescale, this, *y_min, *y_max, _height));
 
         return rvw::zip(xs, ys) | ranges::to<std::vector<std::pair<int, int>>>;
     }
