@@ -116,7 +116,7 @@ namespace spl
         for (auto m{0};  m<= 10; ++m)
         {
             auto j = _border + (_height-2*_border)*m/10;
-            auto t = *y_max + (*y_min-*y_max)*m/10;
+            auto t = - (*y_min + (*y_max-*y_min)*m/10);
             vert.position = sf::Vector2f(x+4, j);
             axes.append(vert);
             vert.position = sf::Vector2f(x-4, j);
