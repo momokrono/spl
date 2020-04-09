@@ -1,0 +1,68 @@
+#include "plotter.hpp"
+
+#include <fmt/format.h>
+#include <fmt/printf.h>
+
+#include <fstream>
+
+#include <range/v3/view/chunk.hpp>
+
+namespace spl
+{
+    auto plotter::save_as_pmm(std::filesystem::path const & destination) const
+        -> bool
+    {
+        namespace rvw = ranges::views;
+        auto sink = std::ofstream{destination};
+        // TODO: check if file is good
+        // assume: _xs.begin() != _xs.end();
+        
+        auto buffer = std::vector<uint8_t>(_width * _height * 3, 0xFF);
+        auto vectors = get_plot_points();
+
+        for (auto const [x, y] : vectors) {
+            auto const base_offset = (x + y * _width) * 3;
+            buffer.at(base_offset + 0) = 0x00;
+            buffer.at(base_offset + 1) = 0x00;
+            buffer.at(base_offset + 2) = 0x00;
+        }
+
+        // PMM FILE FORMAT
+        // 1) 'P3'
+        // 2) width height
+        // 3) max_scale_factor (255)
+        // 4) data... 1 line x pixel
+        sink << fmt::format("P3\n{} {}\n255\n", _width, _height);
+        for (auto const pixel : buffer | rvw::chunk(3)) {
+            sink << fmt::format("{} {} {}\n", pixel[0], pixel[1], pixel[2]);
+        }
+
+        return true;
+    }
+
+    auto plotter::save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const & plot, std::vector<sf::Text> const & labels) const
+            -> bool
+    {
+        sf::RenderTexture texture;
+        texture.create(_width, _height);
+        texture.clear(sf::Color::White);
+
+        auto [vx, ax] = plot;
+        texture.draw(vx);
+        texture.draw(ax);
+        for (auto & l : labels)
+        {
+            texture.draw(l);
+        }
+        auto pic = texture.getTexture().copyToImage();
+        pic.flipVertically();           // stupido sfml
+        if (pic.saveToFile("plot.png")) // TODO: cin >> nome, tipo di file
+        {
+            fmt::printf("plot saved\n"); // TODO: aggiungere eventualmente un testo su schermo
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+} // namespace spl

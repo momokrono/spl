@@ -7,61 +7,18 @@
 
 #include "plotter.hpp"
 
-#include <functional>
-#include <iostream>
-#include <fstream>
+#include <algorithm>
 
 #include <fmt/format.h>
 
-#include <range/v3/view/transform.hpp>
-#include <range/v3/view/chunk.hpp>
-#include <range/v3/view/zip.hpp>
-
 namespace spl
 {
-    auto plotter::save_as_pmm(std::filesystem::path const & destination) const
-        -> bool
-    {
-        namespace rvw = ranges::views;
-        auto sink = std::ofstream{destination};
-        // TODO: check if file is good
-        // assume: _xs.begin() != _xs.end();
-        
-        auto buffer = std::vector<uint8_t>(_width * _height * 3, 0xFF);
-        auto vectors = get_plot_points();
-
-        for (auto const [x, y] : vectors) {
-            auto const base_offset = (x + y * _width) * 3;
-            buffer.at(base_offset + 0) = 0x00;
-            buffer.at(base_offset + 1) = 0x00;
-            buffer.at(base_offset + 2) = 0x00;
-        }
-
-        // PMM FILE FORMAT
-        // 1) 'P3'
-        // 2) width height
-        // 3) max_scale_factor (255)
-        // 4) data... 1 line x pixel
-        sink << fmt::format("P3\n{} {}\n255\n", _width, _height);
-        for (auto const pixel : buffer | rvw::chunk(3)) {
-            sink << fmt::format("{} {} {}\n", pixel[0], pixel[1], pixel[2]);
-        }
-
-        return true;
-    }
-
     void plotter::show() const
     {
-        namespace rvw = ranges::views;
-        // anti aliasing, ma non mi piace l'effetto
-        // sf::ContextSettings ctx;
-        // ctx.antialiasingLevel=2;
-        // sf::RenderWindow window(sf::VideoMode(_width, _height), "titolo", sf::Style::Default, ctx);
-
         sf::RenderWindow window(sf::VideoMode(_width, _height), "titolo");
         sf::VertexArray axes;
 
-        sf::VertexArray vertexes{sf::LinesStrip};   // TODO: aggiungere la possibilità di cambiare primitiva
+        sf::VertexArray function{sf::LinesStrip};   // TODO: aggiungere la possibilità di cambiare primitiva
         axes.setPrimitiveType(sf::Lines);           // per poter fare linee tratteggiate, cerchi, tratto punto, ...
                                                     // Lines, LinesStrip, Points come primitive di un vertex array,
                                                     // altrimenti si va di vettore di cerchi, quadrati, stelline, ...
@@ -71,7 +28,7 @@ namespace spl
             sf::Vertex point;
             point.position = sf::Vector2f(x, _height-y);
             point.color = sf::Color::Blue;
-            vertexes.append(point);
+            function.append(point);
         }
 
         // TODO: abbellire sta roba, aggiungere le misure sugli assi
@@ -109,8 +66,8 @@ namespace spl
             axes.append(vert);
             vert.position = sf::Vector2f(i, y-4);
             axes.append(vert);
-            label.setString(fmt::format("{:.2}", t)); // TODO: inserire qui il numero su R della mia funzione, non i pixel, nel vettore _xs
-            label.setPosition(sf::Vector2f(i, y)); // questo è ok
+            label.setString(fmt::format("{:.2}", t));
+            label.setPosition(sf::Vector2f(i, y));
             labels.push_back(label);
         }
         for (auto m{0};  m<= 10; ++m)
@@ -121,8 +78,8 @@ namespace spl
             axes.append(vert);
             vert.position = sf::Vector2f(x-4, j);
             axes.append(vert);
-            label.setString(fmt::format("{:.2}", t)); // TODO: come sopra, vettore _ys
-            label.setPosition(sf::Vector2f(x, j)); // questo è ok
+            label.setString(fmt::format("{:.2}", t));
+            label.setPosition(sf::Vector2f(x, j));
             labels.push_back(label);
         }
 
@@ -144,55 +101,20 @@ namespace spl
                     }
                     if (event.key.code == sf::Keyboard::S)
                     {
-                        sf::RenderTexture texture;
-                        texture.create(_width, _height);
-                        texture.clear(sf::Color::White);
-                        auto reflect = [](sf::Vertex & v){
-                                v.position.y = -v.position.y;
-                        };
-                        auto ax = axes;
-                        auto vx = vertexes;
-                        for (std::size_t i{0}; i < vx.getVertexCount(); ++i)
-                        {
-                            reflect(vx[i]);
-                        }
-                        for (std::size_t i{0}; i < ax.getVertexCount(); ++i)
-                        {
-                            reflect(ax[i]);
-                        }
-                        // auto axs = axes | rvw::transform([](auto & v){reflect(v);});
-                        texture.draw(ax);
-                        texture.draw(vx);
-                        for (auto & l : labels)
-                        {
-                            texture.draw(l);
-                        }
-                        texture.getTexture().copyToImage().saveToFile("plot.png"); // TODO: cin >> nome, tipo di file
-                        std::cout << "plot saved" << std::endl; // TODO: aggiungere un testo su schermo
+                        auto plot = std::pair<sf::VertexArray, sf::VertexArray>(function, axes);
+                        save_canvas(plot, labels);
                     }
                 }
             }
 
             window.clear(sf::Color::White);
             window.draw(axes);
-            window.draw(vertexes);
+            window.draw(function);
             for (auto & l : labels)
             {
                 window.draw(l);
             }
             window.display();
         }
-    }
-
-    auto plotter::get_plot_points() const
-            -> std::vector<std::pair<int, int>>
-    {
-        namespace rvw = ranges::views;
-        auto const [x_min, x_max] = std::minmax_element(_xs.begin(), _xs.end());
-        auto const [y_min, y_max] = std::minmax_element(_ys.begin(), _ys.end());
-        auto const xs = _xs | rvw::transform(std::bind_front(&plotter::rescale, this, *x_min, *x_max, _width));
-        auto const ys = _ys | rvw::transform(std::bind_front(&plotter::rescale, this, *y_min, *y_max, _height));
-
-        return rvw::zip(xs, ys) | ranges::to<std::vector<std::pair<int, int>>>;
     }
 } // namespace spl

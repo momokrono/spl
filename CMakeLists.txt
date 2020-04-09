@@ -26,7 +26,7 @@ set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fsan
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
 
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/main.cpp src/plotter.cpp)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/main.cpp src/plotter.cpp src/aux_functions.cpp src/save_functions.cpp)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ./include)

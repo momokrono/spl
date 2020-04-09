@@ -14,20 +14,17 @@
 int main()
 {
     namespace rvw = ranges::views;
-    auto xs = rvw::linear_distribute(- 3.1415, 3.1415, 620) | ranges::to_vector; //std::vector<double>{};
-    auto ys = xs | rvw::transform([](auto x) { return std::sin(x); }) | ranges::to_vector;
+    auto xs = rvw::linear_distribute(-2*3.1415, 2*3.1415, 1000) | ranges::to_vector; //std::vector<double>{};
+    auto ys = xs | rvw::transform([](auto x) { return std::cos(x); }) | ranges::to_vector;
 
     auto plot = spl::plotter{640, 480, xs, ys /* altri dati */};
 
-    // 1) finestra
-    // TODO
-
-    // 2) file
+    // --- file
 //     if (plot.save_as_pmm("ok.pmm")) {
 //         return 0;
 //     }
 
 //     return 1;
-    plot.show();
 
+    plot.show();
 }
