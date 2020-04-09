@@ -40,7 +40,9 @@ namespace spl
         return true;
     }
 
-    auto plotter::save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const & plot, std::vector<sf::Text> const & labels) const
+    auto plotter::save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const & plot,
+                              std::vector<sf::Text> const & labels,
+                              std::string const & name) const
             -> bool
     {
         sf::RenderTexture texture;
@@ -56,11 +58,12 @@ namespace spl
         }
         auto pic = texture.getTexture().copyToImage();
         pic.flipVertically();           // stupido sfml
-        if (pic.saveToFile("plot.png")) // TODO: cin >> nome, tipo di file
+        if (pic.saveToFile(name))
         {
             fmt::printf("plot saved\n"); // TODO: aggiungere eventualmente un testo su schermo
             return true;
         } else {
+            fmt::printf("errors occurred while saving the plot\n");
             return false;
         }
     }

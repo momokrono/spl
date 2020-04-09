@@ -66,8 +66,10 @@ namespace spl
             axes.append(vert);
             vert.position = sf::Vector2f(i, y-4);
             axes.append(vert);
+            // if (n == 5)
+            //     continue; // bruttissimo
             label.setString(fmt::format("{:.2}", t));
-            label.setPosition(sf::Vector2f(i, y));
+            label.setPosition(i, y);
             labels.push_back(label);
         }
         for (auto m{0};  m<= 10; ++m)
@@ -78,8 +80,10 @@ namespace spl
             axes.append(vert);
             vert.position = sf::Vector2f(x-4, j);
             axes.append(vert);
+            if (m == 5)
+                continue; // aiuto che schifo
             label.setString(fmt::format("{:.2}", t));
-            label.setPosition(sf::Vector2f(x, j));
+            label.setPosition(x, j);
             labels.push_back(label);
         }
 
@@ -101,8 +105,8 @@ namespace spl
                     }
                     if (event.key.code == sf::Keyboard::S)
                     {
-                        auto plot = std::pair<sf::VertexArray, sf::VertexArray>(function, axes);
-                        save_canvas(plot, labels);
+                        // auto plot = std::pair<sf::VertexArray, sf::VertexArray>(function, axes);
+                        save_canvas({function, axes}, labels, "plot.bmp"); // possible types: bmp, tga, png, jpg
                     }
                 }
             }

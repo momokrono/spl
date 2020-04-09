@@ -27,7 +27,7 @@ namespace spl
         void show() const;
         bool save_as_pmm(std::filesystem::path const &) const; // default to PMM
         // maybe: std::string as_pmm_string() const;
-        bool save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const &, std::vector<sf::Text> const &) const;
+        bool save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const &, std::vector<sf::Text> const &, std::string const &) const;
         
     private:
         uint_fast32_t _width;
@@ -46,8 +46,6 @@ namespace spl
         }
 
         auto get_plot_points() const -> std::vector<std::pair<int, int>>;
-
-        // sf::RenderTexture;
 
     };
 } // namespace spl
