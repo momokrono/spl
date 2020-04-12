@@ -14,9 +14,11 @@ namespace spl
     {
         namespace rvw = ranges::views;
         auto sink = std::ofstream{destination};
-        // TODO: check if file is good
+        if (not sink) {
+            return false;
+        }
+
         // assume: _xs.begin() != _xs.end();
-        
         auto buffer = std::vector<uint8_t>(_width * _height * 3, 0xFF);
         auto vectors = get_plot_points();
 
@@ -32,9 +34,9 @@ namespace spl
         // 2) width height
         // 3) max_scale_factor (255)
         // 4) data... 1 line x pixel
-        sink << fmt::format("P3\n{} {}\n255\n", _width, _height);
+        fmt::print(sink, "P3\n{} {}\n255\n", _width, _height);
         for (auto const pixel : buffer | rvw::chunk(3)) {
-            sink << fmt::format("{} {} {}\n", pixel[0], pixel[1], pixel[2]);
+            fmt::print(sink, "{} {} {}\n", pixel[0], pixel[1], pixel[2]);
         }
 
         return true;
@@ -49,7 +51,7 @@ namespace spl
         texture.create(_width, _height);
         texture.clear(sf::Color::White);
 
-        auto [vx, ax] = plot;
+        auto const [vx, ax] = plot;
         texture.draw(vx);
         texture.draw(ax);
         for (auto & l : labels)
@@ -60,10 +62,10 @@ namespace spl
         pic.flipVertically();           // stupido sfml
         if (pic.saveToFile(name))
         {
-            fmt::printf("plot saved\n"); // TODO: aggiungere eventualmente un testo su schermo
+            fmt::print("plot saved\n"); // TODO: aggiungere eventualmente un testo su schermo
             return true;
         } else {
-            fmt::printf("errors occurred while saving the plot\n");
+            fmt::print("errors occurred while saving the plot\n");
             return false;
         }
     }
