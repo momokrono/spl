@@ -46,7 +46,7 @@ namespace spl
         }
 
         auto get_plot_points() const -> std::vector<std::pair<int, int>>;
-        auto generate_labels(int, int) const -> std::pair<sf::VertexArray, std::vector<sf::Text>>;
+        auto generate_labels(int, int, sf::Font const &) const -> std::pair<sf::VertexArray, std::vector<sf::Text>>;
 
     };
 } // namespace spl
