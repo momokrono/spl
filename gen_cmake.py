@@ -1,10 +1,17 @@
-######################################################################
+import os
+
+output_file = open("CMakeLists.txt", "w")
+banner = """######################################################################
 # @author      : rbrugo, momokrono
 # @file        : CMakeLists
 # @created     : Tuesday Mar 31, 2020 00:22:53 CEST
 ######################################################################
 
-cmake_minimum_required(VERSION 3.16.2)
+"""
+
+output_file.write(banner)
+
+body = """cmake_minimum_required(VERSION 3.16.2)
 
 project(spl CXX)
 add_executable(${CMAKE_PROJECT_NAME})
@@ -26,7 +33,28 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fsaniti
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fsanitize=undefined -fsanitize=null -fsanitize=unreachable -fsanitize=return -fsanitize=signed-integer-overflow -fsanitize=bounds -fsanitize=alignment")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE  src/aux_functions.cpp src/plotter.cpp src/save_functions.cpp src/main.cpp)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)
+"""
+output_file.write(body)
+
+
+src_files = []
+path = "src/"
+
+with os.scandir(path) as sources:
+    for src in sources:
+        if src.is_file():
+            src_files.append(src.name)
+
+src_cmake = "target_sources(${CMAKE_PROJECT_NAME} PRIVATE "
+for src in src_files:
+    src_cmake+=" {}{}".format(path, src)
+src_cmake+=")\n"
+
+output_file.write(src_cmake)
+
+end = """target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ./include)
+"""
+
+output_file.write(end)
