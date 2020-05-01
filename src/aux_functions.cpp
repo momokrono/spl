@@ -7,6 +7,9 @@
 
 namespace spl
 {
+    /*
+    template <typename Container1, typename Container2>
+        requires ranges::input_iterator<Container1> and ranges::input_iterator<Container2>
     auto plotter::get_plot_points() const
             -> std::vector<std::pair<int, int>>
     {
@@ -17,5 +20,5 @@ namespace spl
         auto const ys = _ys | rvw::transform(std::bind_front(&plotter::rescale, this, *y_min, *y_max, _height));
 
         return rvw::zip(xs, ys) | ranges::to<std::vector<std::pair<int, int>>>;
-    }
+    }*/
 }

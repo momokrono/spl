@@ -12,6 +12,9 @@ namespace spl
     auto plotter::save_as_pmm(std::filesystem::path const & destination) const
         -> bool
     {
+#warning remake this
+        return true;
+        /*
         namespace rvw = ranges::views;
         auto sink = std::ofstream{destination};
         if (not sink) {
@@ -39,7 +42,7 @@ namespace spl
             fmt::print(sink, "{} {} {}\n", pixel[0], pixel[1], pixel[2]);
         }
 
-        return true;
+        return true;*/
     }
 
     auto plotter::save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const & plot,
