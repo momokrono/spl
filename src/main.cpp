@@ -16,12 +16,12 @@ int main()
     namespace rvw = ranges::views;
     auto xs = rvw::linear_distribute(-2*3.1415, 2*3.1415, 400) | ranges::to_vector; //std::vector<double>{};
     auto ys = xs | rvw::transform([](auto x) { return std::cos(x); }) | ranges::to_vector;
-    auto x2 = rvw::linear_distribute(-4*3.1415, 4*3.1415, 100) | ranges::to_vector; //std::vector<double>{};
+    auto x2 = rvw::linear_distribute(-4*3.1415, 4*3.1415, 40) | ranges::to_vector; //std::vector<double>{};
     auto y2 = x2 | rvw::transform([](auto x) { return std::sin(x); }) | ranges::to_vector;
 
     auto plot = spl::plotter{640, 480};
     plot.plot(xs, ys)
-        .plot(x2, y2, "rT")
+        .plot(x2, y2, "mo ")
         ;
 
     /* spl::plotter{640, 480, xs, ys}.show(); */

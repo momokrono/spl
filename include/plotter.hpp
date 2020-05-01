@@ -194,8 +194,14 @@ auto plotter::build_primitives(Pair const x_min_max, Pair const y_min_max) const
         } else if (figure_code > 0) {
             for (auto const [x, y] : points) {
                 constexpr auto radius = 5.f;
-                auto vertex_icon = sf::CircleShape{radius, static_cast<size_t>(figure_code)};
+                auto vertex_icon = sf::CircleShape{radius};
                 vertex_icon.setOrigin(radius, radius);
+                if (figure_code > 2) {
+                    vertex_icon.setPointCount(figure_code);
+                } else if (figure_code == 2) {
+                    vertex_icon.setRadius(2*radius);
+                    vertex_icon.setOrigin(2*radius, 2*radius);
+                }
                 vertex_icon.setFillColor(color);
                 vertex_icon.setPosition(x, _height - y);
                 plot_points.push_back(vertex_icon);

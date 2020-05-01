@@ -142,7 +142,7 @@ auto plotter::generate_labels(
 
 void plotter::show() const
 {
-    sf::RenderWindow window(sf::VideoMode(_width, _height), "Ciao Momo :D");
+    sf::RenderWindow window(sf::VideoMode(_width, _height), "spl");
 
     auto const texture = generate_texture();
     auto final_plot = sf::Sprite{texture};
