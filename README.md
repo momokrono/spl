@@ -25,7 +25,7 @@ int main()
 
     auto plot = spl::plotter{640, 480, xs, ys /* format here, eventually */};
 
-    plot.save_plot("my_plot.pmm"); // to save it directly
+    plot.save_plot("my_plot.png"); // to save it directly
 
     plot.show();                     // to open a window
 }
