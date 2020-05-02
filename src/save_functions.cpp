@@ -45,24 +45,11 @@ namespace spl
         return true;*/
     }
 
-    auto plotter::save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const & plot,
-                              std::vector<sf::Text> const & labels,
-                              std::string const & name) const
+    auto plotter::save_canvas( std::string const & name ) const
             -> bool
     {
-        sf::RenderTexture texture;
-        texture.create(_width, _height);
-        texture.clear(sf::Color::White);
-
-        auto const [vx, ax] = plot;
-        texture.draw(vx);
-        texture.draw(ax);
-        for (auto & l : labels)
-        {
-            texture.draw(l);
-        }
-        auto pic = texture.getTexture().copyToImage();
-        pic.flipVertically();           // stupido sfml
+        auto const texture = get_texture();
+        auto pic = texture.copyToImage();
         if (pic.saveToFile(name))
         {
             fmt::print("plot saved\n"); // TODO: aggiungere eventualmente un testo su schermo

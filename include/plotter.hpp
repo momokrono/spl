@@ -63,7 +63,7 @@ public:
     // maybe: std::string as_pmm_string() const;
 
     /// Save the plot as image
-    bool save_canvas(std::pair<sf::VertexArray, sf::VertexArray> const &, std::vector<sf::Text> const &, std::string const &) const;
+    bool save_canvas(std::string const &) const;
 
 private:
     uint_fast32_t _width  = 640;
@@ -198,6 +198,9 @@ auto plotter::build_primitives(Pair const x_min_max, Pair const y_min_max) const
                 vertex_icon.setOrigin(radius, radius);
                 if (figure_code > 2) {
                     vertex_icon.setPointCount(figure_code);
+                    if (figure_code == 4) {
+                        vertex_icon.rotate(45);
+                    }
                 } else if (figure_code == 2) {
                     vertex_icon.setRadius(2*radius);
                     vertex_icon.setOrigin(2*radius, 2*radius);

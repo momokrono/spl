@@ -144,7 +144,7 @@ void plotter::show() const
 {
     sf::RenderWindow window(sf::VideoMode(_width, _height), "spl");
 
-    auto const texture = generate_texture();
+    auto const texture = get_texture();
     auto final_plot = sf::Sprite{texture};
     while (window.isOpen())
     {
@@ -158,7 +158,7 @@ void plotter::show() const
                 if (event.key.code == sf::Keyboard::Escape) {
                     window.close();
                 } else if (event.key.code == sf::Keyboard::S) {
-                    /* save_canvas({plot_points, axes}, labels, "plot.bmp"); // possible types: bmp, tga, png, jpg */
+                    save_canvas("plot.bmp"); // possible types: bmp, tga, png, jpg
                 }
             }
         }
