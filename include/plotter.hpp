@@ -63,7 +63,7 @@ public:
     // maybe: std::string as_pmm_string() const;
 
     /// Save the plot as image
-    bool save_canvas(std::string const &) const;
+    bool save_plot(std::string const &) const;
 
 private:
     uint_fast32_t _width  = 640;

@@ -158,7 +158,7 @@ void plotter::show() const
                 if (event.key.code == sf::Keyboard::Escape) {
                     window.close();
                 } else if (event.key.code == sf::Keyboard::S) {
-                    save_canvas("plot.bmp"); // possible types: bmp, tga, png, jpg
+                    save_plot("plot.bmp"); // possible types: bmp, tga, png, jpg
                 }
             }
         }

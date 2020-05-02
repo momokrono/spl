@@ -45,7 +45,7 @@ namespace spl
         return true;*/
     }
 
-    auto plotter::save_canvas( std::string const & name ) const
+    auto plotter::save_plot( std::string const & name ) const
             -> bool
     {
         auto const texture = get_texture();
