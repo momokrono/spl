@@ -69,10 +69,12 @@ private:
     uint_fast32_t _width  = 640;
     uint_fast32_t _height = 480;
     std::vector<plot_spec> _plots;
-    uint_fast32_t _border = 10; // same for x and y
+    uint_fast32_t _border = 15; // same for x and y
     mutable std::optional<sf::Texture> _cached_texture = std::nullopt;
 
+    /// Takes a format string and parse it
     static format_result parse_format(std::string_view const format);
+
     /// Remap a point from [min, max] to [-length + border, length - border]
     constexpr
     int rescale(value_type const min, value_type const max, uint_fast32_t const length, value_type const x) const noexcept
@@ -99,7 +101,9 @@ private:
 
     /// Generate a texture with the current content of `_plots`
     auto generate_texture() const -> sf::Texture;
-    /// Returns the `_cached_texture`, eventually generating it not present
+
+public:
+    /// Returns the `_cached_texture`, eventually generating it if not present
     auto get_texture() const -> sf::Texture const &;
 };
 
@@ -167,8 +171,7 @@ auto plotter::plot(Container1 && xs, Container2 && ys, std::string format)
     return *this;
 }
 
-
-#warning complete this function
+// TODO: add stuff here
 template <typename Pair>
 auto plotter::build_primitives(Pair const x_min_max, Pair const y_min_max) const
     -> std::vector<primitive>

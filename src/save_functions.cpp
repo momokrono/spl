@@ -13,7 +13,6 @@ namespace spl
         -> bool
     {
 #warning remake this
-        return true;
         /*
         namespace rvw = ranges::views;
         auto sink = std::ofstream{destination};
@@ -48,7 +47,7 @@ namespace spl
     auto plotter::save_plot( std::string const & name ) const
             -> bool
     {
-        auto const texture = get_texture();
+        auto const & texture = get_texture();
         auto pic = texture.copyToImage();
         if (pic.saveToFile(name))
         {
