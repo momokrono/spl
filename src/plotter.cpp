@@ -135,59 +135,16 @@ auto plotter::generate_labels(
 
     auto const x = plotter::rescale(x_min, x_max, _width, 0.);
     auto const y = plotter::rescale(y_min, y_max, _height, 0.);
-    // asse y
+    // y axis
     axes.append({sf::Vector2f{x + 0.f,           _border + 0.f}, sf::Color::Black});
     axes.append({sf::Vector2f{x + 0.f, _height - _border + 0.f}, sf::Color::Black});
-    // asse x
+    // x axis
     axes.append({sf::Vector2f{         _border + 0.f, _height - y + 0.f}, sf::Color::Black});
     axes.append({sf::Vector2f{_width - _border + 0.f, _height - y + 0.f}, sf::Color::Black});
 
-    // calculates the number of labels along the axes
-    // ...
-    //                  0.5
-    //    1 1.5  2  2.5   5
-    //   10  15 20   25  50
-    //  100 150 200 250
-    // ...
-    //  - order of magnitude
-    //  - decrease it by 1
-    //  - divide
-    //
-    // Examples:
-    //
-    //  4e21 -> step of 1e20
-    //  [0, 100'000] -> step (order of magnitude) 10'000
-    //  "rescale" the interval according the order of magnitude of the step: [0, 10]
-    //  try {1, 1.5, 2, 2.5, 5} in decreasing order, take the number wich has the highest number of
-    //      labels (5<=n<=9)
-    //
-    //  [-1e6, 1e6] -> 1e5
-    //  -> [-10, 10]
-    //  - 5: -10 -5 0 5 10      // 5
-    //  - 2.5: -10 -7.5 -5 -2.5 0 2.5 5 7.5 10 // 9
-    //
-    //
-    //  2n + 1
-    //  2(n+1) + 1
-    //
-    //
-    //  [-1.553, 5.68] -> // 0.1
-    //  -> [-15.53, 56.8] -> [-15, 56] (floor)
-    //  - 5: -15 -10 -5 0 5 10 15 20 25 ... => too big => multiply by 10
-    //  - 50: -15 35 no
-    //  - 25: -15 10 35 no
-    //  - 20: -15 5 25 45 no
-    //  - 15: -15 0 15 30 45 OK
-    //  - 10: -15 -5 5 15 25 35 45 55 OK
-    //  [-15, 56] => (rounding depends on the step) [-15, 55] => [-1.5, 5.5]
-    //  step 10
-    //  diff = min_x % step
-    //  min3 = min_x - diff
-    //  -15 % 10 = -5
-    //  -15 - -5 = -10
-
-    auto const [axis_min, axis_max, best_step, order]         = generate_axes_config(x_min, x_max);
-    auto const [axis_min_y, axis_max_y, best_step_y, order_y] = generate_axes_config(y_min, y_max);
+    // x and y axes parameters to compute the optimal number of labels
+    auto const [axes_min, axes_max, best_step, order]         = generate_axes_config(x_min, x_max);
+    auto const [axes_min_y, axes_max_y, best_step_y, order_y] = generate_axes_config(y_min, y_max);
 
     // configure labels
     auto labels = std::vector<sf::Text>{};
@@ -198,7 +155,7 @@ auto plotter::generate_labels(
     label.setFillColor(sf::Color::Black);
     label.setCharacterSize(10);
 
-    for (auto cursor = axis_min, x_cap = axis_max + best_step / 2; cursor < x_cap; cursor += best_step) {
+    for (auto cursor = axes_min, x_cap = axes_max + best_step / 2; cursor < x_cap; cursor += best_step) {
         auto const x_fn = cursor * order;
         auto const x_px = rescale(x_min, x_max, _width, x_fn);
         axes.append({sf::Vector2f(x_px, _height - y + 4), sf::Color::Black});
@@ -208,7 +165,7 @@ auto plotter::generate_labels(
         labels.push_back(label);
     }
 
-    for (auto cursor = axis_min_y, y_cap = axis_max_y + best_step_y / 2; cursor < y_cap; cursor += best_step_y) {
+    for (auto cursor = axes_min_y, y_cap = axes_max_y + best_step_y / 2; cursor < y_cap; cursor += best_step_y) {
         auto const y_fn = cursor * order_y;
         auto const y_px = rescale(y_min, y_max, _height, y_fn);
         axes.append({sf::Vector2f(x + 4, _height - y_px), sf::Color::Black});

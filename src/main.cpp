@@ -24,35 +24,17 @@ constexpr auto pi = std::numbers::pi_v<long double>;
 int main()
 {
     namespace rvw = ranges::views;
-    auto xs = rvw::linear_distribute(-2*pi, 2*pi, 400) | ranges::to_vector; //std::vector<double>{};
-    /* auto ys = xs | rvw::transform([](auto x) { return std::cos(x); }) | ranges::to_vector; */
+    auto xs = rvw::linear_distribute(-2*pi, 2*pi, 400) | ranges::to_vector;
     auto ys = xs | rvw::transform([](auto x) { return std::exp(x) / 1e2; }) | ranges::to_vector;
-    auto x2 = rvw::linear_distribute(-4*pi, 4*pi, 100) | ranges::to_vector; //std::vector<double>{};
+    auto x2 = rvw::linear_distribute(-4*pi, 4*pi, 100) | ranges::to_vector;
     auto y2 = x2 | rvw::transform([](auto x) { return std::sin(x); }) | ranges::to_vector;
-    /* auto x3 = rvw::linear_distribute(0.l, 0.5*pi, 800) | ranges::to_vector; //std::vector<double>{}; */
-    /* auto y3 = x3 | rvw::transform([](auto x) { return std::tan(x); }) | ranges::to_vector; */
 
 
     auto plot = spl::plotter{640, 480};
     plot.plot(xs, ys)
         .plot(x2, y2, "ro-")
-        /* .plot(x3, y3, "g") */
         ;
 
-    /* spl::plotter{640, 480, xs, ys}.show(); */
-    /* spl::show(xs, ys); */
-    /* spl::show(640, 480, xs, ys); */
-    /* spl::save("robe.png", xs, ys, "ro-"); */
-    /* spl::save("cose.png", 640, 480, xs, ys, "ro-"); */
-
-    // --- file
-//     if (plot.save_as_pmm("ok.pmm")) {
-//         return 0;
-//     }
-
-//     return 1;
-
-    // plot.show();
-    plot.save_plot("plot.png");
-    plot.save_plot("plot.ppm");
+    plot.show();
+    // plot.save_plot("plot.png");
 }

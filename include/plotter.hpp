@@ -73,7 +73,7 @@ private:
 
     /// Save the plot in pmm file format
     static bool save_as_ppm(std::filesystem::path const &, sf::Image const &); // default to PPM
-    // maybe: std::string as_pmm_string() const;
+    // maybe: std::string as_ppm_string() const;
 
     /// Remap a point from [min, max] to [-length + border, length - border]
     constexpr
