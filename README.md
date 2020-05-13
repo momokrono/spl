@@ -20,21 +20,54 @@ Here is an example of how you can use it:
 int main()
 {
     namespace rvw = ranges::views;
-    auto xs = rvw::linear_distribute(-2*3.1415, 2*3.1415, 1000) | ranges::to_vector;
-    auto ys = xs | rvw::transform([](auto x) { return std::cos(x); }) | ranges::to_vector;
 
-    auto plot = spl::plotter{640, 480, xs, ys /* format here, eventually */};
+    // Generate some points to plot
+    auto x1 = rvw::linear_distribute(-2*pi, 2*pi, 400) | ranges::to_vector;
+    auto y1 = x1 | rvw::transform([](auto x) { return std::exp(x) / 1e2; }) | ranges::to_vector;
+    auto x2 = rvw::linear_distribute(-4*pi, 4*pi, 100) | ranges::to_vector;
+    auto y2 = x2 | rvw::transform([](auto x) { return std::sin(x); }) | ranges::to_vector;
 
-    plot.save_plot("my_plot.png"); // to save it directly
+    auto graph = spl::plotter{640, 480 /*, xs, ys, format*/};
 
-    plot.show();                     // to open a window
+    graph.plot(x1, y1);           // plot x1 and y1 with default format
+    graph.plot(x2, y2, "ro-");    // plot x2 and y2 with a custom format
+
+    graph.show();                    // to open a window
+    // graph.save_plot("plot.png");  // to save directly
 }
 ```
-You can nest more plots each one with different format, for example
+The code above gives the following output:
+![example](https://github.com/momokrono/spl/blob/master/plot.png)
+
+You can chain more plots each one with different format, for example
 ```cpp
-plot.plot(x1,y1)
-    .plot(x2,y2,"gt-")
-    .plot(x3,y3,"bo ")
-    ;
+graph.plot(x1,y1)
+     .plot(x2,y2,"gt-")
+     .plot(x3,y3,"bo ")
+     ;
 ```
 and then show it, or save it.
+
+### Plot format
+
+A format string let you define three properties of the plot (the color, the primitive and the line
+type) in a way similar to matplotlib.
+Currently available options are:
+- Colors
+    + `b`: blue (default)
+    + `g`: green
+    + `r`: red
+    + `y`: yellow
+    + `m`: magenta
+    + `k`|`B`: black
+- Primitives:
+    + `.`: pixel (default)
+    + `o`: small circle
+    + `O`: big circle
+    + `t`: triangle
+    + `s`: square
+    + `p`: pentagon
+    + `e`: exagon
+- Line types:
+    + `-`: solid (default)
+    + ` `: no line
