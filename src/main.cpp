@@ -54,4 +54,5 @@ int main()
 
     // plot.show();
     plot.save_plot("plot.png");
+    plot.save_plot("plot.ppm");
 }

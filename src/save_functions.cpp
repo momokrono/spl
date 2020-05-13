@@ -9,26 +9,12 @@
 
 namespace spl
 {
-    auto plotter::save_as_pmm(std::filesystem::path const & destination) const
+    auto plotter::save_as_ppm(std::filesystem::path const & destination, sf::Image const & img)
         -> bool
     {
-#warning remake this
-        /*
-        namespace rvw = ranges::views;
         auto sink = std::ofstream{destination};
         if (not sink) {
             return false;
-        }
-
-        // assume: _xs.begin() != _xs.end();
-        auto buffer = std::vector<uint8_t>(_width * _height * 3, 0xFF);
-        auto vectors = get_plot_points();
-
-        for (auto const [x, y] : vectors) {
-            auto const base_offset = (x + y * _width) * 3;
-            buffer.at(base_offset + 0) = 0x00;
-            buffer.at(base_offset + 1) = 0x00;
-            buffer.at(base_offset + 2) = 0x00;
         }
 
         // PMM FILE FORMAT
@@ -36,20 +22,29 @@ namespace spl
         // 2) width height
         // 3) max_scale_factor (255)
         // 4) data... 1 line x pixel
-        fmt::print(sink, "P3\n{} {}\n255\n", _width, _height);
-        for (auto const pixel : buffer | rvw::chunk(3)) {
-            fmt::print(sink, "{} {} {}\n", pixel[0], pixel[1], pixel[2]);
+        auto const [width, height] = img.getSize();
+        fmt::print(sink, "P3\n{} {}\n255\n", width, height);
+
+        for (size_t j = 0; j < height; ++j) {
+            for (size_t i = 0; i < width; ++i) {
+                auto const [r, g, b, a] = img.getPixel(i, j);
+                fmt::print(sink, "{} {} {}\n", r, g, b);
+            }
+            fmt::print(sink, "\n");
         }
 
-        return true;*/
+        return true;
     }
 
-    auto plotter::save_plot( std::string const & name ) const
+    auto plotter::save_plot(std::filesystem::path const & name) const
             -> bool
     {
         auto const & texture = get_texture();
-        auto pic = texture.copyToImage();
-        if (pic.saveToFile(name))
+        auto const   pic = texture.copyToImage();
+
+        if (name.extension() == ".ppm") {
+            return save_as_ppm(name, pic);
+        } else if (pic.saveToFile(name))
         {
             fmt::print("plot saved\n"); // TODO: aggiungere eventualmente un testo su schermo
             return true;
