@@ -7,7 +7,11 @@ namespace spl::graphics
         if ( x > _width - 1 or y > _height - 1)
         {
             std::cerr << "trying to access pixel out of boundaries\n";
+<<<<<<< HEAD
             return {0, 0, 0, 0};
+=======
+            return {0};
+>>>>>>> ef9910ba33439b13977be71dd4eb67d3975d7f94
         } else {
             return _pixels[x][y];
         }
