@@ -38,7 +38,7 @@ output_file.write(body)
 
 
 src_files = []
-path = "src/"
+path = "src/spl/"
 
 with os.scandir(path) as sources:
     for src in sources:
@@ -54,7 +54,7 @@ output_file.write(src_cmake)
 
 end = """target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ./include)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ./include/spl)
 """
 
 output_file.write(end)
