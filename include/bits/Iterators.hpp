@@ -1,11 +1,14 @@
+#ifndef _ITERATORS_HPP_
+#define _ITERATORS_HPP_
+
 #include <compare>
+#include <ranges>
+
+#include "Graphics/rgba.hpp"
 
 namespace spl::graphics
 {
-struct rgba;
 class image;
-
-using iterator = std::vector<rgba>::iterator;
 
 template<bool is_row>
 struct iter_step;
@@ -28,6 +31,7 @@ template <bool is_row>
 class row_col_iter : public iter_step<is_row>
 {
 public:
+    using iterator = std::vector<rgba>::iterator;
     using iterator_category = iterator::iterator_category;
     using difference_type = iterator::difference_type;
     using value_type = iterator::value_type;
@@ -35,7 +39,9 @@ public:
     using pointer = iterator::pointer;
 
     row_col_iter() : iter_step<is_row>{1} {}
+    row_col_iter(iterator i) : _it{i} {}
     row_col_iter(int const s) : iter_step<is_row>{s} {}
+    row_col_iter(iterator i, int const s) : iter_step<is_row>{s}, _it{i} {}
 
     auto operator+=(difference_type const n)
         -> row_col_iter&
@@ -43,7 +49,7 @@ public:
         if constexpr (is_row) {
             _it+=n;
         } else {
-            _it+=n*step;
+            _it+=n*iter_step<is_row>::step;
         }
         return *this;
     }
@@ -54,7 +60,7 @@ public:
         if constexpr (is_row) {
             _it+=n;
         } else {
-            _it+=n*step;
+            _it+=n*iter_step<is_row>::step;
         }
         return *this;
     }
@@ -87,7 +93,7 @@ public:
         if constexpr (is_row) {
             ++_it;
         } else {
-            _it+=step;
+            _it+=iter_step<is_row>::step;
         }
         return *this;
     }
@@ -106,7 +112,7 @@ public:
         if constexpr (is_row) {
             --_it;
         } else {
-            _it-=step;
+            _it-=iter_step<is_row>::step;
         }
         return *this;
     }
@@ -152,7 +158,6 @@ public:
     }
 
     auto operator->() const
-        -> const pointer
     {
         return std::addressof(*_it);
     }
@@ -162,18 +167,20 @@ private:
 };
 
 template <bool is_row>
-class image_range
+class image_range : std::ranges::view_base
 {
-    friend class image;
     using iterator = row_col_iter<is_row>;
-    iterator begin() const { return _begin; };
-    iterator end() const { return _begin+_count; };
-
 private:
-    image_range(iterator const b, int const c) : _begin{b}, _count{c} {}
+    friend class image;
     iterator _begin;
     int _count;
+public:
+    image_range(iterator const b, int const c) : _begin{b}, _count{c} {}
+    iterator end() { return _begin+_count; };
+    iterator begin() const { return _begin; };
 };
 
 class o {};
 } // namespace spl::graphics
+
+#endif

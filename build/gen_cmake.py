@@ -48,7 +48,7 @@ with os.scandir(path) as sources:
 src_cmake = "target_sources(${CMAKE_PROJECT_NAME} PRIVATE "
 for src in src_files:
     src_cmake+=" {}{}".format(path, src)
-src_cmake+=")\n"
+src_cmake+=" example/main.cpp)\n"
 
 output_file.write(src_cmake)
 

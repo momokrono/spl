@@ -37,7 +37,7 @@ fi
 echo "[rebuild] conan install .. --build missing" 1>&2
 conan install .. --build missing
 echo "[generate cmakefile] python3 ./gen_cmake.py" 2>&2
-python3 ./gen_cmake.py
+pushd ..; python3 build/gen_cmake.py; popd
 echo "[rebuild] cmake .." 1>&2
 cmake ..
 echo "[rebuild] cmake --build . -j$(nproc)" 1>&2
