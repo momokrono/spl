@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdint>
 
-#include "bits/Iterators.hpp"
+#include "bits/iterators.hpp"
 #include "rgba.hpp"
 
 namespace spl::graphics
