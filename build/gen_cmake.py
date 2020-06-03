@@ -54,7 +54,7 @@ output_file.write(src_cmake)
 
 end = """target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ./include/spl)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ./include/spl ./include/ ./include/3rd_party/)
 """
 
 output_file.write(end)

@@ -10,12 +10,18 @@
 namespace spl::graphics
 {
 
+struct construct_uninitialized_t {};
+
+inline constexpr
+auto construct_uninitialized = construct_uninitialized_t{};
+
 class image
 {
 public:
     // constructors
     image() : _width{0}, _height{0} {};
-    image(size_t w, size_t h) : _pixels{w * h, {0, 0, 0, 0}}, _width{w}, _height{h} {}
+    image(size_t w, size_t h) : _pixels{w * h, {0, 0, 0, 255}}, _width{w}, _height{h} {}
+    image(construct_uninitialized_t, size_t w, size_t h) : _pixels{w * h}, _width{w}, _height{h} {}
 
     // direct element access
     auto pixel(size_t const x, size_t const y) const -> rgba;
@@ -33,6 +39,12 @@ public:
     auto height()     const noexcept { return _height; }
     auto dimensions() const noexcept { return std::pair{ width(), height() }; }
 
+    // drawing
+    auto fill(rgba const c) noexcept -> image &;
+
+    // utils
+    auto raw_data()   const noexcept { return _pixels.data(); }
+    bool save_to_file(std::string_view const filename) const;
 private:
     std::vector<rgba> _pixels;
     size_t _width, _height;
