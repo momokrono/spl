@@ -22,11 +22,16 @@ public:
     auto pixel(size_t const x, size_t const y) -> rgba &;
 
     // iteration
-    // auto access_rows() -> spl::graphics::image_rows_cols_range<true>; // range of rows
-    // auto access_columns() -> spl::graphics::image_rows_cols_range<false>; // range of columns
-    auto access_row(size_t const y)    -> spl::graphics::image_range<true>;
-    auto access_column(size_t const x) -> spl::graphics::image_range<false>;
-    auto get_pixel_iterator(size_t const x, size_t const y) ->std::vector<rgba>::iterator;
+    // TODO: const overload
+    auto rows() -> spl::graphics::image_range<true>;
+    auto columns() -> spl::graphics::image_range<false>;
+    auto row(size_t const y)    -> spl::graphics::row_col_range<true>;
+    auto column(size_t const x) -> spl::graphics::row_col_range<false>;
+    auto get_pixel_iterator(size_t const x, size_t const y) -> std::vector<rgba>::iterator;
+
+    auto width()      const noexcept { return _width; }
+    auto height()     const noexcept { return _height; }
+    auto dimensions() const noexcept { return std::pair{ width(), height() }; }
 
 private:
     std::vector<rgba> _pixels;
