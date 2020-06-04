@@ -5,9 +5,6 @@
 
 #include "graphics/image.hpp"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
 int main() try
 {
     auto image = spl::graphics::image(300,200);

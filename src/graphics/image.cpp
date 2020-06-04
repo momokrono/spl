@@ -12,6 +12,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
 namespace spl::graphics
