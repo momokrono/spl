@@ -28,12 +28,16 @@ public:
     auto pixel(size_t const x, size_t const y) -> rgba &;
 
     // iteration
-    // TODO: const overload
-    auto rows() -> spl::graphics::image_range<true>;
-    auto columns() -> spl::graphics::image_range<false>;
-    auto row(size_t const y)    -> spl::graphics::row_col_range<true>;
-    auto column(size_t const x) -> spl::graphics::row_col_range<false>;
-    auto get_pixel_iterator(size_t const x, size_t const y) -> std::vector<rgba>::iterator;
+    auto rows()       -> spl::graphics::image_range<true, false>;
+    auto rows() const -> spl::graphics::image_range<true, true>;
+    auto columns()       -> spl::graphics::image_range<false, false>;
+    auto columns() const -> spl::graphics::image_range<false, true>;
+    auto row(size_t const y)       -> spl::graphics::row_col_range<true, false>;
+    auto row(size_t const y) const -> spl::graphics::row_col_range<true, true>;
+    auto column(size_t const x)       -> spl::graphics::row_col_range<false, false>;
+    auto column(size_t const x) const -> spl::graphics::row_col_range<false, true>;
+    auto get_pixel_iterator(size_t const x, size_t const y)       -> std::vector<rgba>::iterator;
+    auto get_pixel_iterator(size_t const x, size_t const y) const -> std::vector<rgba>::const_iterator;
 
     auto width()      const noexcept { return _width; }
     auto height()     const noexcept { return _height; }

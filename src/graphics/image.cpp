@@ -5,7 +5,7 @@
  * @license     : MIT
  */
 
-#include "graphics/Image.hpp"
+#include "graphics/image.hpp"
 #include "bits/exceptions.hpp"
 
 #include <fstream>
@@ -26,27 +26,45 @@ auto image::get_pixel_iterator(size_t const x, size_t const y)
     return _pixels.begin()+(x + y * _width);
 }
 
-auto image::rows()
-    -> spl::graphics::image_range<true>
+auto image::rows() -> spl::graphics::image_range<true, false>
 {
     return {row(0), height()};
 }
 
-auto image::columns()
-    -> spl::graphics::image_range<false>
+auto image::rows() const -> spl::graphics::image_range<true, true>
+{
+    return {row(0), height()};
+}
+
+auto image::columns() -> spl::graphics::image_range<false, false>
 {
     return {column(0), width()};
 }
 
-auto image::row(size_t const y)
-    -> spl::graphics::row_col_range<true>
+auto image::columns() const -> spl::graphics::image_range<false, true>
+{
+    return {column(0), width()};
+}
+
+auto image::row(size_t const y) -> spl::graphics::row_col_range<true, false>
 {
     auto it = get_pixel_iterator(0, y);
     return {it, _width};
 }
 
-auto image::column(size_t const x)
-    -> spl::graphics::row_col_range<false>
+auto image::row(size_t const y) const -> spl::graphics::row_col_range<true, true>
+{
+    auto it = get_pixel_iterator(0, y);
+    return {it, _width};
+}
+
+auto image::column(size_t const x) -> spl::graphics::row_col_range<false, false>
+{
+    auto it = get_pixel_iterator(x, 0);
+    return {{it, _width}, _height};
+}
+
+auto image::column(size_t const x) const -> spl::graphics::row_col_range<false, true>
 {
     auto it = get_pixel_iterator(x, 0);
     return {{it, _width}, _height};

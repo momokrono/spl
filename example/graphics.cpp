@@ -3,7 +3,7 @@
 #include <ranges>
 #include <algorithm>
 
-#include "graphics/Image.hpp"
+#include "graphics/image.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"

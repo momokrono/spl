@@ -12,6 +12,8 @@ namespace spl::graphics
 {
 class image;
 
+namespace detail
+{
 template<bool is_row>
 struct iter_step;
 
@@ -24,27 +26,50 @@ struct iter_step<true>
 template <>
 struct iter_step<false>
 {
-    iter_step(size_t const s = 1) : step{s} {}
+    iter_step(size_t const s = 1) noexcept : step{s} {}
     std::size_t step;
 };
+} // namespace detail
 
-
-template <bool is_row>
-class row_col_iter : iter_step<is_row>
+template <bool is_row, bool is_const>
+class row_col_iter : detail::iter_step<is_row>
 {
+    using base = detail::iter_step<is_row>;
 public:
-    using iterator          = std::vector<rgba>::iterator;
+    friend class row_col_iter<is_row, true>;
+    using iterator          = std::conditional_t<is_const, std::vector<rgba>::const_iterator, std::vector<rgba>::iterator>;
     using iterator_category = iterator::iterator_category;
     using difference_type   = iterator::difference_type;
     using value_type        = iterator::value_type;
-    using reference         = iterator::reference;
-    using const_reference   = value_type;
+    using reference         = std::conditional_t<is_const, value_type const &, value_type &>;
+    using const_reference   = value_type const &;
     using pointer           = iterator::pointer;
 
-    row_col_iter() : iter_step<is_row>{1} {}
-    row_col_iter(iterator i) : _it{i} {}
-    row_col_iter(size_t const s) : iter_step<is_row>{s} {}
-    row_col_iter(iterator i, size_t const s) : iter_step<is_row>{s}, _it{i} {}
+    row_col_iter() noexcept : base{1} {}
+    row_col_iter(row_col_iter const &) noexcept = default;
+    row_col_iter(row_col_iter      &&) noexcept = default;
+
+    row_col_iter(iterator i) noexcept : _it{i} {}
+    row_col_iter(size_t const s) noexcept : base{s} {}
+    row_col_iter(iterator i, size_t const s) noexcept : base{s}, _it{i} {}
+
+    explicit row_col_iter(row_col_iter<is_row, false> const & other) noexcept requires is_const : _it{other._it}
+    {
+        if constexpr (not is_row) {
+            base::step = other.step;
+        }
+    }
+    auto operator=(row_col_iter const & other) noexcept -> row_col_iter & = default;
+    auto operator=(row_col_iter      && other) noexcept -> row_col_iter & = default;
+
+    auto operator=(row_col_iter<is_row, false> const & other) noexcept requires is_const
+    {
+        _it = other._it;
+        if constexpr (not is_row)
+        {
+            base::step = other.step;
+        }
+    }
 
     auto operator+=(difference_type const n)
         -> row_col_iter&
@@ -52,7 +77,7 @@ public:
         if constexpr (is_row) {
             _it += n;
         } else {
-            _it += n * iter_step<is_row>::step;
+            _it += n * base::step;
         }
         return *this;
     }
@@ -63,20 +88,22 @@ public:
         if constexpr (is_row) {
             _it += n;
         } else {
-            _it += n * iter_step<is_row>::step;
+            _it += n * base::step;
         }
         return *this;
     }
 
-    auto operator+(difference_type const n) const
+    auto operator+(difference_type const n) const noexcept
         -> row_col_iter
     {
         auto r = *this;
         r += n;
         return r;
     }
+    friend auto operator+(difference_type const n, row_col_iter it) noexcept
+    { return it += n; }
 
-    auto operator-(difference_type const n) const
+    auto operator-(difference_type const n) const noexcept
         -> row_col_iter
     {
         auto r = *this;
@@ -84,28 +111,30 @@ public:
         return r;
     }
 
-    auto operator-(row_col_iter const a) const
+    auto operator-(row_col_iter const a) const noexcept
         -> difference_type
     {
         if constexpr (is_row) {
             return _it - a._it;
         } else {
-            return (_it - a._it) / iter_step<is_row>::step;
+            return (_it - a._it) / base::step;
         }
     }
+    friend auto operator-(difference_type const n, row_col_iter it) noexcept
+    { return it -= n; }
 
-    auto operator++()
+    auto operator++() noexcept
         -> row_col_iter&
     {
         if constexpr (is_row) {
             ++_it;
         } else {
-            _it+=iter_step<is_row>::step;
+            _it += base::step;
         }
         return *this;
     }
 
-    auto operator++(int)
+    auto operator++(int) noexcept
         -> row_col_iter
     {
         auto r = *this;
@@ -113,13 +142,13 @@ public:
         return r;
     }
 
-    auto operator--()
+    auto operator--() noexcept
         -> row_col_iter&
     {
         if constexpr (is_row) {
             --_it;
         } else {
-            _it-=iter_step<is_row>::step;
+            _it -= base::step;
         }
         return *this;
     }
@@ -132,18 +161,19 @@ public:
         return r;
     }
 
-    auto operator[](difference_type const n)
-        -> reference
-    {
-        return _it[n];
-    }
-
-    auto operator[](difference_type const n) const -> const_reference
+    auto operator[](difference_type const n) noexcept -> reference
     { return _it[n]; }
 
-    friend auto operator== (row_col_iter<is_row> const lhs, row_col_iter<is_row> const rhs) noexcept
+    auto operator[](difference_type const n) const noexcept -> const_reference
+    { return _it[n]; }
+
+    friend auto operator== (row_col_iter const lhs, row_col_iter const rhs) noexcept
     { return lhs._it == rhs._it; }
-    friend auto operator<=>(row_col_iter<is_row> const lhs, row_col_iter<is_row> const rhs) noexcept
+    friend auto operator<=>(row_col_iter const lhs, row_col_iter const rhs) noexcept
+    { return lhs._it <=> rhs._it; }
+    friend auto operator== (row_col_iter const lhs, row_col_iter<is_row, not is_const> const rhs) noexcept
+    { return lhs._it == rhs._it; }
+    friend auto operator<=>(row_col_iter const lhs, row_col_iter<is_row, not is_const> const rhs) noexcept
     { return lhs._it <=> rhs._it; }
 
     auto operator*()       -> decltype(auto)
@@ -162,36 +192,56 @@ private:
     iterator _it;
 };
 
-template <bool is_row>
+template <bool is_row, bool is_const>
 class row_col_range
 {
 public:
-    using value_type = rgba;
-    using iterator = row_col_iter<is_row>;
-    using const_iterator = iterator;
-    using reference = value_type &;
-    using const_reference = value_type;
+    friend class row_col_range<is_row, true>;
+
+    using value_type      = rgba;
+    using iterator        = row_col_iter<is_row, is_const>;
+    using const_iterator  = row_col_iter<is_row, true>;
+    using reference       = rgba &;
+    using const_reference = rgba const &;
+    using difference_type = ptrdiff_t;
 
 private:
-    friend class row_col;
     iterator _begin;
     size_t _length = 0;
 
 public:
-    row_col_range() = default;
-    row_col_range(iterator const b, size_t const c) : _begin{b}, _length{c} {}
-    iterator begin()  const { return _begin; };
-    iterator end()    const { return _begin + _length; };
-    iterator cbegin() const { return _begin; };
-    iterator cend()   const { return _begin + _length; };
+    row_col_range() noexcept = default;
+    row_col_range(row_col_range const &) noexcept = default;
+    row_col_range(row_col_range      &&) noexcept = default;
 
-    auto operator*()       -> row_col_range<is_row>       & { return *this; }
-    auto operator*() const -> row_col_range<is_row> const & { return *this; }
+    row_col_range(iterator const b, size_t const c) noexcept : _begin{b}, _length{c} {}
 
-    auto operator[](size_t const n)       noexcept ->       reference { return *(_begin + n); }
-    auto operator[](size_t const n) const noexcept -> const_reference { return *(_begin + n); }
+    row_col_range(row_col_range<is_row, false> const & other) requires is_const :
+        _begin{other._begin}, _length{other._length} {}
+
+    auto operator=(row_col_range const &) noexcept -> row_col_range & = default;
+    auto operator=(row_col_range      &&) noexcept -> row_col_range & = default;
+
+    auto operator=(row_col_range<is_row, false> const other) noexcept
+        -> row_col_range
+        requires is_const
+    {
+        _begin = other._begin;
+        _length = other._length;
+        return *this;
+    }
+
+    iterator begin() noexcept { return _begin; };
+    iterator end()   noexcept { return _begin + _length; };
+    const_iterator begin()  const noexcept { return static_cast<const_iterator>(_begin); };
+    const_iterator end()    const noexcept { return _begin + _length; };
+    const_iterator cbegin() const noexcept { return static_cast<const_iterator>(_begin); };
+    const_iterator cend()   const noexcept { return _begin + _length; };
+
+    auto operator[](size_t const n)       noexcept ->       rgba & { return *(_begin + n); }
+    auto operator[](size_t const n) const noexcept -> rgba const & { return *(_begin + n); }
     auto at(size_t const n)
-        -> reference
+        -> rgba &
     {
         if (n >= _length) {
             throw spl::out_of_range(n, _length);
@@ -209,8 +259,8 @@ public:
     }
 
 
-    auto operator+=(size_t const n)
-        -> row_col_range<is_row> &
+    auto operator+=(size_t const n) noexcept
+        -> row_col_range &
     {
         if constexpr (is_row) {
             _begin += _length * n;
@@ -219,58 +269,59 @@ public:
         }
         return *this;
     }
-    auto operator+(size_t const n) const { auto copy = *this; return copy += n; }
-    auto operator++() -> row_col_range<is_row> & { return *this += 1; }
-    auto operator++(int) { auto copy = *this; ++*this; return copy; }
+    auto operator+(size_t const n) const noexcept { auto copy = *this; return copy += n; }
+    auto operator++() noexcept -> row_col_range & { return *this += 1; }
+    auto operator++(int) noexcept { auto copy = *this; ++*this; return copy; }
 
-    auto operator-=(size_t const n) -> row_col_range<is_row> & { return *this += -n; }
-    auto operator-(size_t const n) const { return *this + -n; }
-    auto operator--() -> row_col_range<is_row> & { return *this += -1; }
-    auto operator--(int) { auto copy = *this; --*this; return copy; }
+    auto operator-=(size_t const n) noexcept -> row_col_range & { return *this += -n; }
+    auto operator-(size_t const n) const noexcept { return *this + -n; }
+    auto operator--() noexcept -> row_col_range & { return *this += -1; }
+    auto operator--(int) noexcept { auto copy = *this; --*this; return copy; }
 
-    auto size() const { return _length; }
+    auto size() const noexcept { return _length; }
 
-    friend bool operator==(row_col_range const, row_col_range const) = default;
+    friend bool operator==(row_col_range const, row_col_range const) noexcept = default;
 };
 
-template <bool is_row>
+template <bool is_row, bool is_const>
 class image_range
 {
 public:
-    /* using value_type = rgba; */
-    using iterator = row_col_range<is_row>;
-    using const_iterator = iterator;
-    /* using reference = iterator::reference; */
-    /* using const_reference = iterator::reference; */
+    using value_type      = row_col_range<is_row, is_const>;
+    using iterator        = row_col_range<is_row, is_const>;
+    using const_iterator  = row_col_range<is_row, is_const>;
+    using reference       = value_type &;
+    using const_reference = value_type const &;
 
 private:
     iterator _begin;
     size_t   _length = 0;
 
 public:
-    image_range() = default;
-    image_range(iterator const b, size_t const c) : _begin{b}, _length{c} {}
-    auto begin()  const { return _begin; }
-    auto end()    const { return _begin + _length; }
-    auto cbegin() const { return _begin; }
-    auto cend()   const { return _begin + _length; }
+    image_range() noexcept = default;
+    image_range(iterator const b, size_t const c) noexcept : _begin{b}, _length{c} {}
+    iterator begin()  const noexcept { return _begin; }
+    iterator end()    const noexcept { return _begin + _length; }
+    const_iterator cbegin() const noexcept { return _begin; }
+    const_iterator cend()   const noexcept { return _begin + _length; }
 
-    auto size() const { return _length; }
+    auto size() const noexcept { return _length; }
 
-    friend bool operator==(image_range const, image_range const) = default;
+    friend bool operator==(image_range const, image_range const) noexcept = default;
 };
 
 } // namespace spl::graphics
 
 namespace std::ranges
 {
-template <bool is_row>
-inline constexpr bool enable_view<spl::graphics::row_col_range<is_row>> = true;
-template <bool is_row>
-inline constexpr bool enable_borrowed_range<spl::graphics::row_col_range<is_row>> = true;
-template <bool is_row>
-inline constexpr bool enable_view<spl::graphics::image_range<is_row>> = true;
-template <bool is_row>
-inline constexpr bool enable_borrowed_range<spl::graphics::image_range<is_row>> = true;
+template <bool is_row, bool is_const>
+inline constexpr bool enable_view<spl::graphics::row_col_range<is_row, is_const>> = true;
+template <bool is_row, bool is_const>
+inline constexpr bool enable_borrowed_range<spl::graphics::row_col_range<is_row, is_const>> = true;
+template <bool is_row, bool is_const>
+inline constexpr bool enable_view<spl::graphics::image_range<is_row, is_const>> = true;
+template <bool is_row, bool is_const>
+inline constexpr bool enable_borrowed_range<spl::graphics::image_range<is_row, is_const>> = true;
 } // namespace std::ranges
+
 #endif
