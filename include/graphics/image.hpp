@@ -3,12 +3,15 @@
 
 #include <vector>
 #include <cstdint>
+#include <filesystem>
 
 #include "bits/iterators.hpp"
 #include "rgba.hpp"
 
 namespace spl::graphics
 {
+
+enum class load_status : uint8_t { success, file_not_found, failure };
 
 struct construct_uninitialized_t {};
 
@@ -49,6 +52,7 @@ public:
     // utils
     auto raw_data()   const noexcept { return _pixels.data(); }
     bool save_to_file(std::string_view const filename) const;
+    auto load_from_file(std::filesystem::path const & filename) -> load_status;
 private:
     std::vector<rgba> _pixels;
     size_t _width, _height;

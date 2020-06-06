@@ -31,6 +31,12 @@ int main() try
     // image.save_to_file("a.ppm");
     // image.save_to_file("a.pam");
 
+    auto status = image.load_from_file("a.bmp");
+    if (status != spl::graphics::load_status::success) {
+        std::cerr << "Errore\n";
+    }
+    image.save_to_file("a_clone.bmp");
+
     // image.pixel(88, 99);
 } catch (std::exception & e)
 {

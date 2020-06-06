@@ -14,6 +14,8 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "std_image.h"
 
 namespace spl::graphics
 {
@@ -145,6 +147,33 @@ bool image::save_to_file(std::string_view const filename) const
     }
 #endif
     return false;
+}
+
+auto image::load_from_file(std::filesystem::path const & filename)
+    -> load_status
+{
+    struct stb_clear { void operator()(uint8_t * ptr) { if (ptr) { stbi_image_free(ptr); } } };
+    _pixels.clear();
+    _width  = 0;
+    _height = 0;
+    if (not std::filesystem::exists(filename)) {
+        return load_status::file_not_found;
+    }
+    auto width = 0;
+    auto height = 0;
+    auto channels = 0;
+    auto ptr = std::unique_ptr<uint8_t, stb_clear>{stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha)};
+
+    if (not ptr) {
+        return load_status::failure;
+    }
+
+    _pixels.resize(width * height);
+    std::ranges::copy_n(ptr.get(), width * height * 4, reinterpret_cast<uint8_t *>(_pixels.data()));
+    _width  = width;
+    _height = height;
+
+    return load_status::success;
 }
 
 } // namespace spl::graphics
