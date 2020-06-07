@@ -3,7 +3,8 @@
 # `spl` - A Simple Plotting Library for C++
 
 **The library is under heavy development, some parts are broken, others may not work from time to time.
-If you find yourself having issues with it, feel free to report it.**
+If you find yourself having issues with it, feel free to report it.
+A basic version of the library is available in the master branch, but development has moved to branch spl 0.2**
 
 
 ## Documentation
