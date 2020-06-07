@@ -41,7 +41,7 @@ public:
     using iterator_category = iterator::iterator_category;
     using difference_type   = iterator::difference_type;
     using value_type        = iterator::value_type;
-    using reference         = std::conditional_t<is_const, value_type const &, value_type &>;
+    using reference         = iterator::reference;
     using const_reference   = value_type const &;
     using pointer           = iterator::pointer;
 
@@ -164,7 +164,7 @@ public:
     auto operator[](difference_type const n) noexcept -> reference
     { return _it[n]; }
 
-    auto operator[](difference_type const n) const noexcept -> const_reference
+    auto operator[](difference_type const n) const noexcept -> reference
     { return _it[n]; }
 
     friend auto operator== (row_col_iter const lhs, row_col_iter const rhs) noexcept
