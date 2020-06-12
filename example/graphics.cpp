@@ -11,7 +11,7 @@ int main() try
     auto image = spl::graphics::image(300,200);
     auto col_1 = image.column(0);
     auto row_1 = image.row(0);
-    image.fill({0, 255, 255, 128});
+    image.fill({0, 255, 255, 128 * 2 - 3});
     std::ranges::fill(row_1, spl::graphics::rgba{255, 0, 0, 255});
     std::ranges::fill(col_1, spl::graphics::rgba{255, 0, 0, 255});
 

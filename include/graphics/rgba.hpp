@@ -52,6 +52,30 @@ struct rgba
     friend bool operator==(rgba const, rgba const) = default;
 };
 
+inline
+auto over(rgba const foreground, rgba const background)
+    -> rgba
+{
+    auto const [r1, g1, b1, a1] = foreground;
+    auto const [r2, g2, b2, a2] = background;
+
+    auto const k1 = a1 / 255.f;
+    auto const k2 = (1.f - k1) * a2 / 255.f;
+
+    auto const over_impl = [k1, k2](uint8_t c1, uint8_t c2) noexcept {
+        return static_cast<uint8_t>((c1 * k1 + c2 * k2) / (k1 + k2));
+    };
+
+    /* fmt::print("Total blend: {}\n", (k1 + k2) * 255); */
+
+    return {
+        over_impl(r1, r2),
+        over_impl(g1, g2),
+        over_impl(b1, b2),
+        static_cast<uint8_t>((k1 + k2) * 255)
+    };
+}
+
 namespace color
 {
     constexpr const rgba red     {255,   0,      0,      255};
