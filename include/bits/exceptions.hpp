@@ -26,7 +26,19 @@ struct out_of_range : std::exception
         message = fmt::format("out of range: required element ({}, {}) but size is ({}, {})", x, y, w, h);
     }
 
-    auto what() const noexcept -> char const * override 
+    auto what() const noexcept -> char const * override
+    { return message.c_str(); }
+};
+
+struct invalid_argument : std::exception
+{
+    std::string message;
+    invalid_argument(std::string_view const text)
+    {
+        message = fmt::format("invalid argument: {}", text);
+    }
+
+    auto what() const noexcept -> char const * override
     { return message.c_str(); }
 };
 
