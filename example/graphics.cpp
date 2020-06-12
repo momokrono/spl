@@ -4,13 +4,14 @@
 #include <algorithm>
 
 #include "graphics/image.hpp"
+#include "graphics/primitive.hpp"
 
 int main() try
 {
     auto image = spl::graphics::image(300,200);
     auto col_1 = image.column(0);
     auto row_1 = image.row(0);
-    image.fill({0, 255, 255, 255});
+    image.fill({0, 255, 255, 128});
     std::ranges::fill(row_1, spl::graphics::rgba{255, 0, 0, 255});
     std::ranges::fill(col_1, spl::graphics::rgba{255, 0, 0, 255});
 
@@ -25,9 +26,13 @@ int main() try
         }
     }
 
-    if (not image.save_to_file("a.bmp")) { fmt::print("NON VA\n"); };
+    /* static_assert(spl::detail::has_render_on_member_function<spl::graphics::line>); */
+    image.draw(spl::graphics::line{{0, 0}, {100, 199}, spl::graphics::color::red});
+    image.draw(spl::graphics::line{{0, 0}, {299,  50}, spl::graphics::color::blue});
+
+    if (not image.save_to_file("a.png")) { fmt::print("NON VA\n"); };
+    // image.save_to_file("a.bmp");
     // image.save_to_file("a.jpg");
-    // image.save_to_file("a.png");
     // image.save_to_file("a.ppm");
     // image.save_to_file("a.pam");
 
@@ -35,7 +40,7 @@ int main() try
     if (status != spl::graphics::load_status::success) {
         std::cerr << "Errore\n";
     }
-    image.save_to_file("a_clone.bmp");
+    image.save_to_file("a_clone.png");
 
     // image.pixel(88, 99);
 } catch (std::exception & e)

@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "bits/iterators.hpp"
+#include "drawable.hpp"
 #include "rgba.hpp"
 
 namespace spl::graphics
@@ -73,6 +74,16 @@ public:
 
     // drawing
     auto fill(rgba const c) noexcept -> image &;
+    template <drawable D>
+    auto draw(D && obj)  -> image &
+    {
+        if constexpr (spl::detail::has_render_on_member_function<D>) {
+            std::forward<D>(obj).render_on(*this);
+        } else {
+            std::forward<D>(obj)(*this);
+        }
+        return *this;
+    }
 
     // utils
     auto raw_data()   const noexcept { return _pixels.data(); }
