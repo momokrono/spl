@@ -12,21 +12,28 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "std_image.h"
+#include "stb_image.h"
 
 namespace spl::graphics
 {
 
 auto image::get_pixel_iterator(size_t const x, size_t const y)
-    ->std::vector<rgba>::iterator
+    -> image::iterator
 {
     if ( x > _width - 1 or y > _height - 1) {
         throw spl::out_of_range{x, y, _width, _height};
     }
-    return _pixels.begin()+(x + y * _width);
+    return _pixels.begin() + static_cast<ptrdiff_t>(x + y * _width);
+}
+
+auto image::get_pixel_iterator(size_t const x, size_t const y) const
+    -> image::const_iterator
+{
+    if ( x > _width - 1 or y > _height - 1) {
+        throw spl::out_of_range{x, y, _width, _height};
+    }
+    return _pixels.begin() + static_cast<ptrdiff_t>(x + y * _width);
 }
 
 auto image::rows() -> spl::graphics::image_range<true, false>
@@ -101,13 +108,13 @@ auto image::fill(rgba const c) noexcept
 bool image::save_to_file(std::string_view const filename) const
 {
     if (filename.ends_with(".bmp")) {
-        return stbi_write_bmp(filename.data(), width(), height(), 4, raw_data()) == 1;
+        return stbi_write_bmp(filename.data(), static_cast<int>(width()), static_cast<int>(height()), 4, raw_data()) == 1;
     }
     if (filename.ends_with(".png")) {
-        return stbi_write_png(filename.data(), width(), height(), 4, raw_data(), 0) == 1;
+        return stbi_write_png(filename.data(), static_cast<int>(width()), static_cast<int>(height()), 4, raw_data(), 0) == 1;
     }
     if (filename.ends_with(".jpg")) {
-        return stbi_write_jpg(filename.data(), width(), height(), 4, raw_data(), 90) == 1;
+        return stbi_write_jpg(filename.data(), static_cast<int>(width()), static_cast<int>(height()), 4, raw_data(), 90) == 1;
     }
     if (filename.ends_with(".ppm")) {
         auto sink = std::ofstream{filename.data()};
@@ -168,10 +175,10 @@ auto image::load_from_file(std::filesystem::path const & filename)
         return load_status::failure;
     }
 
-    _pixels.resize(width * height);
+    _pixels.resize(static_cast<size_t>(width * height));
     std::ranges::copy_n(ptr.get(), width * height * 4, reinterpret_cast<uint8_t *>(_pixels.data()));
-    _width  = width;
-    _height = height;
+    _width  = static_cast<size_t>(width);
+    _height = static_cast<size_t>(height);
 
     return load_status::success;
 }

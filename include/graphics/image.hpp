@@ -71,6 +71,9 @@ public:
     auto width()      const noexcept { return _width; }
     auto height()     const noexcept { return _height; }
     auto dimensions() const noexcept { return std::pair{ width(), height() }; }
+    auto swidth()      const noexcept { return static_cast<ptrdiff_t>(_width); }
+    auto sheight()     const noexcept { return static_cast<ptrdiff_t>(_height); }
+    auto sdimensions() const noexcept { return std::pair{ width(), height() }; }
 
     // drawing
     auto fill(rgba const c) noexcept -> image &;
