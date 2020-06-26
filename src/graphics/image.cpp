@@ -166,6 +166,9 @@ auto image::load_from_file(std::filesystem::path const & filename)
     if (not std::filesystem::exists(filename)) {
         return load_status::file_not_found;
     }
+    if (filename.extension() == ".ppm") {
+        return load_ppm(filename);
+    }
     auto width = 0;
     auto height = 0;
     auto channels = 0;
@@ -180,6 +183,37 @@ auto image::load_from_file(std::filesystem::path const & filename)
     _width  = static_cast<size_t>(width);
     _height = static_cast<size_t>(height);
 
+    return load_status::success;
+}
+
+auto image::load_ppm(std::filesystem::path const & filename)
+    -> load_status
+{
+    auto in = std::ifstream{filename};
+    if (not in) {
+        return load_status::failure;
+    }
+    char check[3] = "\0\0";
+    in.get(check[0]).get(check[1]).get(check[2]);
+    if (check[0] != 'P' or check[1] != '3' or check[2] != '\n') {
+        return load_status::failure;
+    }
+
+    auto width  = 0ul;
+    auto height = 0ul;
+    auto max_color = 0;
+    in >> width >> height >> max_color;
+    auto buffer = std::vector<rgba>{};
+    buffer.reserve(width * height);
+    for (size_t i = 0; i < width * height; ++i) {
+        uint8_t r, g, b;
+        in >> r >> g >> b;
+        buffer.emplace_back(r, g, b, 255);
+    }
+
+    _pixels = std::move(buffer);
+    _width = width;
+    _height = height;
     return load_status::success;
 }
 

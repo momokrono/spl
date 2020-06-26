@@ -95,6 +95,8 @@ public:
     auto load_from_file(std::filesystem::path const & filename) -> load_status;
 
 private:
+    auto load_ppm(std::filesystem::path const & filename) -> load_status;
+
     std::vector<rgba> _pixels;
     size_t _width, _height;
 };
