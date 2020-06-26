@@ -16,7 +16,7 @@ enum class load_status : uint8_t { success, file_not_found, failure };
 
 struct construct_uninitialized_t {};
 
-inline constexpr
+constexpr inline
 auto construct_uninitialized = construct_uninitialized_t{};
 
 class image
@@ -68,12 +68,13 @@ public:
     auto get_pixel_iterator(size_t const x, size_t const y)       -> iterator;
     auto get_pixel_iterator(size_t const x, size_t const y) const -> const_iterator;
 
-    auto width()      const noexcept { return _width; }
-    auto height()     const noexcept { return _height; }
-    auto dimensions() const noexcept { return std::pair{ width(), height() }; }
+    auto width()       const noexcept { return _width; }
+    auto height()      const noexcept { return _height; }
+    auto dimensions()  const noexcept { return std::pair{ width(), height() }; }
     auto swidth()      const noexcept { return static_cast<ptrdiff_t>(_width); }
     auto sheight()     const noexcept { return static_cast<ptrdiff_t>(_height); }
     auto sdimensions() const noexcept { return std::pair{ width(), height() }; }
+    bool empty()       const noexcept { return _pixels.empty(); }
 
     // drawing
     auto fill(rgba const c) noexcept -> image &;
