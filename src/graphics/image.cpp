@@ -198,6 +198,7 @@ auto image::load_ppm(std::filesystem::path const & filename)
     if (check[0] != 'P' or check[1] != '3' or check[2] != '\n') {
         return load_status::failure;
     }
+    in.exceptions(std::ios_base::failbit | std::ios_base::badbit);
 
     auto width  = 0ul;
     auto height = 0ul;
@@ -206,7 +207,7 @@ auto image::load_ppm(std::filesystem::path const & filename)
     auto buffer = std::vector<rgba>{};
     buffer.reserve(width * height);
     for (size_t i = 0; i < width * height; ++i) {
-        uint8_t r, g, b;
+        uint16_t r, g, b;
         in >> r >> g >> b;
         buffer.emplace_back(r, g, b, 255);
     }
