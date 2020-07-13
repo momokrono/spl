@@ -24,6 +24,7 @@ set_project_warnings(project_warnings)
 add_library(spl)
 target_sources(spl PRIVATE
     src/graphics/image.cpp
+    src/graphics/primitive.cpp
 )
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE)

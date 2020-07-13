@@ -9,6 +9,8 @@
 #define PRIMITIVE_HPP
 
 #include <cmath>
+#include <cstdint>
+#include <queue>
 
 #include "rgba.hpp"
 #include "image.hpp"
@@ -21,6 +23,31 @@ struct vertex
     int_fast32_t x;
     int_fast32_t y;
 };
+
+namespace detail
+{
+    inline
+    auto top_vertex(std::initializer_list<vertex> const & lst) noexcept
+        -> vertex
+    { return std::ranges::max(lst, std::less{}, &vertex::y); }
+
+    inline
+    auto segment_compare = [](std::pair<vertex, vertex> const & a, std::pair<vertex, vertex> const & b)
+    {
+        auto const [a1, a2] = a;
+        auto const [b1, b2] = b;
+        if (auto ay = top_vertex({a1, a2}).y, by = top_vertex({b1, b2}).y; ay < by) {
+            return true;
+        } else if (ay > by) {
+            return false;
+        } else { // ay == by
+            auto const a_bot = std::ranges::min({a1, a2}, std::less{}, &vertex::y).y;
+            auto const b_bot = std::ranges::min({b1, b2}, std::less{}, &vertex::y).y;
+
+            return a_bot < b_bot;
+        }
+    };
+} // namespace detail
 
 class primitive
 {
@@ -44,183 +71,34 @@ struct line // : public primitive
     bool anti_aliasing = true;
     // uint8_t thickness;
 
-    auto render_on(image & img)
-    {
-        if (anti_aliasing) {
-            draw_antialiased(img);
-        }
-        else {
-            draw_aliased(img);
-        }
-    }
+    void render_on(image & img);
 
-    void draw_antialiased_parametric(image & img)
-    {
-        auto [x1, y1] = start;
-        auto [x2, y2] = end;
-
-        if (x1 == x2) {
-            auto [from, to] = std::minmax({y1, y2});
-
-            for (; from <= to; ++from) {
-                auto & pixel = img.pixel(x1, from);
-                pixel = over(color, pixel);
-            }
-        } else if (y1 == y2) {
-            auto [from, to] = std::minmax({x1, x2});
-
-            for (; from <= to; ++from) {
-                auto & pixel = img.pixel(from, y1);
-                pixel = over(color, pixel);
-            }
-        } else {
-            if (x2 < x1) {
-                std::swap(x2, x1);
-                std::swap(y2, y1);
-            }
-            auto const dx = std::abs(x2 - x1);
-            auto const dy = std::abs(y2 - y1);
-            auto const distance = dx + dy;
-
-            auto const kx = dx * 1.f / distance;
-            auto const ky = dy * 1.f / distance * ((y2 > y1) * 2 - 1);
-            for (int_fast32_t t = 0; t < distance; ++t) {
-                auto const x = x1 + t * kx;
-                auto const y = y1 + t * ky;
-
-                for (auto const rounded_y : { std::floor(y), std::ceil(y) }) {
-                    auto const y_blend = 1.f - std::abs(y - rounded_y);
-                    for (auto const rounded_x : { std::floor(x), std::ceil(x) }) {
-                        auto const x_blend = 1.f - std::abs(x - rounded_x);
-
-                        auto & pixel = img.pixel(rounded_x, rounded_y);
-                        pixel = over(color.blend(y_blend * x_blend), pixel);
-                    }
-                }
-            }
-            // one last time for the final pixel
-            {
-                auto const t = distance;
-                auto const x = x1 + t * kx;
-                auto const y = y1 + t * ky;
-
-                auto const y_blend = 1.f - std::abs(y - std::floor(y));
-                auto const x_blend = 1.f - std::abs(x - std::floor(x));
-
-                auto & pixel = img.pixel(std::floor(x), std::floor(y));
-                pixel = over(color.blend(y_blend * x_blend), pixel);
-            }
-
-        }
-
-    }
-
-    void draw_aliased(image & img)
-    {
-        auto [x1, y1] = start;
-        auto [x2, y2] = end;
-
-        if (x1 == x2) {
-            auto [from, to] = std::minmax({y1, y2});
-
-            for (; from <= to; ++from) {
-                img.pixel(x1, from) = color;
-            }
-        } else if (y1 == y2) {
-            auto [from, to] = std::minmax({x1, x2});
-
-            for (; from <= to; ++from) {
-                img.pixel(from, y1) = color;
-            }
-        } else if (std::abs(x2 - x1) >= std::abs(y2 - y1)){
-            auto const m = (y2 - y1) * 1.f / (x2 - x1);
-            auto const q = y2 - m * x2;
-
-            auto [from, to] = std::minmax({x1, x2});
-            while (from < 0) { ++from; }
-            for (; from <= to; ++from) {
-                auto const y = m * from + q;
-                if (y >= 0 and y < img.height()) {
-                    img.pixel(from, std::lround(y)) = color;
-                }
-            }
-        } else {
-            auto const m_rev = (x2 - x1) * 1.f / (y2 - y1);
-            auto const q = y2 - x2 / m_rev;
-
-            auto [from, to] = std::minmax({y1, y2});
-            while (from < 0) { ++from; }
-            for (; from <= to; ++from) {
-                // y = mx + q
-                // x = (y - q)/m
-                auto const x = (from - q) * m_rev;
-                if (x >= 0 and x < img.width()) {
-                    img.pixel(std::lround(x), from) = color;
-                }
-            }
-
-        }
-    }
-
-    void draw_antialiased(image & img)
-    {
-        auto [x1, y1] = start;
-        auto [x2, y2] = end;
-
-        if (x1 == x2) {
-            auto [from, to] = std::minmax({y1, y2});
-
-            for (; from <= to; ++from) {
-                img.pixel(x1, from) = color;
-            }
-        } else if (y1 == y2) {
-            auto [from, to] = std::minmax({x1, x2});
-
-            for (; from <= to; ++from) {
-                img.pixel(from, y1) = color;
-            }
-        } else if (std::abs(x2 - x1) >= std::abs(y2 - y1)){
-            auto const m = (y2 - y1) * 1.f / (x2 - x1);
-            auto const q = y2 - m * x2;
-
-            auto [from, to] = std::minmax({x1, x2});
-            while (from < 0) { ++from; }
-            for (; from <= to; ++from) {
-                auto const y = m * from + q;
-                if (auto const fy = std::floor(y); fy >= 0.f and fy < img.height()) {
-                    auto & pixel = img.pixel(from, static_cast<int_fast32_t>(fy));
-                    pixel = over(color.blend(1. - std::abs(y - fy)), pixel);
-                }
-                if (auto const cy = std::ceil(y); cy >= 0.f and cy < img.height()) {
-                    auto & pixel = img.pixel(from, static_cast<int_fast32_t>(cy));
-                    pixel = over(color.blend(1. - std::abs(y - cy)), pixel);;
-                }
-            }
-        } else {
-            auto const m_rev = (x2 - x1) * 1.f / (y2 - y1);
-            auto const q = y2 - x2 / m_rev;
-
-            auto [from, to] = std::minmax({y1, y2});
-            while (from < 0) { ++from; }
-            for (; from <= to; ++from) {
-                auto const x = (from - q) * m_rev;
-                if (auto const fx = std::floor(x); fx >= 0 and fx < img.width()) {
-                    auto & pixel = img.pixel(static_cast<int_fast32_t>(fx), from);
-                    pixel = over(color.blend(1. - std::abs(x - fx)), pixel);
-                }
-                if (auto const cx = std::ceil(x); cx >= 0 and cx < img.width()) {
-                    auto & pixel = img.pixel(static_cast<int_fast32_t>(cx), from);
-                    pixel = over(color.blend(1. - std::abs(x - cx)), pixel);
-                }
-            }
-
-        }
-    }
+    void draw_antialiased_parametric(image & img);
+    void draw_aliased(image & img);
+    void draw_antialiased(image & img);
 };
 
-class rectangle : public primitive
+class rectangle // : public primitive
 {
+    vertex _origin;
+    std::pair<uint_fast32_t, uint_fast32_t> _sides;
+    float _rotation = 0.;
+    rgba _border_color = spl::graphics::color::black;
+    rgba _fill_color   = spl::graphics::color::nothing;
+    bool _anti_aliasing = false;
+    // border_thickness
+
 public:
+    using uint_pair = std::pair<uint_fast32_t, uint_fast32_t>;
+    rectangle(vertex const origin, uint_pair const sides, float rotation = 0., bool antialiasing = false) :
+        _origin{origin}, _sides{sides}, _rotation{rotation}, _anti_aliasing{antialiasing}
+    {}
+
+    auto fill_color(spl::graphics::rgba const fill)
+        -> rectangle &
+    { _fill_color = fill; return *this; }
+
+    void render_on(image & img);
 };
 
 // template <uint8_t N>

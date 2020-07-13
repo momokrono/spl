@@ -30,6 +30,9 @@ int main() try
     image.draw(spl::graphics::line{{0, 0}, {100, 199}, spl::graphics::color::red});
     image.draw(spl::graphics::line{{0, 0}, {299,  50}, spl::graphics::color::blue});
 
+    image.draw(spl::graphics::rectangle{{50, 50}, {100, 50}});
+    image.draw(spl::graphics::rectangle{{50, 50}, {50, 20}, 3.1415926535 * 0.33, true}.fill_color(spl::graphics::color::red));
+
     if (not image.save_to_file("a.png")) { fmt::print("NON VA\n"); };
     // image.save_to_file("a.bmp");
     // image.save_to_file("a.jpg");
