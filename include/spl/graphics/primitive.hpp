@@ -90,8 +90,8 @@ class rectangle // : public primitive
 
 public:
     using uint_pair = std::pair<uint_fast32_t, uint_fast32_t>;
-    rectangle(vertex const origin, uint_pair const sides, float rotation = 0., bool antialiasing = false) :
-        _origin{origin}, _sides{sides}, _rotation{rotation}, _anti_aliasing{antialiasing}
+    rectangle(vertex const origin, uint_pair const sides, double rotation = 0., bool antialiasing = false) :
+        _origin{origin}, _sides{sides}, _rotation(rotation), _anti_aliasing{antialiasing}
     {}
 
     auto fill_color(spl::graphics::rgba const fill)
