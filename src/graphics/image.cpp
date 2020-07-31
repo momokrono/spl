@@ -18,6 +18,8 @@
 namespace spl::graphics
 {
 
+/* rgba image::_garbage_pixel = rgba{}; */
+
 auto image::get_pixel_iterator(size_t const x, size_t const y)
     -> image::iterator
 {
@@ -94,6 +96,26 @@ auto image::pixel(size_t const x, size_t const y)
 {
     if ( x >= width() or y >= height()) {
         throw spl::out_of_range{x, y, _width, _height};
+    }
+    return _pixels.at(x + y * _width);
+}
+
+auto image::pixel_noexcept(size_t const x, size_t const y) const noexcept
+    -> rgba
+{
+    if (x >= width() or y >= height()) {
+        fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y);
+        return image::_garbage_pixel;
+    }
+    return _pixels.at(x+y*_width);
+}
+
+auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
+    -> rgba &
+{
+    if (x >= width() or y >= height()) {
+        fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y);
+        return image::_garbage_pixel;
     }
     return _pixels.at(x + y * _width);
 }

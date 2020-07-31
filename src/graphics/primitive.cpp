@@ -12,8 +12,41 @@ namespace spl::graphics
 
 void line::render_on(image & img)
 {
-    if (anti_aliasing) {
-        draw_antialiased(img);
+    auto [x1, y1] = start;
+    auto [x2, y2] = end;
+
+    auto const width  = img.swidth();
+    auto const height = img.sheight();
+
+    if (x1 == x2) {
+        if (x1 < 0 or x1 >= width) {
+            return;
+        }
+        auto [from, to] = std::minmax({y1, y2});
+        from = std::max(from, 0l);
+        to   = std::min(to, height - 1);
+
+        for (; from <= to; ++from) {
+            auto & pixel = img.pixel(x1, from);
+            pixel = over(color, pixel);
+        }
+    } else if (y1 == y2) {
+        if (y1 < 0 or y1 >= height) {
+            return;
+        }
+        auto [from, to] = std::minmax({x1, x2});
+        if (from > width - 1 or to < 0) {
+            return;
+        }
+        from = std::max(from, 0l);
+        to   = std::min(to, width - 1);
+
+        for (; from <= to; ++from) {
+            auto & pixel = img.pixel(from, y1);
+            pixel = over(color, pixel);
+        }
+    } else if (anti_aliasing) {
+        draw_antialiased_parametric(img);
     }
     else {
         draw_aliased(img);
@@ -25,55 +58,63 @@ void line::draw_antialiased_parametric(image & img)
     auto [x1, y1] = start;
     auto [x2, y2] = end;
 
-    if (x1 == x2) {
-        auto [from, to] = std::minmax({y1, y2});
+    auto const width  = img.swidth();
+    auto const height = img.sheight();
 
-        for (; from <= to; ++from) {
-            auto & pixel = img.pixel(x1, from);
-            pixel = over(color, pixel);
+    if (x2 < x1) {
+        std::swap(x2, x1);
+        std::swap(y2, y1);
+    }
+    auto const dx = std::abs(x2 - x1);
+    auto const dy = std::abs(y2 - y1);
+    auto const distance = dx + dy; // discrete plane => manhattan distance
+
+    auto const kx = dx * 1.f / distance;
+    auto const ky = dy * 1.f / distance * ((y2 > y1) * 2 - 1);
+
+    int_fast32_t t = 0;
+    for (; t < distance; ++t) {
+        auto const x = x1 + t * kx;
+        auto const y = y1 + t * ky;
+
+        if ((std::floor(x) >= 0 and std::floor(y) >= 0) and (std::ceil(x) < width and std::ceil(y) < height)) {
+            break;
         }
-    } else if (y1 == y2) {
-        auto [from, to] = std::minmax({x1, x2});
+    }
 
-        for (; from <= to; ++from) {
-            auto & pixel = img.pixel(from, y1);
-            pixel = over(color, pixel);
-        }
-    } else {
-        if (x2 < x1) {
-            std::swap(x2, x1);
-            std::swap(y2, y1);
-        }
-        auto const dx = std::abs(x2 - x1);
-        auto const dy = std::abs(y2 - y1);
-        auto const distance = dx + dy;
+    for (; t < distance; ++t) {
+        auto const x = x1 + t * kx;
+        auto const y = y1 + t * ky;
 
-        auto const kx = dx * 1.f / distance;
-        auto const ky = dy * 1.f / distance * ((y2 > y1) * 2 - 1);
-        for (int_fast32_t t = 0; t < distance; ++t) {
-            auto const x = x1 + t * kx;
-            auto const y = y1 + t * ky;
-
-            for (auto const rounded_y : { std::floor(y), std::ceil(y) }) {
-                auto const y_blend = 1.f - std::abs(y - rounded_y);
-                for (auto const rounded_x : { std::floor(x), std::ceil(x) }) {
-                    auto const x_blend = 1.f - std::abs(x - rounded_x);
-
-                    auto & pixel = img.pixel(rounded_x, rounded_y);
-                    pixel = over(color.blend(y_blend * x_blend), pixel);
+        for (auto const rounded_y : { std::floor(y), std::ceil(y) }) {
+            auto const y_blend = 1.f - std::abs(y - rounded_y);
+            for (auto const rounded_x : { std::floor(x), std::ceil(x) }) {
+                if (rounded_x >= width or rounded_y >= height) {
+                    return;
                 }
+                if (rounded_x < 0 or rounded_y < 0) {
+                    return;
+                }
+                auto const x_blend = 1.f - std::abs(x - rounded_x);
+
+                auto & pixel = img.pixel(rounded_x, rounded_y);
+                pixel = over(color.blend(y_blend * x_blend), pixel);
             }
         }
-        // one last time for the final pixel
-        {
-            auto const t = distance;
-            auto const x = x1 + t * kx;
-            auto const y = y1 + t * ky;
+    }
+    // one last time for the final pixel
+    {
+        auto const x = x1 + t * kx;
+        auto const y = y1 + t * ky;
 
-            auto const y_blend = 1.f - std::abs(y - std::floor(y));
-            auto const x_blend = 1.f - std::abs(x - std::floor(x));
+        auto const floorx = std::floor(x);
+        auto const floory = std::floor(y);
 
-            auto & pixel = img.pixel(std::floor(x), std::floor(y));
+        if (not (x >= width or y >= height or floorx < 0 or floory < 0)) {
+            auto const y_blend = 1.f - std::abs(y - floory);
+            auto const x_blend = 1.f - std::abs(x - floorx);
+
+            auto & pixel = img.pixel(floorx, floory);
             pixel = over(color.blend(y_blend * x_blend), pixel);
         }
     }
@@ -84,27 +125,20 @@ void line::draw_aliased(image & img)
     auto [x1, y1] = start;
     auto [x2, y2] = end;
 
-    if (x1 == x2) {
-        auto [from, to] = std::minmax({y1, y2});
+    auto const width  = img.swidth();
+    auto const height = img.sheight();
 
-        for (; from <= to; ++from) {
-            img.pixel(x1, from) = color;
-        }
-    } else if (y1 == y2) {
-        auto [from, to] = std::minmax({x1, x2});
-
-        for (; from <= to; ++from) {
-            img.pixel(from, y1) = color;
-        }
-    } else if (std::abs(x2 - x1) >= std::abs(y2 - y1)){
+    if (std::abs(x2 - x1) >= std::abs(y2 - y1)) {
         auto const m = (y2 - y1) * 1.f / (x2 - x1);
         auto const q = y2 - m * x2;
 
         auto [from, to] = std::minmax({x1, x2});
+        from = std::clamp(from, 0l, width - 1);
+        to   = std::clamp(to,   0l, width - 1);
         while (from < 0) { ++from; }
         for (; from <= to; ++from) {
             auto const y = m * from + q;
-            if (y >= 0 and y < img.height()) {
+            if (y >= 0 and y < height) {
                 img.pixel(from, std::lround(y)) = color;
             }
         }
@@ -113,12 +147,14 @@ void line::draw_aliased(image & img)
         auto const q = y2 - x2 / m_rev;
 
         auto [from, to] = std::minmax({y1, y2});
+        from = std::clamp(from, 0l, height - 1);
+        to   = std::clamp(to,   0l, height - 1);
         while (from < 0) { ++from; }
         for (; from <= to; ++from) {
             // y = mx + q
             // x = (y - q)/m
             auto const x = (from - q) * m_rev;
-            if (x >= 0 and x < img.width()) {
+            if (x >= 0 and x < width) {
                 img.pixel(std::lround(x), from) = color;
             }
         }
@@ -130,19 +166,7 @@ void line::draw_antialiased(image & img)
     auto [x1, y1] = start;
     auto [x2, y2] = end;
 
-    if (x1 == x2) {
-        auto [from, to] = std::minmax({y1, y2});
-
-        for (; from <= to; ++from) {
-            img.pixel(x1, from) = color;
-        }
-    } else if (y1 == y2) {
-        auto [from, to] = std::minmax({x1, x2});
-
-        for (; from <= to; ++from) {
-            img.pixel(from, y1) = color;
-        }
-    } else if (std::abs(x2 - x1) >= std::abs(y2 - y1)){
+    if (std::abs(x2 - x1) >= std::abs(y2 - y1)) {
         auto const m = (y2 - y1) * 1.f / (x2 - x1);
         auto const q = y2 - m * x2;
 
@@ -186,15 +210,16 @@ void rectangle::render_on(image & img)
 
     auto const x1 = _origin.x;
     auto const y1 = _origin.y;
+    static_assert(std::is_signed_v<decltype(x1)>);
 
-    auto const x2 = static_cast<uint32_t>(std::round(_sides.first * cos) + x1);
-    auto const y2 = static_cast<uint32_t>(std::round(_sides.first * sin) + y1);
+    auto const x2 = static_cast<int_fast32_t>(std::round(_sides.first * cos) + x1);
+    auto const y2 = static_cast<int_fast32_t>(std::round(_sides.first * sin) + y1);
 
-    auto const x3 = static_cast<uint32_t>(std::round(_sides.first * cos - _sides.second * sin) + x1);
-    auto const y3 = static_cast<uint32_t>(std::round(_sides.first * sin + _sides.second * cos) + y1);
+    auto const x3 = static_cast<int_fast32_t>(std::round(_sides.first * cos - _sides.second * sin) + x1);
+    auto const y3 = static_cast<int_fast32_t>(std::round(_sides.first * sin + _sides.second * cos) + y1);
 
-    auto const x4 = static_cast<uint32_t>(- std::round(_sides.second * sin) + x1);
-    auto const y4 = static_cast<uint32_t>(std::round(_sides.second * cos) + y1);
+    auto const x4 = static_cast<int_fast32_t>(- std::round(_sides.second * sin) + x1);
+    auto const y4 = static_cast<int_fast32_t>(std::round(_sides.second * cos) + y1);
 
     if (_fill_color.a != 0) {
         using segment = std::pair<vertex, vertex>;
@@ -205,11 +230,8 @@ void rectangle::render_on(image & img)
         segments.push({{x1, y1}, {x4, y4}});
 
         auto y = detail::top_vertex({segments.top().first, segments.top().second}).y - 1;
-        fmt::print(stderr, "Top vertex y: {}\n", y);
-        img.draw(line{{0, y}, {299, y}, color::blue});
-        fmt::print(stderr, "Drawn\n");
 
-        auto pop = [&segments]() mutable 
+        auto pop = [&segments]() mutable
             -> std::optional<segment>
         {
             if (segments.empty()) {
@@ -249,8 +271,12 @@ void rectangle::render_on(image & img)
             }
 
             // trovare le x corrispondente alla y corrente
-            auto x_1 = static_cast<uint32_t>(std::round((y - a_q) * 1.f / a_m));
-            auto x_2 = static_cast<uint32_t>(std::round((y - b_q) * 1.f / b_m));
+            auto x_1 = std::isinf(a_m)
+                     ? a->first.x
+                     : static_cast<int_fast32_t>(std::round((y - a_q) * 1.f / a_m));
+            auto x_2 = std::isinf(b_m)
+                     ? b->first.x
+                     : static_cast<int_fast32_t>(std::round((y - b_q) * 1.f / b_m));
 
             img.draw(line{{x_1, y}, {x_2, y}, _fill_color, false});
             --y;

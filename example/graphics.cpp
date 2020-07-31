@@ -8,45 +8,31 @@
 
 int main() try
 {
-    auto image = spl::graphics::image(300,200);
-    auto col_1 = image.column(0);
-    auto row_1 = image.row(0);
-    image.fill({0, 255, 255, 128 * 2 - 3});
-    std::ranges::fill(row_1, spl::graphics::rgba{255, 0, 0, 255});
-    std::ranges::fill(col_1, spl::graphics::rgba{255, 0, 0, 255});
+    auto image = spl::graphics::image(900,600);
+    image.fill(spl::graphics::color::white);
 
-    image.row(3)[5] = spl::graphics::rgba{255, 0, 0, 0};
-    image.column(5).at(5) = spl::graphics::rgba{255, 0, 0, 0};
+    std::ranges::fill(image.row(0), spl::graphics::rgba{255, 0, 255, 255});
+    std::ranges::fill(image.column(9), spl::graphics::color::violet);
 
-    for (size_t i = 0; i < image.height(); ++i) {
-        for (size_t j = 0; j < image.width(); ++j) {
-            if (i < 20 and j > 180) {
-                image.pixel(j, i) = spl::graphics::rgba{255, 255, 0};
-            }
-        }
+    image.draw(spl::graphics::line{{0, 0}, {300, 599}, spl::graphics::color::cyan});
+    image.draw(spl::graphics::line{{0, 0}, {899, 300}, spl::graphics::color::orange});
+
+    for (float i = 0; i < 3.1415926535 * 4; i += 3.1415296535 / 20) {
+        auto const offset = int_fast32_t(i * 50);
+        image.draw(spl::graphics::rectangle{{150 + offset, 150 - 15}, {90, 30},  i, true}.fill_color(spl::graphics::color::green));
+        image.draw(spl::graphics::rectangle{{150 - offset, 150 - 15}, {90, 30}, -i, true}.fill_color(spl::graphics::color::blue));
+
+        image.draw(spl::graphics::rectangle{{150 + 15, 150 + offset}, {90, 30},  i, true}.fill_color(spl::graphics::color::red));
+        image.draw(spl::graphics::rectangle{{150 - 15, 150 - offset}, {90, 30}, -i, true}.fill_color(spl::graphics::color::yellow));
     }
 
-    /* static_assert(spl::detail::has_render_on_member_function<spl::graphics::line>); */
-    image.draw(spl::graphics::line{{0, 0}, {100, 199}, spl::graphics::color::red});
-    image.draw(spl::graphics::line{{0, 0}, {299,  50}, spl::graphics::color::blue});
+    if (not image.save_to_file("a.png")) { fmt::print(stderr, "Error - can't save the image to a file\n"); };
 
-    image.draw(spl::graphics::rectangle{{50, 50}, {100, 50}});
-    image.draw(spl::graphics::rectangle{{50, 50}, {50, 20}, 3.1415926535 * 0.33, true}.fill_color(spl::graphics::color::red));
-
-    if (not image.save_to_file("a.png")) { fmt::print("NON VA\n"); };
-    // image.save_to_file("a.bmp");
-    // image.save_to_file("a.jpg");
-    // image.save_to_file("a.ppm");
-    // image.save_to_file("a.pam");
-
-    auto status = image.load_from_file("a.bmp");
+    auto status = image.load_from_file("a.png");
     if (status != spl::graphics::load_status::success) {
-        std::cerr << "Errore\n";
+        std::cerr << "Error while loading a.png\n";
     }
-    image.save_to_file("a_clone.png");
-
-    // image.pixel(88, 99);
-} catch (std::exception & e)
-{
+    image.save_to_file("a_clone.jpg");
+} catch (std::exception & e) {
     fmt::print(stderr, "exception caught: {}\n", e.what());
 }

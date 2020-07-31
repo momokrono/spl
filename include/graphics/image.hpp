@@ -21,6 +21,7 @@ auto construct_uninitialized = construct_uninitialized_t{};
 
 class image
 {
+    static inline rgba _garbage_pixel;
 public:
     using value_type         = rgba;
     using reference          = value_type &;
@@ -44,6 +45,8 @@ public:
     // direct element access
     auto pixel(size_t const x, size_t const y)       -> reference;
     auto pixel(size_t const x, size_t const y) const -> const_reference;
+    auto pixel_noexcept(size_t const x, size_t const y)       noexcept -> reference;
+    auto pixel_noexcept(size_t const x, size_t const y) const noexcept -> const_reference;
 
     // iteration
     auto rows()                         -> row_range;

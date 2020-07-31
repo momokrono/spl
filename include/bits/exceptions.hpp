@@ -23,7 +23,7 @@ struct out_of_range : std::exception
     }
     out_of_range(size_t x, size_t y, size_t w, size_t h)
     {
-        message = fmt::format("out of range: required element ({}, {}) but size is ({}, {})", x, y, w, h);
+        message = fmt::format("out of range: required element ({}, {}) but the valid range is [0,{})⨉[0,{})", x, y, w, h);
     }
 
     auto what() const noexcept -> char const * override
