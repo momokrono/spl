@@ -3,8 +3,8 @@
 #include <ranges>
 #include <algorithm>
 
-#include "graphics/image.hpp"
-#include "graphics/primitive.hpp"
+#include "spl/graphics/image.hpp"
+#include "spl/graphics/primitive.hpp"
 
 int main() try
 {

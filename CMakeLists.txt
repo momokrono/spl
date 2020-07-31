@@ -45,7 +45,7 @@ if (build_examples_bench)
 
     target_sources(bench PRIVATE example/bench.cpp)
     target_link_libraries(bench PRIVATE spl ${CONAN_LIBS})
-    target_include_directories(bench PUBLIC ./include/spl ./include/ ./include/3rd_party/)
+    target_include_directories(bench PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
 # examples/graphics
@@ -59,7 +59,7 @@ if (build_examples_graphics)
 
     target_sources(graphics PRIVATE example/graphics.cpp)
     target_link_libraries(graphics PRIVATE spl ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)
-    target_include_directories(graphics PUBLIC ./include/spl ./include/ ./include/3rd_party/)
+    target_include_directories(graphics PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
 

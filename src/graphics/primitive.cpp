@@ -5,7 +5,7 @@
  * @license     : MIT
  */
 
-#include "graphics/primitive.hpp"
+#include "spl/graphics/primitive.hpp"
 
 namespace spl::graphics
 {

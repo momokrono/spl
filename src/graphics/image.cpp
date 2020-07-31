@@ -5,8 +5,8 @@
  * @license     : MIT
  */
 
-#include "graphics/image.hpp"
-#include "bits/exceptions.hpp"
+#include "spl/graphics/image.hpp"
+#include "spl/bits/exceptions.hpp"
 
 #include <fstream>
 #include <fmt/core.h>
