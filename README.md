@@ -6,68 +6,62 @@
 If you find yourself having issues with it, feel free to report it.**
 
 
-## Documentation
+## About
 
-The functions `spl` now offer are limited to opening a window and plotting your data, and saving them to a file.
+`spl` aims to be a simple library to draw stuff and edit images in C++. It is developed with the following ideas in mind:
 
-First of all, create an `spl::plotter` object, then to open a window simply call the `spl::show` method.
-To plot your data you can either use the constructor or use `spl::plot`.
-If you like the way your data are plotted, just press *s* on your keyboard while the window is open, or use `spl::save_plot` to save them to file.
+- Ease of use: the library must be easy to install and easy to use. We're achieving the former using the [conan package manager](https://conan.io/) for the dependencies and [cmake](https://cmake.org/) as build system, and the latter by taking inspiration from [matplotlib](https://matplotlib.org/), since we recognize in it the simplicity wewant our library to transmit while using it
+- Being as up-to-date with the standard as possible: C++ is evolving, and there's no reason for us to avoid all the goodies that C++11, 14, 17 and 20 have brought us. Also, that's a good exercise to learn all the new stuff that comes out from every new standard
+- Being as standard as possible (minimal external dependencies): we want `spl` to be as standalone as possible. As for now, we have the following dependencies:
+    - [range-v3](https://github.com/ericniebler/range-v3), waiting for the C++20 ranges library
+    - [fmtlib](https://github.com/fmtlib/fmt) in the absence of the C++20 formatting library
+    - [stb](https://github.com/nothings/stb) for saving and loading various image types
 
-Here is an example of how you can use it:
+## Example
 
 ```cpp
+#include <ranges>
+#include <numbers>
+#include <iostream>
+
+#include "spl/graphics/image.hpp"
+#include "spl/graphics/primitive.hpp"
+
+namespace color = spl::graphics::color;
+
 int main()
 {
-    namespace rvw = ranges::views;
+    // Creates a new image
+    auto image = spl::graphics::image(900, 600);
 
-    // Generate some points to plot
-    auto x1 = rvw::linear_distribute(-2*pi, 2*pi, 400) | ranges::to_vector;
-    auto y1 = x1 | rvw::transform([](auto x) { return std::exp(x) / 1e2; }) | ranges::to_vector;
-    auto x2 = rvw::linear_distribute(-4*pi, 4*pi, 100) | ranges::to_vector;
-    auto y2 = x2 | rvw::transform([](auto x) { return std::sin(x); }) | ranges::to_vector;
+    // Support for rows, columns, pixels, and for row-by-row, column-by-column, pixel-by-pixel iteration
+    std::ranges::fill(image.row(449), spl::graphics::rgba{255, 0, 255, 255});
+    std::ranges::fill(image.column(130), color::violet);
 
-    auto graph = spl::plotter{640, 480 /*, xs, ys, format*/};
+    // Supports some drawing primitives, like lines and rectangles
+    auto line = spl::graphics::line{{0, 0}, {300, 599}, color::cyan};
+    image.draw(line);
+    image.draw(spl::graphics::line{{100, 100}, {50, 550}, color::orange});
 
-    graph.plot(x1, y1);           // plot x1 and y1 with default format
-    graph.plot(x2, y2, "ro-");    // plot x2 and y2 with a custom format
+    auto rect = spl::graphics::rectangle{{150, 150}, {90, 30}};
+    rect.fill_color(color::green);
+        auto rotated_rect = spl::graphics::rectangle{{20, 30}, {100, 40}, std::numbers::pi / 4, /*antialiasing=*/true}
+                      .fill_color(color::red);
+    image.draw(rect)
+         .draw(rotated_rect);
 
-    graph.show();                    // to open a window
-    // graph.save_plot("plot.png");  // to save directly
+	// Save a new image
+    if (not image.save_to_file("image.png")) {
+        std::cerr << "Error\n";
+        return 1;
+    }
+
+    // Load an existing image
+    auto status = image.load_from_file("image.png");
+    if (status != spl::graphics::load_status::success) {
+        std::cerr << "Error while loading a.png";
+        return 2;
+    }
 }
+
 ```
-The code above gives the following output:
-![example](https://github.com/momokrono/spl/blob/master/plot.png)
-
-You can chain more plots each one with different format, for example
-```cpp
-graph.plot(x1,y1)
-     .plot(x2,y2,"gt-")
-     .plot(x3,y3,"bo ")
-     ;
-```
-and then show it, or save it.
-
-### Plot format
-
-A format string let you define three properties of the plot (the color, the primitive and the line
-type) in a way similar to matplotlib.
-Currently available options are:
-- Colors
-    + `b`: blue (default)
-    + `g`: green
-    + `r`: red
-    + `y`: yellow
-    + `m`: magenta
-    + `k`|`B`: black
-- Primitives:
-    + `.`: pixel (default)
-    + `o`: small circle
-    + `O`: big circle
-    + `t`: triangle
-    + `s`: square
-    + `p`: pentagon
-    + `e`: exagon
-- Line types:
-    + `-`: solid (default)
-    + ` `: no line
