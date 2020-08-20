@@ -6,6 +6,7 @@
  */
 
 #include "spl/graphics/primitive.hpp"
+#include <numbers>
 
 namespace spl::graphics
 {
@@ -289,6 +290,33 @@ void rectangle::render_on(image & img)
     img.draw(line{{x3, y3}, {x4, y4}, _border_color, _anti_aliasing});
     img.draw(line{{x4, y4}, {x1, y1}, _border_color, _anti_aliasing});
 }
+
+void regular_polygon::_draw_unfilled(image & img)
+{
+    auto const [x_c, y_c] = _center;
+    auto const theta = 2 * std::numbers::pi / _sides;
+    auto const theta_0 = theta / 2 + _rotation;
+    fmt::print(stderr, "theta: {}\n", theta);
+    auto const len   = _radius * std::sqrt(2 - std::cos(theta));
+    auto       x_p   = x_c - len * std::sin(theta_0);
+    auto       y_p   = y_c - len * std::cos(theta_0);
+
+    for (auto t = 0.; t < 2 * std::numbers::pi; t += theta) {
+        fmt::print(stderr, "t = {}\n", t);
+        auto const new_x_p = x_p + len * std::sin(theta_0 + t);
+        auto const new_y_p = y_p + len * std::cos(theta_0 + t);
+
+        img.draw(spl::graphics::line{
+            {static_cast<int_fast32_t>(x_p),     static_cast<int_fast32_t>(y_p)},
+            {static_cast<int_fast32_t>(new_x_p), static_cast<int_fast32_t>(new_y_p)},
+            _border_color,
+            _anti_aliasing
+        });
+        x_p = new_x_p;
+        y_p = new_y_p;
+    }
+}
+
 } // namespace spl::graphics
 
 

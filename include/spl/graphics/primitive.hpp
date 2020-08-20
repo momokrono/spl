@@ -94,6 +94,10 @@ public:
         _origin{origin}, _sides{sides}, _rotation(rotation), _anti_aliasing{antialiasing}
     {}
 
+    auto border_color(spl::graphics::rgba const fill)
+        -> rectangle &
+    { _border_color = fill; return *this; }
+
     auto fill_color(spl::graphics::rgba const fill)
         -> rectangle &
     { _fill_color = fill; return *this; }
@@ -101,25 +105,46 @@ public:
     void render_on(image & img);
 };
 
-// template <uint8_t N>
-struct regular_n_agon // : public primitive
+struct regular_polygon // : public primitive
 {
-    vertex  center;
-    uint8_t sides;
-    float rotation;
-    bool filled = false;
+private:
+    vertex  _center;
+    uint8_t _sides;
+    int_fast32_t _radius;
+    float _rotation = 0.;
+    rgba _border_color = spl::graphics::color::black;
+    rgba _fill_color   = spl::graphics::color::nothing;
+    bool _anti_aliasing;
 
-    /* auto render_on(image & img) */
-    /* { */
-    /*     if (filled) { */
-    /*         /1* _draw_filled(img); *1/ */
-    /*     } else { */
-    /*         /1* _draw_unfilled(img); *1/ */
-    /*     } */
-    /* } */
+public:
+    constexpr
+    regular_polygon(vertex const origin, int_fast32_t const radius, uint8_t const sides, double rotation = 0., bool antialiasing = false) :
+        _center{origin}, _sides{sides}, _radius{radius}, _rotation(rotation), _anti_aliasing{antialiasing}
+    {}
+
+    auto border_color(spl::graphics::rgba const fill)
+        -> regular_polygon &
+    { _border_color = fill; return *this; }
+
+    auto fill_color(spl::graphics::rgba const fill)
+        -> regular_polygon &
+    { _fill_color = fill; return *this; }
+
+    inline
+    auto render_on(image & img)
+    {
+        if (_sides == 0 or _radius <= 0) {
+            return;
+        }
+        if (_fill_color != spl::graphics::color::nothing) {
+            /* _draw_filled(img); */
+        } else {
+            _draw_unfilled(img);
+        }
+    }
 
 private:
-    /* auto _draw_filled */
+    void _draw_unfilled(image & img);
 };
 
 } // namespace spl::graphics
