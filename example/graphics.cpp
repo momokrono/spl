@@ -27,7 +27,7 @@ int main() try
     }
 
     image.draw(spl::graphics::regular_polygon{{600, 400}, 50, 8, 3.141592653589793 / 5});
-    image.draw(spl::graphics::regular_polygon{{550, 500}, 50, 5, 3.141592653589793 / 5});
+    image.draw(spl::graphics::regular_polygon{{550, 500}, 50, 5, 3.141592653589793 / 5}.fill_color(spl::graphics::color::cyan));
 
     if (not image.save_to_file("a.png")) { fmt::print(stderr, "Error - can't save the image to a file\n"); };
 

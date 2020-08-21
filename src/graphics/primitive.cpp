@@ -11,6 +11,74 @@
 namespace spl::graphics
 {
 
+namespace detail
+{
+    template <typename SegmentList = std::vector<std::pair<vertex, vertex>>>
+    void draw_filled(image & img, SegmentList && segments_list, spl::graphics::rgba const fill_color)
+    {
+        using segment = std::pair<vertex, vertex>;
+        /* auto segments = std::priority_queue<segment, std::vector<segment>, decltype(detail::segment_compare)>{}; */
+        auto segments = std::priority_queue{detail::segment_compare, std::forward<SegmentList>(segments_list)};
+        /* segments.push({{x1, y1}, {x2, y2}}); */
+        /* segments.push({{x2, y2}, {x3, y3}}); */
+        /* segments.push({{x3, y3}, {x4, y4}}); */
+        /* segments.push({{x1, y1}, {x4, y4}}); */
+
+        auto y = detail::top_vertex({segments.top().first, segments.top().second}).y - 1;
+
+        auto pop = [&segments]() mutable
+            -> std::optional<segment>
+        {
+            if (segments.empty()) {
+                return std::nullopt;
+            }
+            auto [p, q] = segments.top();
+            segments.pop();
+            auto [p2, q2] = std::ranges::minmax(p, q, std::less{}, &vertex::y);
+            return segment{q2, p2};
+        };
+
+        auto m_and_q = [](segment const s) noexcept {
+            auto const m = (s.first.y - s.second.y) * 1.f / (s.first.x - s.second.x);
+            auto const q = s.first.y - m * s.first.x;
+            return std::pair{m, q};
+        };
+
+        auto a = pop();
+        auto [a_m, a_q] = m_and_q(*a);
+        auto b = pop();
+        auto [b_m, b_q] = m_and_q(*b);
+
+        while (true) {
+            if (y < a->second.y) {
+                a = pop();
+                if (not a.has_value()) {
+                    break;
+                }
+                std::tie(a_m, a_q) = m_and_q(*a);
+            }
+            if (y < b->second.y) {
+                b = pop();
+                if (not b.has_value()) {
+                    break;
+                }
+                std::tie(b_m, b_q) = m_and_q(*b);
+            }
+
+            // trovare le x corrispondente alla y corrente
+            auto x_1 = std::isinf(a_m)
+                     ? a->first.x
+                     : static_cast<int_fast32_t>(std::round((y - a_q) * 1.f / a_m));
+            auto x_2 = std::isinf(b_m)
+                     ? b->first.x
+                     : static_cast<int_fast32_t>(std::round((y - b_q) * 1.f / b_m));
+
+            img.draw(line{{x_1, y}, {x_2, y}, fill_color, false});
+            --y;
+        }
+    }
+} // namespace detail
+
 void line::render_on(image & img)
 {
     auto [x1, y1] = start;
@@ -223,65 +291,7 @@ void rectangle::render_on(image & img)
     auto const y4 = static_cast<int_fast32_t>(std::round(_sides.second * cos) + y1);
 
     if (_fill_color.a != 0) {
-        using segment = std::pair<vertex, vertex>;
-        auto segments = std::priority_queue<segment, std::vector<segment>, decltype(detail::segment_compare)>{};
-        segments.push({{x1, y1}, {x2, y2}});
-        segments.push({{x2, y2}, {x3, y3}});
-        segments.push({{x3, y3}, {x4, y4}});
-        segments.push({{x1, y1}, {x4, y4}});
-
-        auto y = detail::top_vertex({segments.top().first, segments.top().second}).y - 1;
-
-        auto pop = [&segments]() mutable
-            -> std::optional<segment>
-        {
-            if (segments.empty()) {
-                return std::nullopt;
-            }
-            auto [p, q] = segments.top();
-            segments.pop();
-            auto [p2, q2] = std::ranges::minmax(p, q, std::less{}, &vertex::y);
-            return segment{q2, p2};
-        };
-
-        auto m_and_q = [](segment const s) noexcept {
-            auto const m = (s.first.y - s.second.y) * 1.f / (s.first.x - s.second.x);
-            auto const q = s.first.y - m * s.first.x;
-            return std::pair{m, q};
-        };
-
-        auto a = pop();
-        auto [a_m, a_q] = m_and_q(*a);
-        auto b = pop();
-        auto [b_m, b_q] = m_and_q(*b);
-
-        while (true) {
-            if (y < a->second.y) {
-                a = pop();
-                if (not a.has_value()) {
-                    break;
-                }
-                std::tie(a_m, a_q) = m_and_q(*a);
-            }
-            if (y < b->second.y) {
-                b = pop();
-                if (not b.has_value()) {
-                    break;
-                }
-                std::tie(b_m, b_q) = m_and_q(*b);
-            }
-
-            // trovare le x corrispondente alla y corrente
-            auto x_1 = std::isinf(a_m)
-                     ? a->first.x
-                     : static_cast<int_fast32_t>(std::round((y - a_q) * 1.f / a_m));
-            auto x_2 = std::isinf(b_m)
-                     ? b->first.x
-                     : static_cast<int_fast32_t>(std::round((y - b_q) * 1.f / b_m));
-
-            img.draw(line{{x_1, y}, {x_2, y}, _fill_color, false});
-            --y;
-        }
+        detail::draw_filled(img, {{{x1, y1}, {x2, y2}}, {{x2, y2}, {x3, y3}}, {{x3, y3}, {x4, y4}}, {{x1, y1}, {x4, y4}}}, _fill_color);
     }
 
 
@@ -296,13 +306,11 @@ void regular_polygon::_draw_unfilled(image & img)
     auto const [x_c, y_c] = _center;
     auto const theta = 2 * std::numbers::pi / _sides;
     auto const theta_0 = theta / 2 + _rotation;
-    fmt::print(stderr, "theta: {}\n", theta);
     auto const len   = _radius * std::sqrt(2 - std::cos(theta));
     auto       x_p   = x_c - len * std::sin(theta_0);
     auto       y_p   = y_c - len * std::cos(theta_0);
 
     for (auto t = 0.; t < 2 * std::numbers::pi; t += theta) {
-        fmt::print(stderr, "t = {}\n", t);
         auto const new_x_p = x_p + len * std::sin(theta_0 + t);
         auto const new_y_p = y_p + len * std::cos(theta_0 + t);
 
@@ -314,6 +322,37 @@ void regular_polygon::_draw_unfilled(image & img)
         });
         x_p = new_x_p;
         y_p = new_y_p;
+    }
+}
+
+void regular_polygon::_draw_filled(image & img)
+{
+    auto const [x_c, y_c] = _center;
+    auto const theta = 2 * std::numbers::pi / _sides;
+    auto const theta_0 = theta / 2 + _rotation;
+    auto const len   = _radius * std::sqrt(2 - std::cos(theta));
+    auto       x_p   = x_c - len * std::sin(theta_0);
+    auto       y_p   = y_c - len * std::cos(theta_0);
+
+    auto segments = std::vector<std::pair<vertex, vertex>>{};
+    segments.reserve(_sides);
+
+    for (auto t = 0.; t < 2 * std::numbers::pi; t += theta) {
+        auto const new_x_p = x_p + len * std::sin(theta_0 + t);
+        auto const new_y_p = y_p + len * std::cos(theta_0 + t);
+
+        segments.emplace_back(
+            vertex{static_cast<int_fast32_t>(x_p),     static_cast<int_fast32_t>(y_p)},
+            vertex{static_cast<int_fast32_t>(new_x_p), static_cast<int_fast32_t>(new_y_p)}
+        );
+        x_p = new_x_p;
+        y_p = new_y_p;
+    }
+
+    detail::draw_filled(img, segments, _fill_color);
+
+    for (auto const [v1, v2] : segments) {
+        img.draw(spl::graphics::line{v1, v2, _border_color, _anti_aliasing });
     }
 }
 

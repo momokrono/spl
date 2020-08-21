@@ -137,13 +137,14 @@ public:
             return;
         }
         if (_fill_color != spl::graphics::color::nothing) {
-            /* _draw_filled(img); */
+            _draw_filled(img);
         } else {
             _draw_unfilled(img);
         }
     }
 
 private:
+    void _draw_filled(image & img);
     void _draw_unfilled(image & img);
 };
 
