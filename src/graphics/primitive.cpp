@@ -17,12 +17,7 @@ namespace detail
     void draw_filled(image & img, SegmentList && segments_list, spl::graphics::rgba const fill_color)
     {
         using segment = std::pair<vertex, vertex>;
-        /* auto segments = std::priority_queue<segment, std::vector<segment>, decltype(detail::segment_compare)>{}; */
         auto segments = std::priority_queue{detail::segment_compare, std::forward<SegmentList>(segments_list)};
-        /* segments.push({{x1, y1}, {x2, y2}}); */
-        /* segments.push({{x2, y2}, {x3, y3}}); */
-        /* segments.push({{x3, y3}, {x4, y4}}); */
-        /* segments.push({{x1, y1}, {x4, y4}}); */
 
         auto y = detail::top_vertex({segments.top().first, segments.top().second}).y - 1;
 
