@@ -14,7 +14,7 @@ namespace spl::graphics
 namespace detail
 {
     template <typename SegmentList = std::vector<std::pair<vertex, vertex>>>
-    void draw_filled(image & img, SegmentList && segments_list, spl::graphics::rgba const fill_color)
+    void draw_filled(image & img, SegmentList && segments_list, spl::graphics::rgba const fill_color) noexcept
     {
         using segment = std::pair<vertex, vertex>;
         auto segments = std::priority_queue{detail::segment_compare, std::forward<SegmentList>(segments_list)};
@@ -74,7 +74,7 @@ namespace detail
     }
 } // namespace detail
 
-void line::render_on(image & img)
+void line::render_on(image & img) noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -117,7 +117,7 @@ void line::render_on(image & img)
     }
 }
 
-void line::draw_antialiased_parametric(image & img)
+void line::draw_antialiased_parametric(image & img) noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -184,7 +184,7 @@ void line::draw_antialiased_parametric(image & img)
     }
 }
 
-void line::draw_aliased(image & img)
+void line::draw_aliased(image & img) noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -225,7 +225,7 @@ void line::draw_aliased(image & img)
     }
 }
 
-void line::draw_antialiased(image & img)
+void line::draw_antialiased(image & img) noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -267,7 +267,7 @@ void line::draw_antialiased(image & img)
     }
 }
 
-void rectangle::render_on(image & img)
+void rectangle::render_on(image & img) noexcept
 {
     auto const sin = std::sin(_rotation);
     auto const cos = std::cos(_rotation);
@@ -296,7 +296,7 @@ void rectangle::render_on(image & img)
     img.draw(line{{x4, y4}, {x1, y1}, _border_color, _anti_aliasing});
 }
 
-void regular_polygon::_draw_unfilled(image & img)
+void regular_polygon::_draw_unfilled(image & img) noexcept
 {
     auto const [x_c, y_c] = _center;
     auto const theta = 2 * std::numbers::pi / _sides;
@@ -320,7 +320,7 @@ void regular_polygon::_draw_unfilled(image & img)
     }
 }
 
-void regular_polygon::_draw_filled(image & img)
+void regular_polygon::_draw_filled(image & img) noexcept
 {
     auto const [x_c, y_c] = _center;
     auto const theta = 2 * std::numbers::pi / _sides;
@@ -348,6 +348,73 @@ void regular_polygon::_draw_filled(image & img)
 
     for (auto const [v1, v2] : segments) {
         img.draw(spl::graphics::line{v1, v2, _border_color, _anti_aliasing });
+    }
+}
+
+void circle::_draw_unfilled(image & img) noexcept
+{
+    // Bresenham circle algorithm
+
+    // The circle is divided in 8 symmetric parts
+    // The starting point is (x, y)
+    // The next point is P':=(x+1, y) or P'':=(x+1, y-1), I have to decide between them
+    // We can define a "radius error" function as follow:
+    // e(P) = distance(P)² - r² = (x_p)² + (y_p)² - r²
+    // With this new function it is possible to define a new "decision parameter":
+    //
+    // d := e(P') + e(P'')
+    //    = (x+1)² + y² - r² + (x+1)² + (y+1)² - r²
+    //    = 2x² + 3 + 4x + 2y² - 2y - 2r²
+    // If I assume that the first point is (0, r),
+    //    = 0   + 3 +  0 + 2r² - 2r - 2r²
+    //    = 3 - 2r
+    //
+    // If d < 0, P' is a better fit than P''. If d >= 0, is the other way.
+    //
+    // After the first calculation, it can be proved that d must be updated using the following rule:
+    //    · d = d + 2*x + 1          if d < 0
+    //    · d = d + 2*(x - y) + 1    if d >= 0
+
+    auto const r = _radius;
+    auto d = 3 - 2 * r;
+
+    auto x = int_fast32_t{0};
+    auto y = int_fast32_t(r);
+    while (x <= y) {
+        _draw_sym_points(img, x, y);
+        _draw_sym_points(img, y, x);
+        ++x;
+        if (d >= 0) {
+            --y;
+            d += 2 * (x - y) + 1;
+        } else {
+            d += 2 * x + 1;
+        }
+    }
+}
+
+void circle::_draw_filled(image & img) noexcept
+{
+    auto const r = _radius;
+    auto d = 3 - 2 * r;
+
+    auto x = int_fast32_t{0};
+    auto y = int_fast32_t(r);
+    while (x <= y) {
+        auto const old_x = x;
+        auto const old_y = y;
+        ++x;
+        _draw_fill_lines(img, y, x - 1);
+        if (d >= 0) {
+            --y;
+            _draw_fill_lines(img, x - 1, y);
+            d += 2 * (x - y) + 1;
+        } else {
+            d += 2 * x + 1;
+        }
+
+        _draw_sym_points(img, old_x, old_y);
+        _draw_sym_points(img, old_y, old_x);
     }
 }
 

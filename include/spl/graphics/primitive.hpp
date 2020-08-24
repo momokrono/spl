@@ -62,11 +62,11 @@ struct line // : public primitive
     bool anti_aliasing = true;
     // uint8_t thickness;
 
-    void render_on(image & img);
+    void render_on(image & img) noexcept;
 
-    void draw_antialiased_parametric(image & img);
-    void draw_aliased(image & img);
-    void draw_antialiased(image & img);
+    void draw_antialiased_parametric(image & img) noexcept;
+    void draw_aliased(image & img) noexcept;
+    void draw_antialiased(image & img) noexcept;
 };
 
 class rectangle // : public primitive
@@ -87,16 +87,16 @@ public:
     {}
 
     constexpr
-    auto border_color(spl::graphics::rgba const fill)
+    auto border_color(spl::graphics::rgba const fill) noexcept
         -> rectangle &
     { _border_color = fill; return *this; }
 
     constexpr
-    auto fill_color(spl::graphics::rgba const fill)
+    auto fill_color(spl::graphics::rgba const fill) noexcept
         -> rectangle &
     { _fill_color = fill; return *this; }
 
-    void render_on(image & img);
+    void render_on(image & img) noexcept;
 };
 
 struct regular_polygon // : public primitive
@@ -117,17 +117,17 @@ public:
     {}
 
     constexpr
-    auto border_color(spl::graphics::rgba const fill)
+    auto border_color(spl::graphics::rgba const fill) noexcept
         -> regular_polygon &
     { _border_color = fill; return *this; }
 
     constexpr
-    auto fill_color(spl::graphics::rgba const fill)
+    auto fill_color(spl::graphics::rgba const fill) noexcept
         -> regular_polygon &
     { _fill_color = fill; return *this; }
 
     inline
-    auto render_on(image & img)
+    auto render_on(image & img) noexcept
     {
         if (_sides == 0 or _radius <= 0) {
             return;
@@ -140,8 +140,8 @@ public:
     }
 
 private:
-    void _draw_filled(image & img);
-    void _draw_unfilled(image & img);
+    void _draw_filled(image & img) noexcept;
+    void _draw_unfilled(image & img) noexcept;
 };
 
 class circle
@@ -157,22 +157,22 @@ public:
     circle(vertex const center, int_fast32_t radius) noexcept : _center{center}, _radius{radius} {}
 
     constexpr
-    auto border_color(spl::graphics::rgba const fill)
+    auto border_color(spl::graphics::rgba const fill) noexcept
         -> circle &
     { _border_color = fill; return *this; }
 
     constexpr
-    auto fill_color(spl::graphics::rgba const fill)
+    auto fill_color(spl::graphics::rgba const fill) noexcept
         -> circle &
     { _fill_color = fill; return *this; }
 
-    auto render_on(image & img)
+    auto render_on(image & img) noexcept
     {
         if (_radius <= 0) {
             return;
         }
         if (_fill_color != spl::graphics::color::nothing) {
-            /* _draw_filled(img); */
+            _draw_filled(img);
         } else {
             _draw_unfilled(img);
         }
@@ -181,7 +181,7 @@ public:
 private:
 
     inline
-    void _draw_sym_points(image & img, int_fast32_t dx, int_fast32_t dy)
+    void _draw_sym_points(image & img, int_fast32_t const dx, int_fast32_t const dy) noexcept
     {
         auto const [x0, y0] = _center;
         auto const color    = _border_color;
@@ -196,54 +196,21 @@ private:
         draw_pixel_with_offset( dx, -dy);
         draw_pixel_with_offset(-dx,  dy);
         draw_pixel_with_offset(-dx, -dy);
-        draw_pixel_with_offset( dy,  dx);
-        draw_pixel_with_offset( dy, -dx);
-        draw_pixel_with_offset(-dy,  dx);
-        draw_pixel_with_offset(-dy, -dx);
     }
 
-    void _draw_unfilled(image & img)
+    inline
+    void _draw_fill_lines(image & img, int_fast32_t const dx, int_fast32_t const dy) noexcept
     {
-        // Bresenham circle algorithm
+        auto const [x0, y0] = _center;
+        auto const color    = _fill_color;
 
-        // The circle is divided in 8 symmetric parts
-        // The starting point is (x, y)
-        // The next point is P':=(x+1, y) or P'':=(x+1, y-1), I have to decide between them
-        // We can define a "radius error" function as follow:
-        // e(P) = distance(P)² - r² = (x_p)² + (y_p)² - r²
-        // With this new function it is possible to define a new "decision parameter":
-        //
-        // d := e(P') + e(P'')
-        //    = (x+1)² + y² - r² + (x+1)² + (y+1)² - r²
-        //    = 2x² + 3 + 4x + 2y² - 2y - 2r²
-        // If I assume that the first point is (0, r),
-        //    = 0   + 3 +  0 + 2r² - 2r - 2r²
-        //    = 3 - 2r
-        //
-        // If d < 0, P' is a better fit than P''. If d >= 0, is the other way.
-        //
-        // After the first calculation, it can be proved that d must be updated using the following rule:
-        //    · d = d + 2*x + 1          if d < 0
-        //    · d = d + 2*(x - y) + 1    if d >= 0
-
-        auto const r = _radius; //std::hypot(_center.x, _center.y);
-        auto d = 3 - 2 * r;
-
-        auto x = int_fast32_t{0};
-        auto y = int_fast32_t(r);
-        while (x <= y) {
-            _draw_sym_points(img, x, y);
-            ++x;
-            if (d >= 0) {
-                --y;
-                d += 2 * (x - y) + 1;
-            } else {
-                d += 2 * x + 1;
-            }
-        }
+        img.draw(line{{x0 - dx, y0 + dy}, {x0 + dx, y0 + dy}, color});
+        img.draw(line{{x0 - dx, y0 - dy}, {x0 + dx, y0 - dy}, color});
     }
-};
 
+    void _draw_unfilled(image & img) noexcept;
+    void _draw_filled(image & img) noexcept;
+};
 
 } // namespace spl::graphics
 

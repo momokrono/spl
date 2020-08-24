@@ -29,7 +29,8 @@ int main() try
     image.draw(spl::graphics::regular_polygon{{600, 400}, 50, 8, 3.141592653589793 / 5});
     image.draw(spl::graphics::regular_polygon{{550, 500}, 50, 5, 3.141592653589793 / 5}.fill_color(spl::graphics::color::cyan));
 
-    image.draw(spl::graphics::circle{{550, 400}, 45}.border_color(spl::graphics::color::green));
+    image.draw(spl::graphics::circle{{550, 400}, 45}.border_color(spl::graphics::color::green).fill_color(spl::graphics::color::violet));
+    image.draw(spl::graphics::circle{{520, 400}, 45}.border_color(spl::graphics::color::green));
 
     if (not image.save_to_file("a.png")) { fmt::print(stderr, "Error - can't save the image to a file\n"); };
 
