@@ -5,7 +5,7 @@
  * @license     : MIT
  */
 
-#include "spl/graphics/image.hpp"
+#include "spl/image.hpp"
 #include "spl/bits/exceptions.hpp"
 
 #include <fstream>

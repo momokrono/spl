@@ -49,12 +49,7 @@ namespace detail
     };
 } // namespace detail
 
-class primitive
-{
-public:
-};
-
-struct line // : public primitive
+struct line
 {
     vertex start;
     vertex end;
@@ -69,7 +64,7 @@ struct line // : public primitive
     void draw_antialiased(image & img) noexcept;
 };
 
-class rectangle // : public primitive
+class rectangle
 {
     vertex _origin;
     std::pair<uint_fast32_t, uint_fast32_t> _sides;
@@ -99,7 +94,7 @@ public:
     void render_on(image & img) noexcept;
 };
 
-struct regular_polygon // : public primitive
+struct regular_polygon
 {
 private:
     vertex  _center;

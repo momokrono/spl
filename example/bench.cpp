@@ -10,8 +10,8 @@
 #include <ranges>
 #include <algorithm>
 
-#include "spl/graphics/image.hpp"
-#include "spl/graphics/primitive.hpp"
+#include "spl/image.hpp"
+#include "spl/primitive.hpp"
 
 int main(int argc, [[maybe_unused]] char * argv[]) try
 {

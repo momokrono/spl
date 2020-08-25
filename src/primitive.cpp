@@ -5,7 +5,7 @@
  * @license     : MIT
  */
 
-#include "spl/graphics/primitive.hpp"
+#include "spl/primitive.hpp"
 #include <numbers>
 
 namespace spl::graphics

@@ -6,7 +6,7 @@
 #include <ranges>
 
 #include "spl/bits/exceptions.hpp"
-#include "spl/graphics/rgba.hpp"
+#include "spl/rgba.hpp"
 
 namespace spl::graphics
 {
