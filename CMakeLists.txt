@@ -62,6 +62,20 @@ if (build_examples_graphics)
     target_include_directories(graphics PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
+# examples/blur
+option(build_examples_blur "Build the blur example" TRUE)
+if (build_examples_blur)
+    add_executable(blur)
+
+    target_compile_features(blur PUBLIC cxx_std_20)
+    target_compile_options(blur PRIVATE -Wall -Wextra -Wpedantic)
+    target_link_options(blur PRIVATE)
+
+    target_sources(blur PRIVATE example/blur.cpp)
+    target_link_libraries(blur PRIVATE spl ${CONAN_LIBS} ${Threads})
+    target_include_directories(blur PUBLIC ./include/ ./include/3rd_party/)
+endif()
+
 
 
 
