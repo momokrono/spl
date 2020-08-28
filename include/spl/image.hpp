@@ -39,7 +39,7 @@ public:
 
     // constructors
     image() noexcept : _width{0}, _height{0} {};
-    image(size_t w, size_t h) noexcept : _pixels{w * h, {0, 0, 0, 255}}, _width{w}, _height{h} {}
+    image(size_t w, size_t h, rgba fill = {0, 0, 0, 255}) noexcept : _pixels{w * h, fill}, _width{w}, _height{h} {}
     image(construct_uninitialized_t, size_t w, size_t h) noexcept : _pixels{w * h}, _width{w}, _height{h} {}
 
     // direct element access
