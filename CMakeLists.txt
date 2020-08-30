@@ -72,7 +72,7 @@ if (build_examples_blur)
     target_link_options(blur PRIVATE)
 
     target_sources(blur PRIVATE example/blur.cpp)
-    target_link_libraries(blur PRIVATE spl ${CONAN_LIBS} ${Threads})
+    target_link_libraries(blur PRIVATE spl Threads::Threads ${CONAN_LIBS})
     target_include_directories(blur PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
