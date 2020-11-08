@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstdint>
 #include <queue>
+#include <span>
+#include <ranges>
 
 #include "rgba.hpp"
 #include "image.hpp"
@@ -62,6 +64,53 @@ struct line
     void draw_antialiased_parametric(image & img) noexcept;
     void draw_aliased(image & img) noexcept;
     void draw_antialiased(image & img) noexcept;
+};
+
+namespace detail
+{
+    constexpr
+    void _bezier_render_aliased(image & img, std::span<vertex> const, spl::graphics::rgba const color) noexcept;
+} // namespace detail
+
+template <typename Alloc = std::allocator<vertex>>
+class bezier
+{
+    std::vector<vertex, Alloc> _vertexes;
+    rgba _color;
+    bool _anti_aliasing = true;
+
+public:
+    template <std::ranges::range Rng = std::initializer_list<vertex>>
+        requires std::same_as<std::ranges::range_value_t<Rng>, vertex>
+    constexpr
+    bezier(Rng && rng, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
+        _vertexes(rng.begin(), rng.end()), _color{color}, _anti_aliasing{anti_aliasing} {}
+
+    constexpr
+    bezier(std::vector<vertex, Alloc> && v, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
+        _vertexes{std::move(v)}, _color{color}, _anti_aliasing{anti_aliasing} {}
+
+    constexpr
+    auto color(spl::graphics::rgba const color) noexcept
+        -> bezier &
+    { _color = color; return *this; }
+
+    constexpr
+    auto render_on(image & img) noexcept
+    {
+        if (_vertexes.size() < 2 or _color == spl::graphics::color::nothing) {
+            return;
+        }
+        if (_anti_aliasing) {
+
+        } else {
+            detail::_bezier_render_aliased(img, std::span{_vertexes}, _color);
+        }
+    }
+
+/* private: */
+    /* constexpr */
+    /* static void _render_on_impl(image & img, std::span<vertex> const) noexcept; */
 };
 
 class rectangle

@@ -267,6 +267,113 @@ void line::draw_antialiased(image & img) noexcept
     }
 }
 
+template <typename Alloc>
+void detail::_bezier_render_aliased(image & img, std::span<vertex> const v, spl::graphics::rgba const color)
+{
+    switch (std::ssize(v)) {
+    case 2: {
+        // linear
+        /*
+        auto const [x0, y0] = v.front();
+        auto const [x1, y1] = v.back();
+
+        auto const dx = std::abs(x1 - x0);
+        auto const dy = std::abs(y1 - y0);
+        auto const distance = std::max(dx, dy);
+        auto const distance_inv = 1.f / distance;
+
+        for (int_fast32_t i = 0;V i < distance; ++i) {
+            auto const t = i * distance_inv;
+            auto const x = (1 - t) * x0 + t * x1;
+            auto const y = (1 - t) * y0 + t * y1;
+
+            img.pixel(x, std::lround(y)) = color;
+        }*/
+        img.draw(line{v.front(), v.back(), color, false});
+        break;
+    }
+    case 3: {
+        // quadratic
+        auto const [x0, y0] = v.front();
+        auto const [x1, y1] = v[1];
+        auto const [x2, y2] = v.back();
+
+        auto const dx = std::max({x0, x1, x2}) - std::min({x0, x1, x2});
+        auto const dy = std::max({y0, y1, y2}) - std::min({y0, y1, y2});
+        auto const distance = std::max(dx, dy);
+        auto const distance_inv = 1.f / distance;
+
+        for (int_fast32_t i = 0; i < distance; ++i) {
+            auto const t = i * distance_inv;
+            auto const x = (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * x1 + t * t * x2;
+            auto const y = (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * y1 + t * t * y2;
+
+            img.pixel(x, std::lround(y)) = color;
+        }
+
+        // B(t) = (1-t)²P0 + 2t(1-t)P1 + t²P2
+        break;
+    }
+    case 4:
+        // cubic
+        auto const [x0, y0] = v.front();
+        auto const [x1, y1] = v[1];
+        auto const [x2, y2] = v[2];
+        auto const [x3, y3] = v.back();
+
+        auto const dx = std::max({x0, x1, x2, x3}) - std::min({x0, x1, x2, x3});
+        auto const dy = std::max({y0, y1, y2, y3}) - std::min({y0, y1, y2, y3});
+        auto const distance = std::max(dx, dy);
+        auto const distance_inv = 1.f / distance;
+
+        for (int_fast32_t i = 0; i < distance; ++i) {
+            auto const t = i * distance_inv;
+            auto const u = 1 - t;
+            auto const x =     u * u * u * x0
+                         + 3 * u * u * t * x1
+                         + 3 * u * t * t * x2
+                         +     t * t * t * x3;
+            auto const y =     u * u * u * y0
+                         + 3 * u * u * t * y1
+                         + 3 * u * t * t * y2
+                         +     t * t * t * y3;
+
+            img.pixel(x, std::lround(y)) = color;
+        }
+
+        // B(t) = (1-t)³P0 + 3t(1-t)²P1 + 3t²(1 - t)P2 + t³P3
+        break;
+    default: {
+        auto const [x_min, x_max] = std::ranges::minmax_element(v, std::ranges::less{}, &vertex::x);
+        auto const [y_min, y_max] = std::ranges::minmax_element(v, std::ranges::less{}, &vertex::y);
+
+        auto const binomial_coefficient = [](auto n, auto k) -> std::uint64_t {
+            if (k == 0 or k == n) {
+                return 1;
+            }
+            if (k > n) {
+                return 0;
+            }
+            if (k > n - k) {
+                k = n - k;
+            }
+            if (k == 1) {
+                return n;
+            }
+
+            auto b = 1.; //std::uint64_t{1};
+            for (int_fast32_t i = 1; i <= k; ++i) {
+                b *= (n - (k - i));
+                b /= i;
+            }
+
+            return b;
+        };
+    }
+    }
+
+}
+
 void rectangle::render_on(image & img) noexcept
 {
     auto const sin = std::sin(_rotation);
