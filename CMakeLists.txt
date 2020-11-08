@@ -28,7 +28,7 @@ target_sources(spl PRIVATE
 )
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE)
-target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt PUBLIC stb ) # range-v3 is currently not needed
+target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt PUBLIC stb)
 target_include_directories(spl
     PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/spl"
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
