@@ -59,11 +59,11 @@ struct line
     bool anti_aliasing = true;
     // uint8_t thickness;
 
-    void render_on(image & img) noexcept;
+    void render_on(image & img) const noexcept;
 
-    void draw_antialiased_parametric(image & img) noexcept;
-    void draw_aliased(image & img) noexcept;
-    void draw_antialiased(image & img) noexcept;
+    void draw_antialiased_parametric(image & img) const noexcept;
+    void draw_aliased(image & img) const noexcept;
+    void draw_antialiased(image & img) const noexcept;
 };
 
 namespace detail
@@ -96,7 +96,7 @@ public:
     { _color = color; return *this; }
 
     constexpr
-    auto render_on(image & img) noexcept
+    auto render_on(image & img) const noexcept
     {
         if (_vertexes.size() < 2 or _color == spl::graphics::color::nothing) {
             return;
@@ -140,7 +140,7 @@ public:
         -> rectangle &
     { _fill_color = fill; return *this; }
 
-    void render_on(image & img) noexcept;
+    void render_on(image & img) const noexcept;
 };
 
 struct regular_polygon
@@ -171,7 +171,7 @@ public:
     { _fill_color = fill; return *this; }
 
     inline
-    auto render_on(image & img) noexcept
+    auto render_on(image & img) const noexcept
     {
         if (_sides == 0 or _radius <= 0) {
             return;
@@ -184,8 +184,8 @@ public:
     }
 
 private:
-    void _draw_filled(image & img) noexcept;
-    void _draw_unfilled(image & img) noexcept;
+    void _draw_filled(image & img) const noexcept;
+    void _draw_unfilled(image & img) const noexcept;
 };
 
 class circle
@@ -210,7 +210,7 @@ public:
         -> circle &
     { _fill_color = fill; return *this; }
 
-    auto render_on(image & img) noexcept
+    auto render_on(image & img) const noexcept
     {
         if (_radius <= 0) {
             return;
@@ -225,7 +225,7 @@ public:
 private:
 
     inline
-    void _draw_sym_points(image & img, int_fast32_t const dx, int_fast32_t const dy) noexcept
+    void _draw_sym_points(image & img, int_fast32_t const dx, int_fast32_t const dy) const noexcept
     {
         auto const [x0, y0] = _center;
         auto const color    = _border_color;
@@ -243,7 +243,7 @@ private:
     }
 
     inline
-    void _draw_fill_lines(image & img, int_fast32_t const dx, int_fast32_t const dy) noexcept
+    void _draw_fill_lines(image & img, int_fast32_t const dx, int_fast32_t const dy) const noexcept
     {
         auto const [x0, y0] = _center;
         auto const color    = _fill_color;
@@ -252,8 +252,8 @@ private:
         img.draw(line{{x0 - dx, y0 - dy}, {x0 + dx, y0 - dy}, color});
     }
 
-    void _draw_unfilled(image & img) noexcept;
-    void _draw_filled(image & img) noexcept;
+    void _draw_unfilled(image & img) const noexcept;
+    void _draw_filled(image & img) const noexcept;
 };
 
 } // namespace spl::graphics

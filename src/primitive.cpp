@@ -74,7 +74,7 @@ namespace detail
     }
 } // namespace detail
 
-void line::render_on(image & img) noexcept
+void line::render_on(image & img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -117,7 +117,7 @@ void line::render_on(image & img) noexcept
     }
 }
 
-void line::draw_antialiased_parametric(image & img) noexcept
+void line::draw_antialiased_parametric(image & img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -184,7 +184,7 @@ void line::draw_antialiased_parametric(image & img) noexcept
     }
 }
 
-void line::draw_aliased(image & img) noexcept
+void line::draw_aliased(image & img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -225,7 +225,7 @@ void line::draw_aliased(image & img) noexcept
     }
 }
 
-void line::draw_antialiased(image & img) noexcept
+void line::draw_antialiased(image & img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -374,7 +374,7 @@ void detail::_bezier_render_aliased(image & img, std::span<vertex> const v, spl:
 
 }
 
-void rectangle::render_on(image & img) noexcept
+void rectangle::render_on(image & img) const noexcept
 {
     auto const sin = std::sin(_rotation);
     auto const cos = std::cos(_rotation);
@@ -403,7 +403,7 @@ void rectangle::render_on(image & img) noexcept
     img.draw(line{{x4, y4}, {x1, y1}, _border_color, _anti_aliasing});
 }
 
-void regular_polygon::_draw_unfilled(image & img) noexcept
+void regular_polygon::_draw_unfilled(image & img) const noexcept
 {
     auto const [x_c, y_c] = _center;
     auto const theta = 2 * std::numbers::pi / _sides;
@@ -427,7 +427,7 @@ void regular_polygon::_draw_unfilled(image & img) noexcept
     }
 }
 
-void regular_polygon::_draw_filled(image & img) noexcept
+void regular_polygon::_draw_filled(image & img) const noexcept
 {
     auto const [x_c, y_c] = _center;
     auto const theta = 2 * std::numbers::pi / _sides;
@@ -458,7 +458,7 @@ void regular_polygon::_draw_filled(image & img) noexcept
     }
 }
 
-void circle::_draw_unfilled(image & img) noexcept
+void circle::_draw_unfilled(image & img) const noexcept
 {
     // Bresenham circle algorithm
 
@@ -500,7 +500,7 @@ void circle::_draw_unfilled(image & img) noexcept
     }
 }
 
-void circle::_draw_filled(image & img) noexcept
+void circle::_draw_filled(image & img) const noexcept
 {
     auto const r = _radius;
     auto d = 3 - 2 * r;
