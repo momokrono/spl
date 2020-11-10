@@ -19,14 +19,14 @@ struct rgba
 
     // std::same_as<uint8_t>
     constexpr inline
-    auto blend(uint8_t a2) noexcept
+    auto blend(uint8_t a2) const noexcept
     {
         a2 = static_cast<uint8_t>((a2 / 255.f) * a);
         return rgba{r, g, b, a2};
     }
 
     constexpr inline
-    auto blend(std::floating_point auto a2)
+    auto blend(std::floating_point auto a2) const
     {
         if (a2 < 0. or a2 > 1.) {
             throw spl::invalid_argument{"'rgba::value(std::floating_point auto)' expects a value"
@@ -38,7 +38,7 @@ struct rgba
     }
 
     constexpr inline
-    auto to_rgb() noexcept
+    auto to_rgb() const noexcept
     {
         auto const alpha = a / 255.f;
         return rgba{
