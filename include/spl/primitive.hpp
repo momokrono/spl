@@ -113,10 +113,8 @@ struct line
     
     constexpr
     auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
-        start.x += x;
-        start.y += y;
-        end.x += x;
-        end.y+=y;
+        start += {x, y};
+        end += {x, y}
         return *this;
     }
 };
