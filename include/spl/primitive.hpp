@@ -24,6 +24,52 @@ struct vertex
 {
     int_fast32_t x;
     int_fast32_t y;
+
+    friend constexpr vertex & operator+=(vertex & self, vertex v) noexcept {
+        self.x+=v.x;
+        self.y+=v.y;
+        return self;
+    }
+
+    friend constexpr vertex operator-(vertex & self) noexcept {
+        return vertex{-self.x, -self.y};
+    }
+
+    friend constexpr vertex & operator-=(vertex & self, vertex v) noexcept {
+        return self+=-v;
+    }
+
+    friend constexpr vertex operator+(vertex self, vertex v) noexcept {
+        return v+=self;
+    }
+
+    friend constexpr vertex operator-(vertex self, vertex v) noexcept {
+        return v-=self;
+    }
+
+    friend constexpr vertex operator*=(vertex & self, float a) noexcept {
+        self.x*=a;
+        self.y*=a;
+        return self;
+    }
+
+    friend constexpr vertex operator*(vertex self, float a) noexcept {
+        return self*=a;
+    }
+
+    friend constexpr vertex operator*(float a, vertex self) noexcept {
+        return self*=a;
+    }
+
+    friend constexpr vertex operator/=(vertex & self, float a) noexcept {
+        self.x/=a;
+        self.y/=a;
+        return self;
+    }
+
+    friend constexpr vertex operator/(vertex self, float a) noexcept {
+        return self/=a;
+    }
 };
 
 namespace detail
@@ -64,6 +110,15 @@ struct line
     void draw_antialiased_parametric(image & img) const noexcept;
     void draw_aliased(image & img) const noexcept;
     void draw_antialiased(image & img) const noexcept;
+    
+    constexpr
+    auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
+        start.x += x;
+        start.y += y;
+        end.x += x;
+        end.y+=y;
+        return *this;
+    }
 };
 
 namespace detail
@@ -107,7 +162,13 @@ public:
             detail::_bezier_render_aliased(img, std::span{_vertexes}, _color);
         }
     }
-
+    
+    constexpr
+    auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
+        start += vertex{x, y};
+        end += vertex{x, y};
+        return *this;
+    }
 /* private: */
     /* constexpr */
     /* static void _render_on_impl(image & img, std::span<vertex> const) noexcept; */
@@ -141,6 +202,37 @@ public:
     { _fill_color = fill; return *this; }
 
     void render_on(image & img) const noexcept;
+
+    constexpr
+    auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> rectangle & {
+        _origin += vertex{x, y};
+        return *this;
+    }
+
+    constexpr
+    auto set_origin(int_fast32_t const x, int_fast32_t const y) noexcept -> rectangle & {
+        _origin = vertex{x, y};
+        return *this;
+    }
+
+    constexpr
+    auto set_origin(vertex const new_orig) noexcept -> rectangle & {
+        _origin = new_orig;
+        return *this;
+    }
+
+    constexpr
+    auto rotate(float const angle) noexcept -> rectangle & {
+        _rotation += angle;
+        return *this;
+    }
+
+    constexpr
+    auto set_rotation(float const angle) noexcept -> rectangle & {
+        _rotation = angle;
+        return *this;
+    }
+
 };
 
 struct regular_polygon
@@ -220,6 +312,24 @@ public:
         } else {
             _draw_unfilled(img);
         }
+    }
+
+    constexpr
+    auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> circle & {
+        _center += {x, y};
+        return *this;
+    }
+
+    constexpr
+    auto set_origin(int_fast32_t const x, int_fast32_t const y) noexcept -> circle & {
+        _center ={x, y};
+        return *this;
+    }
+
+    constexpr
+    auto set_origin(vertex const new_orig) noexcept -> circle & {
+        _center = new_orig;
+        return *this;
     }
 
 private:
