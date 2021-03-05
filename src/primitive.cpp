@@ -267,6 +267,7 @@ void line::draw_antialiased(image & img) const noexcept
     }
 }
 
+#ifdef PRIMITIVES_BEZIER_HPP
 template <typename Alloc>
 void detail::_bezier_render_aliased(image & img, std::span<vertex> const v, spl::graphics::rgba const color)
 {
@@ -373,6 +374,7 @@ void detail::_bezier_render_aliased(image & img, std::span<vertex> const v, spl:
     }
 
 }
+#endif // PRIMITIVES_BEZIER_HPP
 
 void rectangle::render_on(image & img) const noexcept
 {

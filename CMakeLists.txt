@@ -22,13 +22,10 @@ set_project_warnings(project_warnings)
 
 # spl library
 add_library(spl)
-target_sources(spl PRIVATE
-    src/image.cpp
-    src/primitive.cpp
-)
+target_sources(spl PRIVATE src/image.cpp src/primitive.cpp)
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE)
-target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt PUBLIC stb)
+target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb) #PUBLIC stb)
 target_include_directories(spl
     PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/spl"
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
@@ -40,8 +37,8 @@ if (build_examples_bench)
     add_executable(bench)
 
     target_compile_features(bench PUBLIC cxx_std_20)
-    target_compile_options(bench PRIVATE -Wall -Wextra -Wpedantic -fconcepts)
-    target_link_options(bench PRIVATE)
+    target_compile_options(bench PRIVATE -Wall -Wextra -Wpedantic)
+    target_link_options(bench PRIVATE -pthread)
 
     target_sources(bench PRIVATE example/bench.cpp)
     target_link_libraries(bench PRIVATE spl ${CONAN_LIBS})
