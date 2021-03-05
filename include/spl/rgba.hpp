@@ -49,7 +49,7 @@ struct rgba
     }
 
     constexpr
-    friend bool operator==(rgba const, rgba const) = default;
+    friend bool operator==(rgba, rgba) = default;
 };
 
 constexpr

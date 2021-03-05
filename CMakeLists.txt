@@ -9,6 +9,8 @@ cmake_minimum_required(VERSION 3.16.2)
 project(spl CXX)
 include(cmake/general.cmake)
 
+set(CMAKE_CXX_STANDARD 20)
+
 # Various libraries
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS) # enables the import of single libraries
@@ -27,7 +29,6 @@ target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE)
 target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb) #PUBLIC stb)
 target_include_directories(spl
-    PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/spl"
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 enable_sanitizers(spl)
 
@@ -72,8 +73,3 @@ if (build_examples_blur)
     target_link_libraries(blur PRIVATE spl Threads::Threads ${CONAN_LIBS})
     target_include_directories(blur PUBLIC ./include/ ./include/3rd_party/)
 endif()
-
-
-
-
-# target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE spl ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)

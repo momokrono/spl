@@ -1,14 +1,12 @@
 /**
- * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
+ * @author      : rbrugo. momokrono
  * @file        : bench
  * @created     : Friday Jun 12, 2020 14:13:07 CEST
  * @license     : MIT
  */
 
 #include <fmt/format.h>
-#include <iostream>
 #include <ranges>
-#include <algorithm>
 
 #include "spl/image.hpp"
 #include "spl/primitive.hpp"
@@ -35,8 +33,7 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
             line4.draw_antialiased(image);
         }
     }
-
-    if (not image.save_to_file("a.png")) { fmt::print("NON VA\n"); };
+    if (not image.save_to_file("a.png")) { fmt::print("NON VA\n"); }
 } catch (std::exception & e)
 {
     fmt::print(stderr, "exception caught: {}\n", e.what());

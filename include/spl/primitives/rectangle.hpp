@@ -47,7 +47,7 @@ public:
     void render_on(image & img) const noexcept;
 
     constexpr
-    auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> rectangle & {
+    auto translate(int_fast32_t x, int_fast32_t y) noexcept -> rectangle & {
         _origin += vertex{x, y};
         return *this;
     }

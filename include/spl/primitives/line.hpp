@@ -49,8 +49,10 @@ struct line
     vertex start;
     vertex end;
     rgba color;
-    bool anti_aliasing = true;
+    bool anti_aliasing;
     // uint8_t thickness;
+
+    constexpr line(vertex s, vertex e, spl::graphics::rgba c=spl::graphics::color::black, bool aa=true): start{s}, end{e}, color{c}, anti_aliasing{aa} {}
 
     void render_on(image & img) const noexcept;
 
@@ -59,7 +61,7 @@ struct line
     void draw_antialiased(image & img) const noexcept;
 
     constexpr
-    auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
+    auto translate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
         start += {x, y};
         end += {x, y};
         return *this;

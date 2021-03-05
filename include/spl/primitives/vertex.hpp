@@ -33,11 +33,11 @@ struct vertex
     }
 
     friend constexpr vertex operator+(vertex self, vertex v) noexcept {
-        return v += self;
+        return self += v;
     }
 
     friend constexpr vertex operator-(vertex self, vertex v) noexcept {
-        return v -= self;
+        return self -= v;
     }
 
     friend constexpr vertex operator*=(vertex & self, float a) noexcept {

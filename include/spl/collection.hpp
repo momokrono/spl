@@ -18,7 +18,7 @@ namespace spl::graphics
 
 class collection
 {
-    class object_t;
+    struct object_t;
 
     std::vector<object_t> _buffer;
 
@@ -33,7 +33,7 @@ public:
 struct collection::object_t
 {
     template <drawable T>
-    object_t(T obj) : _self{std::make_shared<model<T>>(std::move(obj))} {}
+    explicit object_t(T obj) : _self{std::make_shared<model<T>>(std::move(obj))} {}
 
     struct concept_t
     {
@@ -44,8 +44,8 @@ struct collection::object_t
     template <drawable T>
     struct model final : concept_t
     {
-        model(T obj) : _data{std::move(obj)} {}
-        void render_on(graphics::image & img) const noexcept override
+        explicit model(T obj) : _data{std::move(obj)} {}
+        void render_on(graphics::image & img) const noexcept final
         {
             if constexpr (spl::detail::has_render_on_member_function<T>) {
                 _data.render_on(img);
