@@ -1,5 +1,5 @@
 /**
- * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
+ * @author      : rbrugo, momokrono
  * @file        : exceptions
  * @created     : Wednesday Jun 03, 2020 22:29:53 CEST
  * @license     : MIT
