@@ -6,7 +6,9 @@ Simple Graphics Library
 Disegna solo "cose facili"
 Metodo `draw`: richiede `drawable`
 
-## RENDERER
+_fatto_
+
+## COLLECTION
 
 inheritance
     Pro:

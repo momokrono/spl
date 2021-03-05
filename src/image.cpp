@@ -104,7 +104,7 @@ auto image::pixel_noexcept(size_t const x, size_t const y) const noexcept
     -> rgba
 {
     if (x >= width() or y >= height()) {
-        fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y);
+//        fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO  -  logger
         return image::_garbage_pixel;
     }
     return _pixels.at(x+y*_width);
