@@ -1,5 +1,5 @@
 /**
- * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
+ * @author      : rbrugo, momokrono
  * @file        : renderer
  * @created     : Tuesday Nov 10, 2020 10:54:18 CET
  * @license     : MIT
@@ -21,11 +21,13 @@ class collection
     class object_t;
 
     std::vector<object_t> _buffer;
+
 public:
     void render_on(graphics::image & img) const noexcept;
     template <drawable T>
     collection & push(T obj) noexcept;
     void clear() noexcept { _buffer.clear(); }
+    void reserve(std::size_t n) { _buffer.reserve(n); }
 };
 
 struct collection::object_t
