@@ -4,6 +4,7 @@
 #include <vector>
 #include <optional>
 #include "spl/primitives/vertex.hpp"
+#include "spl/primitives/line.hpp"
 #include "spl/rgba.hpp"
 #include "spl/image.hpp"
 
@@ -54,14 +55,14 @@ void vertex_array::render_on(spl::graphics::image & img) const noexcept
 	};
 	auto draw_lines = [this](spl::graphics::image & img) {
 		auto start = _buffer.begin();
-		auto gigi  = std::ranges::next(start, _buffer.end(), 1);
+		auto gigi  = std::ranges::next(start, 1, _buffer.end());
 		while(gigi != _buffer.end())
 		{
 			auto const [x1, y1, c1] = *start;
 			auto const [x2, y2, c2] = *gigi;
 			img.draw(spl::graphics::line{{x1,y1}, {x2,y2}, c1.value_or(_color)});
 			start = ++gigi;
-			gigi  = std::ranges::next(start, _buffer.end(), 1);
+			gigi  = std::ranges::next(start, 1, _buffer.end());
 		}
 		if (start != _buffer.end()) {
 			auto const [x, y, c] = *start;
@@ -70,14 +71,14 @@ void vertex_array::render_on(spl::graphics::image & img) const noexcept
 	};
 	auto draw_lines_strip = [this](spl::graphics::image & img) {
 		auto start = _buffer.begin();
-		auto gigi  = std::ranges::next(start, _buffer.end(), 1);
+		auto gigi  = std::ranges::next(start, 1, _buffer.end());
 		while(gigi != _buffer.end())
 		{
 			auto const [x1, y1, c1] = *start;
 			auto const [x2, y2, c2] = *gigi;
 			img.draw(spl::graphics::line{{x1,y1}, {x2,y2}, c1.value_or(_color)});
 			start = gigi;
-			gigi  = std::ranges::next(start, _buffer.end(), 1);
+			gigi  = std::ranges::next(start, 1, _buffer.end());
 		}
 	};
 	auto draw_triangles = [this](spl::graphics::image & ) {
