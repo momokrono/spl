@@ -80,7 +80,7 @@ void image::draw(drawable auto f)
 void image::draw(callable<splg::image> auto f)
 
 ----------------------------------------------------------------------------------------------------
-## Cos'è RENDERER
+## Cos'è RENDERER // ora collection, forse group
     È quell'oggetto che contiene le istruzioni per disegnare su un'immagine ciò che voglio disegnare
     Ha diversi metodi che accumulano primitive in un buffer, e li applica tutti in una volta
 ## Cosa manca a RENDERER
@@ -95,6 +95,22 @@ struct lambda_adaptor
     std::function<void(splg::image &)> f;
     void render_on(splg::image & img) { f(img); }
 };
+```
+
+
+## parallel collection/group per disegni in parallelo
+NB: non garantisce sull'ordine di disegno
+NB: UB se due disegni si intersecano
+```cpp
+    auto par_graph = parallel_collection{};
+    par_graph.push(axis);
+    par_graph.push(f); // line, (error bars, points)
+    par_graph.push(g);
+
+    auto graph = collection{};
+    graph.push(grid);
+    graph.push(par_graph);
+    graph.push(text);
 ```
 ----------------------------------------------------------------------------------------------------
 ## Cos'è PLOTTER
@@ -118,3 +134,4 @@ ren << line{0, 0, {0, 0}} << circle{10, {10, 4}} << color::blue << ...
 ren << point{0, 0} << line_to(5, 3)
 
 ```
+
