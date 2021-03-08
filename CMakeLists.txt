@@ -26,8 +26,8 @@ set_project_warnings(project_warnings)
 add_library(spl)
 target_sources(spl PRIVATE src/image.cpp src/primitive.cpp)
 target_compile_features(spl PUBLIC cxx_std_20)
-target_link_options(spl PRIVATE)
-target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb) #PUBLIC stb)
+target_link_options(spl PRIVATE RELEASE -flto)
+target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb Threads::Threads) # TODO: Threads dipendenza optionale via config (src/image.cpp)
 target_include_directories(spl
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 enable_sanitizers(spl)
@@ -56,7 +56,7 @@ if (build_examples_graphics)
     target_link_options(graphics PRIVATE)
 
     target_sources(graphics PRIVATE example/graphics.cpp)
-    target_link_libraries(graphics PRIVATE spl ${CONAN_LIBS} ${Threads} -lsfml-system -lsfml-graphics -lsfml-window)
+    target_link_libraries(graphics PRIVATE spl ${CONAN_LIBS} Threads::Threads -lsfml-system -lsfml-graphics -lsfml-window)
     target_include_directories(graphics PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -72,4 +72,18 @@ if (build_examples_blur)
     target_sources(blur PRIVATE example/blur.cpp)
     target_link_libraries(blur PRIVATE spl Threads::Threads ${CONAN_LIBS})
     target_include_directories(blur PUBLIC ./include/ ./include/3rd_party/)
+endif()
+
+# examples/collection
+option(build_examples_collection "Build the collection example" TRUE)
+if (build_examples_collection)
+    add_executable(collection)
+
+    target_compile_features(collection PUBLIC cxx_std_20)
+    target_compile_options(collection PRIVATE -Wall -Wextra -Wpedantic)
+    target_link_options(collection PRIVATE)
+
+    target_sources(collection PRIVATE example/collection.cpp)
+    target_link_libraries(collection PRIVATE spl Threads::Threads ${CONAN_LIBS})
+    target_include_directories(collection PUBLIC ./include/ ./include/3rd_party/)
 endif()
