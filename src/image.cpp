@@ -11,7 +11,10 @@
 #include <fstream>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+
+#ifdef SPL_FILL_MULTITHREAD
 #include <thread>
+#endif // SPL_FILL_MULTITHREAD
 
 #include "stb_image_write.h"
 #include "stb_image.h"
@@ -105,7 +108,7 @@ auto image::pixel_noexcept(size_t const x, size_t const y) const noexcept
     -> rgba
 {
     if (x >= width() or y >= height()) {
-//        fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO  -  logger
+        // fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO - logger
         return image::_garbage_pixel;
     }
     return _pixels.at(x+y*_width);
@@ -115,7 +118,7 @@ auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
     -> rgba &
 {
     if (x >= width() or y >= height()) {
-        fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y);
+        // fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO - logger
         return image::_garbage_pixel;
     }
     return _pixels.at(x + y * _width);
@@ -124,8 +127,7 @@ auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
 auto image::fill(rgba const c) noexcept
     -> image &
 {
-    // std::ranges::fill(_pixels, c);
-
+#ifdef SPL_FILL_MULTITHREAD
     auto n_threads = std::thread::hardware_concurrency();
     auto pix_dim = _height * _width;
     auto pix_per_thread = pix_dim/n_threads;
@@ -137,6 +139,9 @@ auto image::fill(rgba const c) noexcept
         }, i, pix_per_thread, c);
     }
     std::ranges::fill(_pixels.begin()+pix_per_thread*n_threads, _pixels.end(), c);
+#else
+    std::ranges::fill(_pixels, c);
+#endif // SPL_FILL_MULTITHREAD
 
     return *this;
 }
