@@ -11,6 +11,7 @@
 #include <fstream>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
+#include <thread>
 
 #include "stb_image_write.h"
 #include "stb_image.h"
@@ -123,7 +124,20 @@ auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
 auto image::fill(rgba const c) noexcept
     -> image &
 {
-    std::ranges::fill(_pixels, c);
+    // std::ranges::fill(_pixels, c);
+
+    auto n_threads = std::thread::hardware_concurrency();
+    auto pix_dim = _height * _width;
+    auto pix_per_thread = pix_dim/n_threads;
+    auto jobs = std::vector<std::jthread>();
+    jobs.reserve(n_threads);
+    for (auto i = 0u; i < n_threads; ++i) {
+        jobs.emplace_back([this](auto j, auto p, auto col) {
+            std::ranges::fill(_pixels.begin()+p*j, _pixels.begin()+p*(j+1), col);
+        }, i, pix_per_thread, c);
+    }
+    std::ranges::fill(_pixels.begin()+pix_per_thread*n_threads, _pixels.end(), c);
+
     return *this;
 }
 
