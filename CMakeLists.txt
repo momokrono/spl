@@ -8,8 +8,11 @@ cmake_minimum_required(VERSION 3.16.2)
 
 project(spl CXX)
 include(cmake/general.cmake)
+include(cmake/export_target.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
+set(CMAKE_CXX_EXTENSIONS NO)
 
 # Various libraries
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -37,6 +40,12 @@ if (SPL_FILL_MULTITHREAD)
     target_compile_definitions(spl PUBLIC -DSPL_FILL_MULTITHREAD)
     target_link_libraries(spl PRIVATE Threads::Threads)
 endif()
+export_target(
+    PACKAGE_NAME spl
+    TARGETS spl project_warnings stb
+    NAMESPACE spl
+    INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"
+)
 
 # examples/bench
 option(build_examples_bench "Build the bench test (not a real benchmark, used during development)" TRUE)
@@ -86,7 +95,7 @@ if (build_examples_collection)
     add_executable(collection)
 
     target_compile_features(collection PUBLIC cxx_std_20)
-    target_compile_options(collection PRIVATE)
+    target_compile_options(collection PRIVATE -fconcepts-diagnostics-depth=2)
     target_link_options(collection PRIVATE)
 
     target_sources(collection PRIVATE example/collection.cpp)
