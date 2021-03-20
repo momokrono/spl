@@ -38,9 +38,6 @@ int main() try
     image.fill(sgl::color::white);
     fmt::print("Image created: {}\n", time_passed(start));
 
-    auto const w = width - 1;
-    auto const h = height / 2;
-
     constexpr auto tot_lines = 1'000;
     constexpr auto n_threads = 6;
     constexpr auto lines_per_thread = tot_lines / n_threads;
@@ -77,7 +74,9 @@ int main() try
     start = std::chrono::steady_clock::now();
 
     for (auto i = 0ul; i < n_threads; ++i) {
-        jobs.push_back(std::async(build_collection, w, h, i * lines_per_thread, (i + 1) * lines_per_thread));
+        jobs.push_back(std::async(
+            build_collection, width - 1, height / 2, i * lines_per_thread, (i + 1) * lines_per_thread)
+        );
     }
     for (auto & subcollection : jobs) {
         collection.push(std::move(subcollection.get()));
