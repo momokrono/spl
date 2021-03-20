@@ -5,17 +5,16 @@ include_guard()
 # Default build type
 if (NOT CMAKE_BUILD_TYPE)
     message(
-        STATUS "Setting build type to default 'RelWithDebugInfo' ")
-    set(CMAKE_BUILD_TYPE RelWithDebugInfo CACHE STRING "Choose the type of build: " FORCE)
+        STATUS "Setting build type to default 'RelWithDebInfo' ")
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build: " FORCE)
     set_property(
-        CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebugInfo"
+        CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo"
     )
 endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE -O2)
 set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELWITHDEBUGINFO "-O2 -g -DNDEBUG")
 
 # ccache
 option(ENABLE_CACHE "Enable ccache if available" ON)
