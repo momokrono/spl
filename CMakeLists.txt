@@ -16,8 +16,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
 
 # Various libraries
+# include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+# conan_basic_setup(TARGETS) # enables the import of single libraries
+include(cmake/conan.cmake)
+conan_cmake_configure(REQUIRES fmt/7.1.2 BASIC_SETUP CMAKE_TARGETS)
+conan_cmake_autodetect(settings)
+conan_cmake_install(
+    PATH_OR_REFERENCE ${CMAKE_CURRENT_LIST_DIR}
+    BUILD missing
+    GENERATOR cmake
+    SETTINGS ${settings}
+)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS) # enables the import of single libraries
+# conan_define_targets()
+
+# conan_cmake_run(REQUIRES fmt/7.1.2 BASIC_SETUP CMAKE_TARGETS)
 find_package(Threads REQUIRED)
 add_subdirectory(3rd_party/stb)
 
@@ -66,7 +80,7 @@ if (build_examples_bench)
     target_link_options(bench PRIVATE -pthread)
 
     target_sources(bench PRIVATE example/bench.cpp)
-    target_link_libraries(bench PRIVATE spl ${CONAN_LIBS})
+    target_link_libraries(bench PRIVATE spl CONAN_PKG::fmt)
     target_include_directories(bench PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -80,7 +94,7 @@ if (build_examples_graphics)
     target_link_options(graphics PRIVATE)
 
     target_sources(graphics PRIVATE example/graphics.cpp)
-    target_link_libraries(graphics PRIVATE spl ${CONAN_LIBS} Threads::Threads)
+    target_link_libraries(graphics PRIVATE spl CONAN_PKG::fmt Threads::Threads)
     target_include_directories(graphics PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -94,7 +108,7 @@ if (build_examples_blur)
     target_link_options(blur PRIVATE)
 
     target_sources(blur PRIVATE example/blur.cpp)
-    target_link_libraries(blur PRIVATE spl Threads::Threads ${CONAN_LIBS} project_warnings)
+    target_link_libraries(blur PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
     target_include_directories(blur PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -108,6 +122,6 @@ if (build_examples_collection)
     target_link_options(collection PRIVATE)
 
     target_sources(collection PRIVATE example/collection.cpp)
-    target_link_libraries(collection PRIVATE spl Threads::Threads ${CONAN_LIBS} project_warnings)
+    target_link_libraries(collection PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
     target_include_directories(collection PUBLIC ./include/ ./include/3rd_party/)
 endif()
