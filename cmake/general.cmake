@@ -1,17 +1,21 @@
 # Configuration for cmake
 
+include_guard()
+
 # Default build type
 if (NOT CMAKE_BUILD_TYPE)
     message(
         STATUS "Setting build type to default 'RelWithDebugInfo' ")
     set(CMAKE_BUILD_TYPE RelWithDebugInfo CACHE STRING "Choose the type of build: " FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebugInfo")
+    set_property(
+        CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebugInfo"
+    )
 endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE -O2)
-set(CMAKE_CXX_FLAGS_DEBUG -Og -g)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO -O2 -g -DNDEBUG)
-set(CMAKE_CXX_FLAGS_RELWITHDEBUGINFO -O2 -g -DNDEBUG)
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBUGINFO "-O2 -g -DNDEBUG")
 
 # ccache
 option(ENABLE_CACHE "Enable ccache if available" ON)
@@ -51,7 +55,9 @@ function(enable_sanitizers target_name)
         endif()
 
         string(TOUPPER "ENABLE_SANITIZER_UNDEFINED_BEHAVIOR_FOR_${target_name}" ENABLE_SANITIZER_UB)
-        option(${ENABLE_SANITIZER_UB} "Enable undefined behavior sanitizer for ${target_name}" FALSE)
+        option(
+            ${ENABLE_SANITIZER_UB} "Enable undefined behavior sanitizer for ${target_name}" FALSE
+        )
         if(${ENABLE_SANITIZER_UB})
             list(APPEND SANITIZERS "undefined")
         endif()
@@ -75,7 +81,6 @@ endfunction()
 
 # lto
 include(CheckIPOSupported)
-
 function(enable_lto target_name)
     string(TOUPPER "ENABLE_LTO_FOR_${target_name}" OPT_NAME)
     option(${OPT_NAME} "Enable link time optimization" OFF)
@@ -89,3 +94,13 @@ function(enable_lto target_name)
     endif()
 endfunction()
 
+# force colors in compiler output
+option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." FALSE)
+mark_as_advanced(FORCE_COLORED_OUTPUT)
+if (${FORCE_COLORED_OUTPUT})
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        add_compile_options(-fdiagnostics-color=always)
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        add_compile_options(-fcolor-diagnostics)
+    endif()
+endif()

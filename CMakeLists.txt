@@ -6,9 +6,10 @@
 
 cmake_minimum_required(VERSION 3.16.2)
 
-project(spl CXX)
+project(spl VERSION 0.2 LANGUAGES CXX)
 include(cmake/general.cmake)
 include(cmake/export_target.cmake)
+include(cmake/functions.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
@@ -37,9 +38,11 @@ enable_sanitizers(spl)
 enable_lto(spl)
 option(SPL_FILL_MULTITHREAD "image::fill uses threads to fill faster" OFF)
 if (SPL_FILL_MULTITHREAD)
+    message(STATUS "FILL_MULTITHREADED option enabled")
     target_compile_definitions(spl PUBLIC -DSPL_FILL_MULTITHREAD)
     target_link_libraries(spl PRIVATE Threads::Threads)
 endif()
+add_library(spl::spl ALIAS spl)
 export_target(
     PACKAGE_NAME spl
     TARGETS spl project_warnings stb
@@ -47,8 +50,14 @@ export_target(
     INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
+# TODO: move in a subdirectory
+
 # examples/bench
-option(build_examples_bench "Build the bench test (not a real benchmark, used during development)" TRUE)
+option(
+    build_examples_bench
+    "Build the bench test (not a real benchmark, used during development)"
+    TRUE
+)
 if (build_examples_bench)
     add_executable(bench)
 
@@ -71,7 +80,7 @@ if (build_examples_graphics)
     target_link_options(graphics PRIVATE)
 
     target_sources(graphics PRIVATE example/graphics.cpp)
-    target_link_libraries(graphics PRIVATE spl ${CONAN_LIBS} Threads::Threads -lsfml-system -lsfml-graphics -lsfml-window)
+    target_link_libraries(graphics PRIVATE spl ${CONAN_LIBS} Threads::Threads)
     target_include_directories(graphics PUBLIC ./include/ ./include/3rd_party/)
 endif()
 

@@ -1,5 +1,8 @@
-# Packaging: stackoverflow.com, making-a-cmake-library-accessible-by-other-cmake-packages-automatically
+# Packaging: stackoverflow, making-a-cmake-library-accessible-by-other-cmake-packages-automatically
 # CMakeParseArguments: https://asitdhal.medium.com/cmake-functions-and-macros-22293041519f
+
+include_guard()
+
 function(export_target)
     set(prefix _EXPORT)
     set(flags)
@@ -34,7 +37,7 @@ function(export_target)
         "
     )
 
-if ("${_EXPORT_NAMESPACE}" STREQUAL "")
+    if ("${_EXPORT_NAMESPACE}" STREQUAL "")
         export(
             TARGETS ${_EXPORT_TARGETS}
             FILE "${CMAKE_CURRENT_BINARY_DIR}/${_EXPORT_PACKAGE_NAME}Targets.cmake"
@@ -46,4 +49,4 @@ if ("${_EXPORT_NAMESPACE}" STREQUAL "")
             FILE "${CMAKE_CURRENT_BINARY_DIR}/${_EXPORT_PACKAGE_NAME}Targets.cmake"
         )
     endif()
-endfunction(export_target)
+endfunction()
