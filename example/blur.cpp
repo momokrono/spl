@@ -21,10 +21,10 @@ auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, u
     };
 
     constexpr
-    auto total_contribution = [](auto const radius) {
-        auto acc = 1. + radius * (radius % 2 == 0);
-        for (int n = 1, up = std::ceil(radius / 2); n < up; ++n) {
-            acc += n * (radius - n);
+    auto total_contribution = [](auto const rad) {
+        auto acc = 1. + rad * (rad % 2 == 0);
+        for (int n = 1, up = std::ceil(rad / 2); n < up; ++n) {
+            acc += n * (rad - n);
         }
 
         return acc;
