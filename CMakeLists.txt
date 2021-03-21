@@ -22,7 +22,7 @@ include(cmake/conan.cmake)
 conan_cmake_configure(REQUIRES fmt/7.1.2 BASIC_SETUP CMAKE_TARGETS)
 conan_cmake_autodetect(settings)
 conan_cmake_install(
-    PATH_OR_REFERENCE ${CMAKE_CURRENT_LIST_DIR}
+    PATH_OR_REFERENCE ${CMAKE_BINARY_DIR}
     BUILD missing
     GENERATOR cmake
     SETTINGS ${settings}
