@@ -103,8 +103,8 @@ public:
     auto load_from_file(std::filesystem::path const & filename) -> load_status;
 
     // viewport
-    operator basic_viewport<false>() & noexcept;
-    operator basic_viewport<true>() const & noexcept;
+    explicit operator basic_viewport<false>() & noexcept;
+    explicit operator basic_viewport<true>() const & noexcept;
 
 private:
     auto load_ppm(std::filesystem::path const & filename) -> load_status;

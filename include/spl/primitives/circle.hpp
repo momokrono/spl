@@ -9,7 +9,7 @@
 #define PRIMITIVES_CIRCLE_HPP
 
 #include "spl/primitives/line.hpp"
-#include "spl/image.hpp"
+#include "spl/viewport.hpp"
 
 namespace spl::graphics
 {
@@ -36,7 +36,7 @@ public:
         -> circle &
     { _fill_color = fill; return *this; }
 
-    auto render_on(image & img) const noexcept
+    auto render_on(viewport img) const noexcept
     {
         if (_radius <= 0) {
             return;
@@ -69,7 +69,7 @@ public:
 private:
 
     inline
-    void _draw_sym_points(image & img, int_fast32_t const dx, int_fast32_t const dy) const noexcept
+    void _draw_sym_points(viewport img, int_fast32_t const dx, int_fast32_t const dy) const noexcept
     {
         auto const [x0, y0] = _center;
         auto const color    = _border_color;
@@ -87,7 +87,7 @@ private:
     }
 
     inline
-    void _draw_fill_lines(image & img, int_fast32_t const dx, int_fast32_t const dy) const noexcept
+    void _draw_fill_lines(viewport img, int_fast32_t const dx, int_fast32_t const dy) const noexcept
     {
         auto const [x0, y0] = _center;
         auto const color    = _fill_color;
@@ -96,8 +96,8 @@ private:
         img.draw(line{{x0 - dx, y0 - dy}, {x0 + dx, y0 - dy}, color});
     }
 
-    void _draw_unfilled(image & img) const noexcept;
-    void _draw_filled(image & img) const noexcept;
+    void _draw_unfilled(viewport img) const noexcept;
+    void _draw_filled(viewport img) const noexcept;
 };
 
 } // namespace spl::graphics

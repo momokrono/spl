@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "spl/drawable.hpp"
-#include "spl/image.hpp"
+#include "spl/viewport.hpp"
 
 namespace spl::graphics
 {
@@ -23,7 +23,7 @@ class collection
     std::vector<object_t> _buffer;
 
 public:
-    void render_on(graphics::image & img) const noexcept;
+    void render_on(graphics::viewport img) const noexcept;
     template <drawable T>
     collection & push(T obj) noexcept;
     void clear() noexcept { _buffer.clear(); }
@@ -38,14 +38,14 @@ struct collection::object_t
     struct concept_t
     {
         virtual ~concept_t() = default;
-        virtual void render_on(graphics::image &) const noexcept = 0;
+        virtual void render_on(graphics::viewport) const noexcept = 0;
     };
 
     template <drawable T>
     struct model final : concept_t
     {
         explicit model(T obj) : _data{std::move(obj)} {}
-        void render_on(graphics::image & img) const noexcept final
+        void render_on(graphics::viewport img) const noexcept final
         {
             if constexpr (spl::detail::has_render_on_member_function<T>) {
                 _data.render_on(img);
@@ -56,7 +56,7 @@ struct collection::object_t
         T _data;
     };
 
-    void render_on(graphics::image & img) const noexcept
+    void render_on(graphics::viewport img) const noexcept
     {
         _self->render_on(img);
     }
@@ -65,7 +65,7 @@ struct collection::object_t
 };
 
 inline
-void collection::render_on(graphics::image & img) const noexcept
+void collection::render_on(graphics::viewport img) const noexcept
 {
     for (auto const & obj : _buffer) {
         obj.render_on(img);

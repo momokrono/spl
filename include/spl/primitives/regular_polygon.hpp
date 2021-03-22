@@ -8,7 +8,7 @@
 #ifndef PRIMITIVES_REGULAR_POLYGON_HPP
 #define PRIMITIVES_REGULAR_POLYGON_HPP
 
-#include "spl/image.hpp"
+#include "spl/viewport.hpp"
 #include "spl/primitives/vertex.hpp"
 
 namespace spl::graphics
@@ -42,7 +42,7 @@ public:
     { _fill_color = fill; return *this; }
 
     inline
-    auto render_on(image & img) const noexcept
+    auto render_on(viewport img) const noexcept
     {
         if (_sides == 0 or _radius <= 0) {
             return;
@@ -55,8 +55,8 @@ public:
     }
 
 private:
-    void _draw_filled(image & img) const noexcept;
-    void _draw_unfilled(image & img) const noexcept;
+    void _draw_filled(viewport img) const noexcept;
+    void _draw_unfilled(viewport img) const noexcept;
 };
 
 } // namespace spl::graphics
