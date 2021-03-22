@@ -14,7 +14,7 @@ namespace spl::graphics
 namespace detail
 {
     template <typename SegmentList = std::vector<std::pair<vertex, vertex>>>
-    void draw_filled(image & img, SegmentList && segments_list, spl::graphics::rgba const fill_color) noexcept
+    void draw_filled(viewport img, SegmentList && segments_list, spl::graphics::rgba const fill_color) noexcept
     {
         using segment = std::pair<vertex, vertex>;
         auto segments = std::priority_queue{detail::segment_compare, std::forward<SegmentList>(segments_list)};
@@ -74,7 +74,7 @@ namespace detail
     }
 } // namespace detail
 
-void line::render_on(image & img) const noexcept
+void line::render_on(viewport img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -117,7 +117,7 @@ void line::render_on(image & img) const noexcept
     }
 }
 
-void line::draw_antialiased_parametric(image & img) const noexcept
+void line::draw_antialiased_parametric(viewport img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -184,7 +184,7 @@ void line::draw_antialiased_parametric(image & img) const noexcept
     }
 }
 
-void line::draw_aliased(image & img) const noexcept
+void line::draw_aliased(viewport img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -225,7 +225,7 @@ void line::draw_aliased(image & img) const noexcept
     }
 }
 
-void line::draw_antialiased(image & img) const noexcept
+void line::draw_antialiased(viewport img) const noexcept
 {
     auto [x1, y1] = start;
     auto [x2, y2] = end;
@@ -269,7 +269,7 @@ void line::draw_antialiased(image & img) const noexcept
 
 #ifdef PRIMITIVES_BEZIER_HPP
 template <typename Alloc>
-void detail::_bezier_render_aliased(image & img, std::span<vertex> const v, spl::graphics::rgba const color)
+void detail::_bezier_render_aliased(viewport img, std::span<vertex> const v, spl::graphics::rgba const color)
 {
     switch (std::ssize(v)) {
     case 2: {
@@ -376,7 +376,7 @@ void detail::_bezier_render_aliased(image & img, std::span<vertex> const v, spl:
 }
 #endif // PRIMITIVES_BEZIER_HPP
 
-void rectangle::render_on(image & img) const noexcept
+void rectangle::render_on(viewport img) const noexcept
 {
     auto const sin = std::sin(_rotation);
     auto const cos = std::cos(_rotation);
@@ -405,7 +405,7 @@ void rectangle::render_on(image & img) const noexcept
     img.draw(line{{x4, y4}, {x1, y1}, _border_color, _anti_aliasing});
 }
 
-void regular_polygon::_draw_unfilled(image & img) const noexcept
+void regular_polygon::_draw_unfilled(viewport img) const noexcept
 {
     auto const [x_c, y_c] = _center;
     auto const theta = 2 * std::numbers::pi / _sides;
@@ -429,7 +429,7 @@ void regular_polygon::_draw_unfilled(image & img) const noexcept
     }
 }
 
-void regular_polygon::_draw_filled(image & img) const noexcept
+void regular_polygon::_draw_filled(viewport img) const noexcept
 {
     auto const [x_c, y_c] = _center;
     auto const theta = 2 * std::numbers::pi / _sides;
@@ -460,7 +460,7 @@ void regular_polygon::_draw_filled(image & img) const noexcept
     }
 }
 
-void circle::_draw_unfilled(image & img) const noexcept
+void circle::_draw_unfilled(viewport img) const noexcept
 {
     // Bresenham circle algorithm
 
@@ -502,7 +502,7 @@ void circle::_draw_unfilled(image & img) const noexcept
     }
 }
 
-void circle::_draw_filled(image & img) const noexcept
+void circle::_draw_filled(viewport img) const noexcept
 {
     auto const r = _radius;
     auto d = 3 - 2 * r;

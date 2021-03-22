@@ -14,7 +14,7 @@
 
 #include "spl/rgba.hpp"
 #include "spl/primitives/vertex.hpp"
-#include "spl/image.hpp"
+#include "spl/viewport.hpp"
 
 namespace spl::graphics
 {
@@ -54,11 +54,11 @@ struct line
 
     constexpr line(vertex s, vertex e, spl::graphics::rgba c=spl::graphics::color::black, bool aa=true): start{s}, end{e}, color{c}, anti_aliasing{aa} {}
 
-    void render_on(image & img) const noexcept;
+    void render_on(viewport img) const noexcept;
 
-    void draw_antialiased_parametric(image & img) const noexcept;
-    void draw_aliased(image & img) const noexcept;
-    void draw_antialiased(image & img) const noexcept;
+    void draw_antialiased_parametric(viewport img) const noexcept;
+    void draw_aliased(viewport img) const noexcept;
+    void draw_antialiased(viewport img) const noexcept;
 
     constexpr
     auto translate(int_fast32_t x, int_fast32_t y) noexcept -> line & {

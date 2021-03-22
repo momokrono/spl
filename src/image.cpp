@@ -260,12 +260,12 @@ auto image::load_ppm(std::filesystem::path const & filename)
 
 image::operator basic_viewport<false>() & noexcept
 {
-    return {*this};
+    return basic_viewport<false>{*this};
 }
 
 image::operator basic_viewport<true>() const & noexcept
 {
-    return {*this};
+    return basic_viewport<true>{*this};
 }
 
 } // namespace spl::graphics
