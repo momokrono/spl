@@ -47,7 +47,7 @@ set_project_warnings(project_warnings)
 #                                  SPL                                   #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_library(spl)
-target_sources(spl PRIVATE src/image.cpp src/primitive.cpp)
+target_sources(spl PRIVATE src/image.cpp src/primitive.cpp src/viewport.cpp)
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE RELEASE)
 target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb)
