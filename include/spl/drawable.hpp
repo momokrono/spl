@@ -13,16 +13,20 @@ namespace spl
 
 namespace graphics
 {
-class image;
+// class image;
+template <bool B>
+class basic_viewport;
 } // namespace graphics
 
 namespace detail
 {
 // FIXME `img` must be passed by (non-const) reference
 template <typename T>
-concept has_render_on_member_function = requires (T & t, graphics::image & img) { { t.render_on(img) }; };
+concept has_render_on_member_function = requires (T & t, graphics::basic_viewport<false> img) {
+    { t.render_on(img) };
+};
 template <typename T>
-concept callable_with_image = requires (T & t, graphics::image & img) { { t(img) }; };
+concept callable_with_image = requires (T & t, graphics::basic_viewport<false> img) { { t(img) }; };
 } // namespace detail
 
 template <typename T>
