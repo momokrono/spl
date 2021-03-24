@@ -14,7 +14,8 @@ int main() try
     std::ranges::fill(image.row(0), spl::graphics::rgba{255, 0, 255, 255});
     std::ranges::fill(image.column(9), spl::graphics::color::violet);
 
-    image.draw(spl::graphics::line{{0, 0}, {300, 599}, spl::graphics::color::cyan});
+    image.draw(spl::graphics::line{{0, 0}, {300, 599}, 10, spl::graphics::color::cyan});
+    image.draw(spl::graphics::line{{0, 0}, {300, 599}, 3,  spl::graphics::color::green});
     image.draw(spl::graphics::line{{0, 0}, {899, 300}, spl::graphics::color::orange});
 
     for (float i = 0; i < 3.1415926535 * 4; i += 3.1415296535 / 20) {
@@ -31,6 +32,25 @@ int main() try
 
     image.draw(spl::graphics::circle{{550, 400}, 45}.border_color(spl::graphics::color::green).fill_color(spl::graphics::color::violet));
     image.draw(spl::graphics::circle{{520, 400}, 45}.border_color(spl::graphics::color::green));
+
+    // image.draw(spl::graphics::line{{400, 400}, {450, 400}, 5, spl::graphics::color::blue});
+    // image.draw(spl::graphics::line{{390, 400}, {410, 420}, 7, spl::graphics::color::blue});
+    // image.draw(spl::graphics::line{{380, 400}, {380, 440}, 7, spl::graphics::color::blue});
+    image.draw(spl::graphics::line{{400, 400}, {403, 403}, 1, spl::graphics::color::black, false});
+
+    for (int i = 0; i < 11; ++i) {
+        auto const o = 400;
+        auto const th = 2 * 3.141592653589793 * i / 11;
+        auto const len = 100;
+        image.draw(spl::graphics::line{{o, o}, {o + len * std::cos(th), o + len * std::sin(th)}, 7, spl::graphics::color::blue});
+        fmt::print("draw {} [{} rad]\n", i+1, th);
+        // if (i > 6) break;
+    }
+
+    // image.pixel(403 + 7, 403 + 13) = spl::graphics::color::black;
+
+
+    // image.draw(spl::graphics::rectangle{{450, 300}, {50, 20}, 45 * 3.141592 / 180}.fill_color(spl::graphics::color::orange).border_color(spl::graphics::color::blue));
 
     if (not image.save_to_file("a.png")) { fmt::print(stderr, "Error - can't save the image to a file\n"); };
 
