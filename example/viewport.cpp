@@ -63,10 +63,10 @@ int main()
         group.push(circle).push(line1).push(line2);
     }
 
-    for (auto y = 0ul; y + 150 < height; y += 100) {
-        for (auto x = 0ul; x + 150 < width; x += 100) {
-            auto viewport = sgl::viewport{image, x, y, 151, 151};
-            group.render_on(viewport);
+    for (; group.position().y + 150 < height; group.translate(0, 100)) {
+        group.position().x = 0;
+        for (; group.position().x + 150 < width; group.translate(100, 0)) {
+            group.render_on(image);
         }
     }
 

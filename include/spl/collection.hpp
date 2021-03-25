@@ -12,6 +12,7 @@
 
 #include "spl/drawable.hpp"
 #include "spl/viewport.hpp"
+#include "spl/primitives/vertex.hpp"
 
 namespace spl::graphics
 {
@@ -21,6 +22,7 @@ class collection
     struct object_t;
 
     std::vector<object_t> _buffer;
+    vertex _origin{0, 0};
 
 public:
     void render_on(graphics::viewport img) const noexcept;
@@ -28,6 +30,9 @@ public:
     collection & push(T obj) noexcept;
     void clear() noexcept { _buffer.clear(); }
     void reserve(std::size_t n) { _buffer.reserve(n); }
+    auto position()       noexcept -> vertex & { return _origin; }
+    auto position() const noexcept -> vertex   { return _origin; }
+    auto & translate(int_fast32_t x, int_fast32_t y) { _origin += {x, y}; return *this; }
 };
 
 struct collection::object_t
@@ -67,8 +72,9 @@ struct collection::object_t
 inline
 void collection::render_on(graphics::viewport img) const noexcept
 {
+    auto view = viewport{img, _origin.x, _origin.y};
     for (auto const & obj : _buffer) {
-        obj.render_on(img);
+        obj.render_on(view);
     }
 }
 

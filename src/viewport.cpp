@@ -11,38 +11,30 @@ namespace spl::graphics
 {
 
 template <bool Const>
-auto basic_viewport<Const>::pixel(size_t const x, size_t const y) -> reference
+auto basic_viewport<Const>::pixel(int_fast32_t const x, int_fast32_t const y)
+    -> reference
 {
-    if (x >= width() or y >= height()) {
-        throw spl::out_of_range{x, y, width(), height()};
-    }
     return _base->pixel(_x + x, _y + y);
 }
 
 template <bool Const>
-auto basic_viewport<Const>::pixel(size_t const x, size_t const y) const -> const_reference
+auto basic_viewport<Const>::pixel(int_fast32_t const x, int_fast32_t const y) const
+    -> const_reference
 {
-    if (x >= width() or y >= height()) {
-        throw spl::out_of_range{x, y, width(), height()};
-    }
     return _base->pixel(_x + x, _y + y);
 }
 
 template <bool Const>
-auto basic_viewport<Const>::pixel_noexcept(size_t const x, size_t const y) noexcept -> reference
+auto basic_viewport<Const>::pixel_noexcept(int_fast32_t const x, int_fast32_t const y) noexcept
+    -> reference
 {
-    if (x >= width() or y >= height()) {
-        return _base->_garbage_pixel;
-    }
     return _base->pixel_noexcept(_x + x, _y + y);
 }
 
 template <bool Const>
-auto basic_viewport<Const>::pixel_noexcept(size_t const x, size_t const y) const noexcept -> const_reference
+auto basic_viewport<Const>::pixel_noexcept(int_fast32_t const x, int_fast32_t const y) const noexcept
+    -> const_reference
 {
-    if (x >= width() or y >= height()) {
-        return _base->_garbage_pixel;
-    }
     return _base->pixel_noexcept(_x + x, _y + y);
 }
 

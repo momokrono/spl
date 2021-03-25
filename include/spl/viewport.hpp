@@ -35,7 +35,7 @@ public:
 
 private:
     image_t * _base = nullptr;
-    size_t _x = 0, _y = 0;
+    int_fast32_t _x = 0, _y = 0;
     size_t _width = 0, _height = 0;
     // float rotation = 0.f;
 
@@ -51,19 +51,38 @@ public:
         _height = std::exchange(other._height, 0);
     }
 
+    constexpr basic_viewport(basic_viewport img, int_fast32_t x_off, int_fast32_t y_off, size_t w, size_t h) :
+        _base{img._base},
+        _x{img._x + x_off}, _y{img._y + y_off},
+        _width{img._width + w}, _height{img._height + h}
+    {}
+
+    constexpr basic_viewport(basic_viewport img, int_fast32_t x_off, int_fast32_t y_off) :
+        _base{img._base},
+        _x{img._x + x_off}, _y{img._y + y_off},
+        _width{img.width()}, _height{img.height()}
+    {}
+
     // TODO: want to disable rvalues for img, how to do it?
     explicit
-    constexpr basic_viewport(image_t & img, size_t x_offset, size_t y_offset, size_t w, size_t h) :
-        _base{std::addressof(img)}, _x{x_offset}, _y{y_offset}, _width{w}, _height{h}
+    constexpr basic_viewport(image_t & img, int_fast32_t x_off, int_fast32_t y_off, size_t w, size_t h) :
+        _base{std::addressof(img)}, _x{x_off}, _y{y_off}, _width{w}, _height{h}
+    {}
+
+    explicit
+    constexpr basic_viewport(image_t & img, int_fast32_t x_off, int_fast32_t y_off) :
+        _base{std::addressof(img)},
+        _x{x_off}, _y{y_off},
+        _width{img.width() - x_off}, _height{img.height() - y_off}
     {}
 
     // TODO: want to disable rvalues for img, how to do it?
     constexpr basic_viewport(image_t & img) : basic_viewport{img, 0, 0, img.width(), img.height()} {}
 
-    auto pixel(size_t const x, size_t const y)       -> reference;
-    auto pixel(size_t const x, size_t const y) const -> const_reference;
-    auto pixel_noexcept(size_t const x, size_t const y)       noexcept -> reference;
-    auto pixel_noexcept(size_t const x, size_t const y) const noexcept -> const_reference;
+    auto pixel(int_fast32_t const x, int_fast32_t const y)       -> reference;
+    auto pixel(int_fast32_t const x, int_fast32_t const y) const -> const_reference;
+    auto pixel_noexcept(int_fast32_t const x, int_fast32_t const y)       noexcept -> reference;
+    auto pixel_noexcept(int_fast32_t const x, int_fast32_t const y) const noexcept -> const_reference;
 
     auto row(size_t const y)            -> row_view;
     auto row(size_t const y) const      -> const_row_view;
