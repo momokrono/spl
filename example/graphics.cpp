@@ -33,21 +33,26 @@ int main() try
     image.draw(spl::graphics::circle{{550, 400}, 45}.border_color(spl::graphics::color::green).fill_color(spl::graphics::color::violet));
     image.draw(spl::graphics::circle{{520, 400}, 45}.border_color(spl::graphics::color::green));
 
-    // image.draw(spl::graphics::line{{400, 400}, {450, 400}, 5, spl::graphics::color::blue});
-    // image.draw(spl::graphics::line{{390, 400}, {410, 420}, 7, spl::graphics::color::blue});
-    // image.draw(spl::graphics::line{{380, 400}, {380, 440}, 7, spl::graphics::color::blue});
     image.draw(spl::graphics::line{{400, 400}, {403, 403}, 1, spl::graphics::color::black, false});
 
-    for (int i = 0; i < 11; ++i) {
-        auto const o = 400;
-        auto const th = 2 * 3.141592653589793 * i / 11;
-        auto const len = 100;
-        image.draw(spl::graphics::line{{o, o}, {o + len * std::cos(th), o + len * std::sin(th)}, 7, spl::graphics::color::blue});
-        fmt::print("draw {} [{} rad]\n", i+1, th);
-        // if (i > 6) break;
+    for (int j = 0; j < 5; ++j) {
+        auto const o = 100 * (j + 1);
+        if (j < 3) continue;
+        for (int i = 0; i < 11; ++i) {
+            auto const th = 2 * 3.141592653589793 * i / 11;
+            auto const len = 100;
+            auto const off = 7 + 2;
+            auto const from = spl::graphics::vertex(o + off * std::cos(th), o + off * std::sin(th));
+            auto const to   = spl::graphics::vertex(o + len * std::cos(th), o + len * std::sin(th));
+            image.draw(spl::graphics::line{from, to, 7, spl::graphics::color::blue});
+        }
+        break;
     }
+    // image.pixel(400, 392) = spl::graphics::color::green;
+    // image.pixel(400, 394) = spl::graphics::color::green;
+    // image.pixel(399, 393) = spl::graphics::color::green;
+    // image.pixel(401, 393) = spl::graphics::color::green;
 
-    // image.pixel(403 + 7, 403 + 13) = spl::graphics::color::black;
 
 
     // image.draw(spl::graphics::rectangle{{450, 300}, {50, 20}, 45 * 3.141592 / 180}.fill_color(spl::graphics::color::orange).border_color(spl::graphics::color::blue));

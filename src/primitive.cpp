@@ -274,6 +274,7 @@ void line::draw_antialiased(image & img) const noexcept
     }
 }
 
+
 void line::_draw_thick(image & img) const noexcept
 {
     // assumes thicknes > 1
@@ -285,11 +286,6 @@ void line::_draw_thick(image & img) const noexcept
 
         auto const sin = std::sin(inclination);
         auto const cos = std::cos(inclination);
-
-        // auto const border_color = anti_aliasing
-                                // ? over(color::nothing, color)
-                                // : color;
-        // auto const border_color = rgba{color.r, color.g, color.b, anti_aliasing ? uint8_t(color.a / 2) : color.a};
 
         auto const rect = rectangle(
             {int_fast32_t(x1 + thickness * sin / 2), int_fast32_t(y1 - thickness * cos / 2)},
@@ -303,54 +299,69 @@ void line::_draw_thick(image & img) const noexcept
     auto [x1, y1] = start;
     auto [x2, y2] = end;
     auto const radius = thickness / 2.f;
+    auto const width = img.swidth();
+    auto const height = img.sheight();
 
-    if (std::abs(x2 - x1) >= std::abs(y2 - y1)) {
-        auto const m = (y2 - y1) * 1. / (x2 - x1);
-        auto const q = y2 - m * x2;
+    auto const m = (y2 - y1) * 1. / (x2 - x1);
+    auto const q = y2 - m * x2;
 
-        auto [from, to] = std::minmax({x1, x2});
+    // auto [from, to] = std::minmax({x1, x2});
+    auto [pt_from, pt_to] = std::ranges::minmax({start, end}, std::ranges::less{}, &spl::graphics::vertex::x);
+    auto [from, from_y] = pt_from;
+    auto [to, to_y] = pt_to;
 
-        // ∀ y ∈ [m * from + q - y_off, m * to + q + y_off]:
-        //     ∀ x ∈ [from - x_off, to + x_off]:
-        //         weight = ... # inv proportional to distance
-        //         pixel = over(color.blend(weight), pixel)
-        auto const dy = m > 0 ? 1 : -1;
-        auto const x_off = radius;
-        auto const y_off = radius * dy;
+    auto const dy = m >= 0 ? 1 : -1;
+    auto const x_off = radius;
+    auto const y_off = radius * dy;
 
-        auto const min_x = std::max<float>(0, from - x_off);
-        auto const max_x = std::min<float>(to + x_off, img.swidth() - 1);
+    auto const min_x = std::max<float>(0, from - x_off);
+    auto const max_x = std::min<float>(to + x_off, width - 1);
 
-        // Point-to-line distance if on the segment, point-to-point if outside
-        auto const distance = [
-            m, q, from, to, inv_den = 1 / std::sqrt(1 + m * m)
-        ](auto const x, auto const y) {
-            if (x < from) {
-                return std::hypot<float>(x - from, y - m * from - q);
+    auto const distance = [=, inv_den = 1 / std::sqrt(1 + m * m)](auto const x, auto const y) {
+        // Check if (x,y) in the plane delimited by the lines passing for from and to, and orthogonal
+        //  to the segment from-to
+        auto const q1 = m != 0 ? from_y + from / m : from;
+        auto const q2 = m != 0 ? to_y   + to   / m : to;
+        auto const q3 = m != 0 ? y      + x    / m : x;
+
+        // If the point is not in the plane, calculate the distance relative to the nearest point
+        if (q3 < std::min(q1, q2)) {
+            auto varx = q1 <= q2 ? from : to;
+            auto vary = q1 <= q2 ? from_y : to_y;
+            return std::hypot<float>(x - varx, y - vary);
+        }
+
+        if (q3 > std::max(q1, q2)) {
+            auto varx = (q1 >= q2) ? from : to;
+            auto vary = (q1 >= q2) ? from_y : to_y;
+            return std::hypot<float>(x - varx, y - vary);
+        }
+
+        // If it is in the plane, calculate the line-point distance
+        return std::abs(y - m * x - q) * inv_den;
+    };
+
+    // Weight normalized on the distance
+    auto const weight = [&distance, norm = 1.f / radius](auto const x, auto const y) {
+        return 1 - distance(x, y) * norm;
+    };
+
+    auto y = std::clamp<float>(
+        m * (from - radius * std::numbers::sqrt2 / 2) + q - y_off,
+        0,
+        width - 1
+    );
+
+    for (; std::abs(m * to + y_off - y) > 0.01 and 0 <= y and y < width; y += dy) {
+        for (int_fast32_t const effective_y : {std::floor(y), std::ceil(y)}) {
+            if (effective_y < 0 or effective_y >= height) {
+                continue;
             }
-            if (x > to) {
-                return std::hypot<float>(x - to, y - m * to - q);
-            }
-            return std::abs(y - m * x - q) * inv_den;
-        };
-
-        // Weight normalized on the distance
-        auto const weight = [&distance, norm = 1.f / radius](auto const x, auto const y) {
-            return 1 - distance(x, y) * norm;
-        };
-
-        // The first point 
-        auto y = std::clamp<float>(
-            m * (from - radius * std::numbers::sqrt2 / 2) + q - y_off,
-            0,
-            img.swidth() - 1
-        );
-
-        for (; std::abs(m * to + y_off - y) > 0.01 and 0 <= y and y < img.swidth(); y += dy) {
             auto x = min_x;
-            for (auto [d, prev_d] = std::pair{distance(x, y), img.swidth()}; d > radius and x <= max_x;) {
+            for (auto [d, prev_d] = std::pair{distance(x, effective_y), width * 1.f};
+                 d > radius and x <= max_x;)  {
                 ++x;
-                prev_d = std::ceil(std::exchange(d, distance(x, y)));
+                prev_d = (std::exchange(d, distance(x, effective_y)));
                 if (prev_d < d) {
                     x = max_x + 1;
                 }
@@ -359,41 +370,18 @@ void line::_draw_thick(image & img) const noexcept
                 continue;
             }
 
-            for (; distance(x, y) <= radius and x < max_x; ++x) {
-                for (int_fast32_t const effective_y : {std::floor(y), std::ceil(y)}) {
-                    if (effective_y < 0 or effective_y >= img.sheight()) {
-                        continue;
+            for (; distance(x, effective_y) <= radius and x < max_x; ++x) {
+                for (int_fast32_t const effective_x : {std::floor(x), std::ceil(x)}) {
+                    if (effective_x >= width) {
+                        break;
                     }
-                    for (int_fast32_t const effective_x : {std::floor(x), std::ceil(x)}) {
-                        if (effective_x < 0 or effective_x >= img.swidth()) {
-                            continue;
-                        }
-                        auto const w = weight(effective_x, effective_y);
-                        if (w > 0) {
-                            auto & pixel = img.pixel(effective_x, effective_y);
-                            pixel = over(color.blend(w), pixel);
-                        }
+                    auto const w = weight(effective_x, effective_y);
+                    if (w > 0) {
+                        auto & pixel = img.pixel(effective_x, effective_y);
+                        pixel = over(color.blend(w), pixel);
+                    }
 
-                    }
                 }
-            }
-        }
-    } else {
-        // Vertical
-        auto const m_rev = (x2 - x1) * 1.f / (y2 - y1);
-        auto const q = y2 - x2 / m_rev;
-
-        auto [from, to] = std::minmax({y1, y2});
-        while (from < 0) { ++from; }
-        for (; from <= to; ++from) {
-            auto const x = (from - q) * m_rev;
-            if (auto const fx = std::floor(x); fx >= 0 and fx < img.width()) {
-                auto & pixel = img.pixel(static_cast<int_fast32_t>(fx), from);
-                pixel = over(color.blend(1. - std::abs(x - fx)), pixel);
-            }
-            if (auto const cx = std::ceil(x); cx >= 0 and cx < img.width()) {
-                auto & pixel = img.pixel(static_cast<int_fast32_t>(cx), from);
-                pixel = over(color.blend(1. - std::abs(x - cx)), pixel);
             }
         }
     }
