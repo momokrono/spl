@@ -296,19 +296,16 @@ void line::_draw_thick(image & img) const noexcept
         return;
     }
 
-    auto [x1, y1] = start;
-    auto [x2, y2] = end;
     auto const radius = thickness / 2.f;
     auto const width = img.swidth();
     auto const height = img.sheight();
 
-    auto const m = (y2 - y1) * 1. / (x2 - x1);
-    auto const q = y2 - m * x2;
-
-    // auto [from, to] = std::minmax({x1, x2});
     auto [pt_from, pt_to] = std::ranges::minmax({start, end}, std::ranges::less{}, &spl::graphics::vertex::x);
     auto [from, from_y] = pt_from;
     auto [to, to_y] = pt_to;
+
+    auto const m = (to_y - from_y) * 1. / (to - from);
+    auto const q = to_y - m * to;
 
     auto const dy = m >= 0 ? 1 : -1;
     auto const x_off = radius;
@@ -317,11 +314,14 @@ void line::_draw_thick(image & img) const noexcept
     auto const min_x = std::max<float>(0, from - x_off);
     auto const max_x = std::min<float>(to + x_off, width - 1);
 
-    auto const distance = [=, inv_den = 1 / std::sqrt(1 + m * m)](auto const x, auto const y) {
+    auto const distance = [
+        =,
+        q1 = m != 0 ? from_y + from / m : from,
+        q2 = m != 0 ? to_y   + to   / m : to,
+        inv_den = 1 / std::hypot(1, m)
+    ](auto const x, auto const y) {
         // Check if (x,y) in the plane delimited by the lines passing for from and to, and orthogonal
         //  to the segment from-to
-        auto const q1 = m != 0 ? from_y + from / m : from;
-        auto const q2 = m != 0 ? to_y   + to   / m : to;
         auto const q3 = m != 0 ? y      + x    / m : x;
 
         // If the point is not in the plane, calculate the distance relative to the nearest point
@@ -352,19 +352,15 @@ void line::_draw_thick(image & img) const noexcept
         width - 1
     );
 
-    for (; std::abs(m * to + y_off - y) > 0.01 and 0 <= y and y < width; y += dy) {
+    for (; std::abs(m * to + y_off - y) > 0.01 and 0 <= y and y < height; y += dy) {
         for (int_fast32_t const effective_y : {std::floor(y), std::ceil(y)}) {
             if (effective_y < 0 or effective_y >= height) {
                 continue;
             }
             auto x = min_x;
-            for (auto [d, prev_d] = std::pair{distance(x, effective_y), width * 1.f};
-                 d > radius and x <= max_x;)  {
+            for (auto d = distance(x, effective_y); d > radius and x <= max_x; ) {
                 ++x;
-                prev_d = (std::exchange(d, distance(x, effective_y)));
-                if (prev_d < d) {
-                    x = max_x + 1;
-                }
+                d = distance(x, effective_y);
             }
             if (x > max_x) {
                 continue;
