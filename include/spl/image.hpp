@@ -19,8 +19,13 @@ struct construct_uninitialized_t {};
 constexpr inline
 auto construct_uninitialized = construct_uninitialized_t{};
 
+template <bool Const>
+class basic_viewport;
+
 class image
 {
+    friend class basic_viewport<true>;
+    friend class basic_viewport<false>;
     static inline rgba _garbage_pixel;
 public:
     using value_type         = rgba;
@@ -49,17 +54,17 @@ public:
     auto pixel_noexcept(size_t const x, size_t const y) const noexcept -> const_reference;
 
     // iteration
-    auto rows()                         -> row_range;
-    auto rows() const                   -> const_row_range;
-
-    auto columns()                      -> column_range;
-    auto columns() const                -> const_column_range;
-
     auto row(size_t const y)            -> row_view;
     auto row(size_t const y) const      -> const_row_view;
 
     auto column(size_t const x)         -> column_view;
     auto column(size_t const x) const   -> const_column_view;
+
+    auto rows()                         -> row_range;
+    auto rows() const                   -> const_row_range;
+
+    auto columns()                      -> column_range;
+    auto columns() const                -> const_column_range;
 
     auto begin()        -> iterator       { return _pixels.begin(); }
     auto begin()  const -> const_iterator { return _pixels.begin(); }
@@ -80,9 +85,9 @@ public:
     bool empty()       const noexcept { return _pixels.empty(); }
 
     // drawing
-    auto fill(rgba const c) noexcept -> image &;
+    auto fill(rgba const c) & noexcept -> image &;
     template <drawable D>
-    auto draw(D && obj)  -> image &
+    auto draw(D && obj) & -> image &
     {
         if constexpr (spl::detail::has_render_on_member_function<D>) {
             std::forward<D>(obj).render_on(*this);
@@ -96,6 +101,10 @@ public:
     auto raw_data()   const noexcept { return _pixels.data(); }
     bool save_to_file(std::string_view const filename) const;
     auto load_from_file(std::filesystem::path const & filename) -> load_status;
+
+    // viewport
+    explicit operator basic_viewport<false>() & noexcept;
+    explicit operator basic_viewport<true>() const & noexcept;
 
 private:
     auto load_ppm(std::filesystem::path const & filename) -> load_status;

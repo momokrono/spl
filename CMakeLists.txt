@@ -47,7 +47,7 @@ set_project_warnings(project_warnings)
 #                                  SPL                                   #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_library(spl)
-target_sources(spl PRIVATE src/image.cpp src/primitive.cpp)
+target_sources(spl PRIVATE src/image.cpp src/primitive.cpp src/viewport.cpp)
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE RELEASE)
 target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb)
@@ -129,4 +129,18 @@ if (build_examples_collection)
     target_sources(collection PRIVATE example/collection.cpp)
     target_link_libraries(collection PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
     target_include_directories(collection PUBLIC ./include/ ./include/3rd_party/)
+endif()
+
+# examples/viewport
+option(build_examples_viewport "Build the viewport example" TRUE)
+if (build_examples_viewport)
+    add_executable(viewport)
+
+    target_compile_features(viewport PUBLIC cxx_std_20)
+    target_compile_options(viewport PRIVATE -fconcepts-diagnostics-depth=2)
+    target_link_options(viewport PRIVATE)
+
+    target_sources(viewport PRIVATE example/viewport.cpp)
+    target_link_libraries(viewport PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
+    target_include_directories(viewport PUBLIC ./include/)
 endif()

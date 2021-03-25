@@ -14,7 +14,7 @@
 
 #include "spl/rgba.hpp"
 #include "spl/primitives/vertex.hpp"
-#include "spl/image.hpp"
+#include "spl/viewport.hpp"
 
 namespace spl::graphics
 {
@@ -66,11 +66,11 @@ struct line
     ) : line{from, to, 1, color, anti_aliasing}
     {}
 
-    void render_on(image & img) const noexcept;
+    void render_on(viewport img) const noexcept;
 
-    void draw_antialiased_parametric(image & img) const noexcept;
-    void draw_aliased(image & img) const noexcept;
-    void draw_antialiased(image & img) const noexcept;
+    void draw_antialiased_parametric(viewport img) const noexcept;
+    void draw_aliased(viewport img) const noexcept;
+    void draw_antialiased(viewport img) const noexcept;
 
     constexpr
     auto translate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
@@ -80,7 +80,7 @@ struct line
     }
 
 private:
-    void _draw_thick(image & img) const noexcept;
+    void _draw_thick(viewport img) const noexcept;
 };
 
 } // namespace spl::graphics

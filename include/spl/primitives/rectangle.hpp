@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "spl/primitives/vertex.hpp"
-#include "spl/image.hpp"
+#include "spl/viewport.hpp"
 
 namespace spl::graphics
 {
@@ -44,7 +44,7 @@ public:
         -> rectangle &
     { _fill_color = fill; return *this; }
 
-    void render_on(image & img) const noexcept;
+    void render_on(viewport img) const noexcept;
 
     constexpr
     auto translate(int_fast32_t x, int_fast32_t y) noexcept -> rectangle & {

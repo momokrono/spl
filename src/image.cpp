@@ -6,6 +6,7 @@
  */
 
 #include "spl/image.hpp"
+#include "spl/viewport.hpp"
 #include "spl/bits/exceptions.hpp"
 
 #include <fstream>
@@ -22,12 +23,10 @@
 namespace spl::graphics
 {
 
-/* rgba image::_garbage_pixel = rgba{}; */
-
 auto image::get_pixel_iterator(size_t const x, size_t const y)
     -> image::iterator
 {
-    if ( x > _width - 1 or y > _height - 1) {
+    if (x > _width - 1 or y > _height - 1) {
         throw spl::out_of_range{x, y, _width, _height};
     }
     return _pixels.begin() + static_cast<ptrdiff_t>(x + y * _width);
@@ -36,7 +35,7 @@ auto image::get_pixel_iterator(size_t const x, size_t const y)
 auto image::get_pixel_iterator(size_t const x, size_t const y) const
     -> image::const_iterator
 {
-    if ( x > _width - 1 or y > _height - 1) {
+    if (x > _width - 1 or y > _height - 1) {
         throw spl::out_of_range{x, y, _width, _height};
     }
     return _pixels.begin() + static_cast<ptrdiff_t>(x + y * _width);
@@ -89,7 +88,7 @@ auto image::column(size_t const x) const -> spl::graphics::row_col_range<false, 
 auto image::pixel(size_t const x, size_t const y) const
     -> rgba
 {
-    if ( x >= width() or y >= height()) {
+    if (x >= width() or y >= height()) {
         throw spl::out_of_range{x, y, _width, _height};
     }
     return _pixels.at(x+y*_width);
@@ -98,7 +97,7 @@ auto image::pixel(size_t const x, size_t const y) const
 auto image::pixel(size_t const x, size_t const y)
     -> rgba &
 {
-    if ( x >= width() or y >= height()) {
+    if (x >= width() or y >= height()) {
         throw spl::out_of_range{x, y, _width, _height};
     }
     return _pixels.at(x + y * _width);
@@ -111,7 +110,7 @@ auto image::pixel_noexcept(size_t const x, size_t const y) const noexcept
         // fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO - logger
         return image::_garbage_pixel;
     }
-    return _pixels.at(x+y*_width);
+    return _pixels.at(x + y * _width);
 }
 
 auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
@@ -124,21 +123,21 @@ auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
     return _pixels.at(x + y * _width);
 }
 
-auto image::fill(rgba const c) noexcept
+auto image::fill(rgba const c) & noexcept
     -> image &
 {
 #ifdef SPL_FILL_MULTITHREAD
-    auto n_threads = std::thread::hardware_concurrency();
-    auto pix_dim = _height * _width;
-    auto pix_per_thread = pix_dim/n_threads;
+    auto const n_threads = std::thread::hardware_concurrency();
+    auto const pix_dim = _height * _width;
+    auto const pix_per_thread = pix_dim / n_threads;
     auto jobs = std::vector<std::jthread>();
     jobs.reserve(n_threads);
     for (auto i = 0u; i < n_threads; ++i) {
         jobs.emplace_back([this](auto j, auto p, auto col) {
-            std::ranges::fill(_pixels.begin()+p*j, _pixels.begin()+p*(j+1), col);
+            std::ranges::fill(_pixels.begin() + p * j, _pixels.begin() + p * (j + 1), col);
         }, i, pix_per_thread, c);
     }
-    std::ranges::fill(_pixels.begin()+pix_per_thread*n_threads, _pixels.end(), c);
+    std::ranges::fill(_pixels.begin() + pix_per_thread * n_threads, _pixels.end(), c);
 #else
     std::ranges::fill(_pixels, c);
 #endif // SPL_FILL_MULTITHREAD
@@ -257,6 +256,16 @@ auto image::load_ppm(std::filesystem::path const & filename)
     _width = width;
     _height = height;
     return load_status::success;
+}
+
+image::operator basic_viewport<false>() & noexcept
+{
+    return basic_viewport<false>{*this};
+}
+
+image::operator basic_viewport<true>() const & noexcept
+{
+    return basic_viewport<true>{*this};
 }
 
 } // namespace spl::graphics
