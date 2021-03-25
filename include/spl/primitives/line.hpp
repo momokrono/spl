@@ -50,9 +50,21 @@ struct line
     vertex end;
     rgba color;
     bool anti_aliasing;
-    // uint8_t thickness;
+    int16_t thickness = 1;
 
-    constexpr line(vertex s, vertex e, spl::graphics::rgba c=spl::graphics::color::black, bool aa=true): start{s}, end{e}, color{c}, anti_aliasing{aa} {}
+    constexpr line(
+        vertex from, vertex to, int16_t thickness,
+        spl::graphics::rgba color = spl::graphics::color::black,
+        bool anti_aliasing = true
+    ) : start{from}, end{to}, color{color}, anti_aliasing{anti_aliasing}, thickness{thickness}
+    {}
+
+    constexpr line(
+        vertex from, vertex to,
+        spl::graphics::rgba color = spl::graphics::color::black,
+        bool anti_aliasing = true
+    ) : line{from, to, 1, color, anti_aliasing}
+    {}
 
     void render_on(image & img) const noexcept;
 
@@ -66,6 +78,9 @@ struct line
         end += {x, y};
         return *this;
     }
+
+private:
+    void _draw_thick(image & img) const noexcept;
 };
 
 } // namespace spl::graphics

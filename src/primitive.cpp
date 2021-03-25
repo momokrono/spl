@@ -76,6 +76,13 @@ namespace detail
 
 void line::render_on(image & img) const noexcept
 {
+    if (thickness <= 0) {
+        return;
+    }
+    if (thickness > 1) {
+        _draw_thick(img);
+        return;
+    }
     auto [x1, y1] = start;
     auto [x2, y2] = end;
 
@@ -267,6 +274,115 @@ void line::draw_antialiased(image & img) const noexcept
     }
 }
 
+
+void line::_draw_thick(image & img) const noexcept
+{
+    // assumes thicknes > 1
+    if (not anti_aliasing) {
+        auto const [x1, y1] = start;
+        auto const [x2, y2] = end;
+        auto const length = std::hypot(x2 - x1, y2 - y1);
+        auto const inclination = std::atan2(y2 - y1, x2 - x1);
+
+        auto const sin = std::sin(inclination);
+        auto const cos = std::cos(inclination);
+
+        auto const rect = rectangle(
+            {int_fast32_t(x1 + thickness * sin / 2), int_fast32_t(y1 - thickness * cos / 2)},
+            {length, thickness - 1}, inclination, false
+        ).fill_color(color).border_color(color);
+
+        rect.render_on(img);
+        return;
+    }
+
+    auto const radius = thickness / 2.f;
+    auto const width = img.swidth();
+    auto const height = img.sheight();
+
+    auto [pt_from, pt_to] = std::ranges::minmax({start, end}, std::ranges::less{}, &spl::graphics::vertex::x);
+    auto [from, from_y] = pt_from;
+    auto [to, to_y] = pt_to;
+
+    auto const m = (to_y - from_y) * 1. / (to - from);
+    auto const q = to_y - m * to;
+
+    auto const dy = m >= 0 ? 1 : -1;
+    auto const x_off = radius;
+    auto const y_off = radius * dy;
+
+    auto const min_x = std::max<float>(0, from - x_off);
+    auto const max_x = std::min<float>(to + x_off, width - 1);
+
+    auto const distance = [
+        =,
+        q1 = m != 0 ? from_y + from / m : from,
+        q2 = m != 0 ? to_y   + to   / m : to,
+        inv_den = 1 / std::hypot(1, m)
+    ](auto const x, auto const y) {
+        // Check if (x,y) in the plane delimited by the lines passing for from and to, and orthogonal
+        //  to the segment from-to
+        auto const q3 = m != 0 ? y      + x    / m : x;
+
+        // If the point is not in the plane, calculate the distance relative to the nearest point
+        if (q3 < std::min(q1, q2)) {
+            auto varx = q1 <= q2 ? from : to;
+            auto vary = q1 <= q2 ? from_y : to_y;
+            return std::hypot<float>(x - varx, y - vary);
+        }
+
+        if (q3 > std::max(q1, q2)) {
+            auto varx = (q1 >= q2) ? from : to;
+            auto vary = (q1 >= q2) ? from_y : to_y;
+            return std::hypot<float>(x - varx, y - vary);
+        }
+
+        // If it is in the plane, calculate the line-point distance
+        return std::abs(y - m * x - q) * inv_den;
+    };
+
+    // Weight normalized on the distance
+    auto const weight = [&distance, norm = 1.f / radius](auto const x, auto const y) {
+        return 1 - distance(x, y) * norm;
+    };
+
+    auto y = std::clamp<float>(
+        m * (from - radius * std::numbers::sqrt2 / 2) + q - y_off,
+        0,
+        width - 1
+    );
+
+    for (; std::abs(m * to + y_off - y) > 0.01 and 0 <= y and y < height; y += dy) {
+        for (int_fast32_t const effective_y : {std::floor(y), std::ceil(y)}) {
+            if (effective_y < 0 or effective_y >= height) {
+                continue;
+            }
+            auto x = min_x;
+            for (auto d = distance(x, effective_y); d > radius and x <= max_x; ) {
+                ++x;
+                d = distance(x, effective_y);
+            }
+            if (x > max_x) {
+                continue;
+            }
+
+            for (; distance(x, effective_y) <= radius and x < max_x; ++x) {
+                for (int_fast32_t const effective_x : {std::floor(x), std::ceil(x)}) {
+                    if (effective_x >= width) {
+                        break;
+                    }
+                    auto const w = weight(effective_x, effective_y);
+                    if (w > 0) {
+                        auto & pixel = img.pixel(effective_x, effective_y);
+                        pixel = over(color.blend(w), pixel);
+                    }
+
+                }
+            }
+        }
+    }
+}
+
 #ifdef PRIMITIVES_BEZIER_HPP
 template <typename Alloc>
 void detail::_bezier_render_aliased(image & img, std::span<vertex> const v, spl::graphics::rgba const color)
@@ -395,7 +511,11 @@ void rectangle::render_on(image & img) const noexcept
     auto const y4 = static_cast<int_fast32_t>(std::round(_sides.second * cos) + y1);
 
     if (_fill_color.a != 0) {
-        detail::draw_filled(img, {{{x1, y1}, {x2, y2}}, {{x2, y2}, {x3, y3}}, {{x3, y3}, {x4, y4}}, {{x1, y1}, {x4, y4}}}, _fill_color);
+        detail::draw_filled(img, {
+            {{x1, y1}, {x2, y2}},
+            {{x2, y2}, {x3, y3}},
+            {{x3, y3}, {x4, y4}},
+            {{x1, y1}, {x4, y4}}}, _fill_color);
     }
 
 
