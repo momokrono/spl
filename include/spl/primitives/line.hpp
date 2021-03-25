@@ -80,7 +80,7 @@ struct line
     }
 
 private:
-    void _draw_thick(image & img) const noexcept;
+    void _draw_thick(viewport img) const noexcept;
 };
 
 } // namespace spl::graphics

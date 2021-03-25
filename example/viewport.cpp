@@ -25,16 +25,24 @@ namespace sgl = spl::graphics;
 auto build_face(int w, int h)
 {
     auto group = sgl::collection{};
+
+    group.push(sgl::line({int(0.25 * w - 0.25 * 0.5 * w * 0.75), int(0.2 * h - 0.20 * 0.5 * h * 1.7)},
+                         {int(0.25 * w + 0.25 * 0.5 * w),        int(0.2 * h - 0.20 * 0.5 * h)}, 10));
+    group.push(sgl::line({int(0.75 * w + 0.25 * 0.5 * w * 0.75), int(0.2 * h - 0.20 * 0.5 * h * 1.7)},
+                         {int(0.75 * w - 0.25 * 0.5 * w),        int(0.2 * h - 0.20 * 0.5 * h)}, 10));
+
     group.push(sgl::circle({int(0.25 * w), int(0.2 * h)}, 0.25 * 0.5 * w).fill_color(sgl::color::black));
     group.push(sgl::circle({int(0.75 * w), int(0.2 * h)}, 0.25 * 0.5 * w).fill_color(sgl::color::black));
 
-    group.push(sgl::line({int(0.5 * w), int(0.2 * h)}, {int(1.5 * 0.25 * w), int(2.4 * 0.2 * h)}));
-    group.push(sgl::line({int(1.5 * 0.25 * w), int(2.4 * 0.2 * h)}, {int(2.5 * 0.25 * w), int(2.4 * 0.2 * h)}));
+    group.push(sgl::line({int(0.5 * w), int(0.2 * h)}, {int(1.5 * 0.25 * w), int(2.4 * 0.2 * h)}, 10));
+    group.push(sgl::line({int(1.5 * 0.25 * w), int(2.4 * 0.2 * h)}, {int(2.5 * 0.25 * w), int(2.4 * 0.2 * h)}, 10));
 
-    group.push(sgl::line({int(0.9 * 0.25 * w), int(0.2 * 3 * h)}, {int(3.1 * 0.25 * w), int(0.2 * 3 * h)}));
-    group.push(sgl::line({int(0.9 * 0.25 * w), int(0.2 * 4 * h)}, {int(3.1 * 0.25 * w), int(0.2 * 4 * h)}));
-    group.push(sgl::line({int(0.9 * 0.25 * w), int(0.2 * 3 * h)}, {int(0.9 * 0.25 * w), int(0.2 * 4 * h)}));
-    group.push(sgl::line({int(3.1 * 0.25 * w), int(0.2 * 3 * h)}, {int(3.1 * 0.25 * w), int(0.2 * 4 * h)}));
+    // group.push(sgl::line({int(0.9 * 0.25 * w), int(0.2 * 3 * h)}, {int(3.1 * 0.25 * w), int(0.2 * 3 * h)}));
+    // group.push(sgl::line({int(0.9 * 0.25 * w), int(0.2 * 4 * h)}, {int(3.1 * 0.25 * w), int(0.2 * 4 * h)}));
+    // group.push(sgl::line({int(0.9 * 0.25 * w), int(0.2 * 3 * h)}, {int(0.9 * 0.25 * w), int(0.2 * 4 * h)}));
+    // group.push(sgl::line({int(3.1 * 0.25 * w), int(0.2 * 3 * h)}, {int(3.1 * 0.25 * w), int(0.2 * 4 * h)}));
+
+    group.push(sgl::line({int(0.9 * 0.25 * w), int(0.2 * 3 * h)}, {int(3.1 * 0.25 * w), int(0.2 * 3 * h)}, 10));
 
     return group;
 }

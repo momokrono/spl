@@ -275,7 +275,7 @@ void line::draw_antialiased(viewport img) const noexcept
 }
 
 
-void line::_draw_thick(image & img) const noexcept
+void line::_draw_thick(viewport img) const noexcept
 {
     // assumes thicknes > 1
     if (not anti_aliasing) {
