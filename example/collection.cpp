@@ -1,6 +1,6 @@
 /**
  * @author      : @rbrugo, @momokrono
- * @file        : collection
+ * @file        : group
  * @created     : Friday Mar 05, 2021 11:51:30 CET
  * @license     : MIT
  */
@@ -17,7 +17,7 @@
 
 #include "spl/image.hpp"
 #include "spl/primitive.hpp"
-#include "spl/collection.hpp"
+#include "spl/group.hpp"
 
 namespace sgl = spl::graphics;
 
@@ -41,14 +41,14 @@ int main() try
     constexpr auto tot_lines = 1'000;
     constexpr auto n_threads = 6;
     constexpr auto lines_per_thread = tot_lines / n_threads;
-    auto jobs = std::vector<std::future<sgl::collection>>{};
+    auto jobs = std::vector<std::future<sgl::group>>{};
     jobs.reserve(n_threads);
 
-    auto collection = spl::graphics::collection{};
+    auto group = spl::graphics::group{};
 
-    auto build_collection = [](int const w, int const h, int const from, int const to) mutable
+    auto build_group = [](int const w, int const h, int const from, int const to) mutable
     {
-        auto subcollection = sgl::collection{};
+        auto subgroup = sgl::group{};
 
         for (int j = from; j < to; ++j) {
             auto line1 = spl::graphics::line{{0, h}, {w, h + j * 3}, spl::graphics::color::green};
@@ -61,13 +61,13 @@ int main() try
                 std::swap(line3, line4);
             }
 
-            subcollection.push(line1)
+            subgroup.push(line1)
                       .push(line2)
                       .push(line3)
                       .push(line4);
         }
 
-        return subcollection;
+        return subgroup;
     };
 
     fmt::print("Launching threads...\n");
@@ -75,19 +75,19 @@ int main() try
 
     for (auto i = 0ul; i < n_threads; ++i) {
         jobs.push_back(std::async(
-            build_collection, width - 1, height / 2, i * lines_per_thread, (i + 1) * lines_per_thread)
+            build_group, width - 1, height / 2, i * lines_per_thread, (i + 1) * lines_per_thread)
         );
     }
-    for (auto & subcollection : jobs) {
-        collection.push(std::move(subcollection.get()));
+    for (auto & subgroup : jobs) {
+        group.push(std::move(subgroup.get()));
     }
-    fmt::print("Collection built: {}\n", time_passed(start));
+    fmt::print("group built: {}\n", time_passed(start));
     start = std::chrono::steady_clock::now();
-    collection.render_on(image);
+    group.render_on(image);
     fmt::print("Image rendered: {}\n", time_passed(start));
     start = std::chrono::steady_clock::now();
 
-    if (not image.save_to_file("example_collection.jpg")) {
+    if (not image.save_to_file("example_group.jpg")) {
         fmt::print(stderr, "Error while trying to save the generate image to file\n");
     }
     fmt::print("Image saved: {}\n", time_passed(start));

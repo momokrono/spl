@@ -17,14 +17,14 @@
 
 #include "spl/image.hpp"
 #include "spl/primitive.hpp"
-#include "spl/collection.hpp"
+#include "spl/group.hpp"
 #include "spl/viewport.hpp"
 
 namespace sgl = spl::graphics;
 
 auto build_face(int w, int h)
 {
-    auto group = sgl::collection{};
+    auto group = sgl::group{};
 
     group.push(sgl::line({int(0.25 * w - 0.25 * 0.5 * w * 0.75), int(0.2 * h - 0.20 * 0.5 * h * 1.7)},
                          {int(0.25 * w + 0.25 * 0.5 * w),        int(0.2 * h - 0.20 * 0.5 * h)}, 10));
@@ -53,7 +53,7 @@ int main()
     constexpr auto height = 600;
     auto image = sgl::image(width, height, sgl::color::white);
 
-    auto group = sgl::collection{};
+    auto group = sgl::group{};
     {
         auto circle = sgl::circle{{100, 100}, 50};
         circle.fill_color(sgl::color::red);

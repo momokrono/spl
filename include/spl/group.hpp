@@ -17,7 +17,7 @@
 namespace spl::graphics
 {
 
-class collection
+class group
 {
     struct object_t;
 
@@ -27,7 +27,7 @@ class collection
 public:
     void render_on(graphics::viewport img) const noexcept;
     template <drawable T>
-    collection & push(T obj) noexcept;
+    group & push(T obj) noexcept;
     void clear() noexcept { _buffer.clear(); }
     void reserve(std::size_t n) { _buffer.reserve(n); }
     auto position()       noexcept -> vertex & { return _origin; }
@@ -35,7 +35,7 @@ public:
     auto & translate(int_fast32_t x, int_fast32_t y) { _origin += {x, y}; return *this; }
 };
 
-struct collection::object_t
+struct group::object_t
 {
     template <drawable T>
     explicit object_t(T obj) : _self{std::make_shared<model<T>>(std::move(obj))} {}
@@ -70,7 +70,7 @@ struct collection::object_t
 };
 
 inline
-void collection::render_on(graphics::viewport img) const noexcept
+void group::render_on(graphics::viewport img) const noexcept
 {
     auto view = viewport{img, _origin.x, _origin.y};
     for (auto const & obj : _buffer) {
@@ -80,7 +80,7 @@ void collection::render_on(graphics::viewport img) const noexcept
 
 template <drawable T>
 inline
-auto collection::push(T obj) noexcept -> collection &
+auto group::push(T obj) noexcept -> group &
 {
     _buffer.emplace_back(std::move(obj));
     return *this;
