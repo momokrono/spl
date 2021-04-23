@@ -9,9 +9,11 @@
 #include <spl/primitive.hpp>
 #include <fmt/format.h>
 
-auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, uint16_t radius) noexcept
+auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, int16_t radius) noexcept
     -> spl::graphics::rgba
 {
+    radius = std::min({x0, y0, img.swidth() - x0, img.sheight() - y0, radius + 0l});
+    if (radius == 0) { radius = 1; }
     auto triangular_filter = [=](int64_t dx, int64_t dy) -> double {
         if (dx + dy < radius) {
             return (1 - (dx + dy) * 1. / radius);
@@ -20,19 +22,7 @@ auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, u
         }
     };
 
-    constexpr
-    auto total_contribution = [](auto const rad) {
-        auto acc = 1. + rad * (rad % 2 == 0);
-        for (int n = 1, up = std::ceil(rad / 2); n < up; ++n) {
-            acc += n * (rad - n);
-        }
-
-        return acc;
-    };
-    static_assert(total_contribution(3) - 3./19 > -0.000000001);
-    static_assert(total_contribution(4) - 11    <  0.000000001);
-
-    auto const norm_factor = 1. / total_contribution(radius); //3./19;
+    auto total_contribution = 0.;
 
     double r = 0;
     double g = 0;
@@ -50,24 +40,32 @@ auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, u
             partial_r += weight * color.r;
             partial_g += weight * color.g;
             partial_b += weight * color.b;
+            total_contribution += weight;
         }
 
-        r += partial_r * norm_factor;
-        g += partial_g * norm_factor;
-        b += partial_b * norm_factor;
+        r += partial_r;
+        g += partial_g;
+        b += partial_b;
     }
+
+    auto const norm_factor = 1. / total_contribution;
+    r *= norm_factor;
+    g *= norm_factor;
+    b *= norm_factor;
 
     return spl::graphics::rgba(r, g, b);
 }
 
-auto box_blur(int64_t x0, int64_t y0, spl::graphics::image & img, uint16_t radius) noexcept
+auto box_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, int16_t radius) noexcept
 {
+    radius = std::min({x0, y0, img.swidth() - x0, img.sheight() - y0, radius + 0l});
+    if (radius == 0) { radius = 1; }
     double r = 0;
     double g = 0;
     double b = 0;
-    auto const norm_factor = 1. / (4 * radius * radius);
-    auto const max_x = std::min(img.swidth(), x0 + radius);
-    auto const max_y = std::min(img.sheight(), y0 + radius);
+    auto const norm_factor = 1. / ((2 * radius + 1) * (2 * radius + 1));
+    auto const max_x = std::min(img.swidth(), x0 + radius + 1);
+    auto const max_y = std::min(img.sheight(), y0 + radius + 1);
     for (auto y = std::max(0l, y0 - radius); y < max_y; ++y) {
         auto partial_r = 0.;
         auto partial_g = 0.;
