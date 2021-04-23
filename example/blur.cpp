@@ -37,9 +37,9 @@ auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, i
             auto weight = triangular_filter(std::abs(x - x0), std::abs(y - y0));
             auto color  = img.pixel(x, y);
 
-            partial_r += weight * color.r;
-            partial_g += weight * color.g;
-            partial_b += weight * color.b;
+            partial_r += weight * color.r * color.r;
+            partial_g += weight * color.g * color.g;
+            partial_b += weight * color.b * color.b;
             total_contribution += weight;
         }
 
@@ -53,7 +53,7 @@ auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, i
     g *= norm_factor;
     b *= norm_factor;
 
-    return spl::graphics::rgba(r, g, b);
+    return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
 }
 
 auto box_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, int16_t radius) noexcept
@@ -73,16 +73,16 @@ auto box_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, int16_t 
         for (auto x = std::max(0l, x0 - radius); x < max_x; ++x) {
             auto color  = img.pixel(x, y);
 
-            partial_r += color.r;
-            partial_g += color.g;
-            partial_b += color.b;
+            partial_r += color.r * color.r;
+            partial_g += color.g * color.g;
+            partial_b += color.b * color.b;
         }
         r += partial_r * norm_factor;
         g += partial_g * norm_factor;
         b += partial_b * norm_factor;
     }
 
-    return spl::graphics::rgba(r, g, b);
+    return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
 }
 
 #include <thread>
