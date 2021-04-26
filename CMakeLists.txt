@@ -61,6 +61,13 @@ if (SPL_FILL_MULTITHREAD)
     target_compile_definitions(spl PUBLIC -DSPL_FILL_MULTITHREAD)
     target_link_libraries(spl PRIVATE Threads::Threads)
 endif()
+option(SPL_DISABLE_GAMMA_CORRECTION
+    "color-composing algorithms like `over` will not use gamma correction" OFF
+)
+if (SPL_DISABLE_GAMMA_CORRECTION)
+    message(STATUS "gamma correction option enabled")
+    target_compile_definitions(spl PUBLIC -DSPL_DISABLE_GAMMA_CORRECTION)
+endif()
 add_library(spl::spl ALIAS spl)
 export_target(
     PACKAGE_NAME spl

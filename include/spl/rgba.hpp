@@ -52,10 +52,11 @@ struct rgba
     friend bool operator==(rgba, rgba) = default;
 };
 
+
 constexpr
-auto over(rgba const foreground, rgba const background)
-    -> rgba
-{
+auto over_no_gamma(rgba const foreground, rgba const background)
+   -> rgba
+ {
     auto const [r1, g1, b1, a1] = foreground;
     auto const [r2, g2, b2, a2] = background;
 
@@ -73,6 +74,38 @@ auto over(rgba const foreground, rgba const background)
         static_cast<uint8_t>((k1 + k2) * 255)
     };
 }
+
+#ifdef SPL_DISABLE_GAMMA_CORRECTION
+constexpr
+auto over(rgba const foreground, rgba const background)
+{
+    return over_no_gamma(foreground, background);
+}
+#else
+constexpr
+auto over(rgba const foreground, rgba const background)
+    -> rgba
+{
+    auto const [r1, g1, b1, a1] = foreground;
+    auto const [r2, g2, b2, a2] = background;
+
+    auto const k1 = a1 / 255.f;
+    auto const k2 = (1.f - k1) * a2 / 255.f;
+
+    auto const over_impl = [k1, k2](uint8_t c1, uint8_t c2) noexcept {
+        // return static_cast<uint8_t>((c1 * k1 + c2 * k2) / (k1 + k2));
+        return static_cast<uint8_t>(std::sqrt((c1 * c1 * k1 + c2 * c2 * k2) / (k1 + k2)));
+    };
+
+    return {
+        over_impl(r1, r2),
+        over_impl(g1, g2),
+        over_impl(b1, b2),
+        static_cast<uint8_t>((k1 + k2) * 255)
+    };
+}
+#endif
+
 
 namespace color
 {
