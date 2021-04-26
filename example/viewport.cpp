@@ -76,6 +76,6 @@ int main()
         face.render_on(viewport);
     }
 
-    image.save_to_file("test_viewport.png");
+    image.save_to_file("example_viewport.png");
 }
 

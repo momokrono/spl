@@ -33,7 +33,7 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
             line4.draw_antialiased(image);
         }
     }
-    if (not image.save_to_file("a.png")) { fmt::print("NON VA\n"); }
+    if (not image.save_to_file("bench.png")) { fmt::print("NON VA\n"); }
 } catch (std::exception & e)
 {
     fmt::print(stderr, "exception caught: {}\n", e.what());
