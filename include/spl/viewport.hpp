@@ -12,6 +12,8 @@
 
 namespace spl::graphics
 {
+template <bool, bool>
+struct viewport_iterator;
 
 template <bool Const>
 class basic_viewport
@@ -22,8 +24,8 @@ public:
     using value_type         = image_t::value_type;
     using reference          = std::conditional_t<Const, value_type, value_type &>;
     using const_reference    = image_t::const_reference;
-    using iterator           = image_t::iterator;
-    using const_iterator     = image_t::const_iterator;
+    using iterator           = viewport_iterator<false, Const>;
+    using const_iterator     = viewport_iterator<true, Const>;
     using row_view           = row_col_range<true,  Const>;
     using const_row_view     = row_col_range<true,  true>;
     using column_view        = row_col_range<false, Const>;
@@ -116,10 +118,75 @@ public:
         }
         return *this;
     }
+
+    auto begin() requires (not Const) { return iterator{*this}; }
+	auto end() requires (not Const) { return iterator{*this, 0, sheight()};	}
+
+	/*auto begin() requires (not Const) { return iterator{*this}; }
+	auto end() requires (not Const) { return iterator{*this, 0, sheight()};	}*/
 };
 
 using viewport = basic_viewport<false>;
 using image_view = basic_viewport<true>;
+
+template <bool Const, bool BasicConst>
+struct viewport_iterator
+{
+	using iterator_category = std::input_iterator_tag;
+	using difference_type   = std::ptrdiff_t;
+	using value_type = std::conditional_t<not Const, rgba, rgba const>;
+	using reference = value_type &;
+	using const_reference = value_type const &;
+
+	using basic_viewport_t = basic_viewport<BasicConst>;
+	using viewport_t = std::conditional_t<not Const, basic_viewport_t, basic_viewport_t const>;
+
+	using pointer = rgba *;
+
+	viewport_t * _base = nullptr;
+	std::ptrdiff_t _x = 0, _y = 0;
+
+	viewport_iterator() = default;
+	viewport_iterator(viewport_t & v, std::ptrdiff_t x, std::ptrdiff_t y) : _base{std::addressof(v)}, _x{x}, _y{y} {}
+	viewport_iterator(viewport_t & v) : viewport_iterator{v, 0, 0} {}
+	auto operator*()       -> reference { return _base->pixel(_x, _y); }
+	auto operator*() const -> reference { return _base->pixel(_x, _y); }
+
+	auto operator++()
+		-> viewport_iterator &
+	{
+		++_x;
+		if (_x == _base->swidth()) {
+			_x = 0;
+			_y = std::min(_y + 1, _base->sheight());
+		}
+		return *this;
+	}
+
+	auto operator++(int) const
+		-> viewport_iterator
+	{
+		auto copy = *this;
+		++*this;
+		return copy;
+	}
+
+	bool operator==(viewport_iterator const &) const = default;
+};
+
+static_assert(std::input_iterator<viewport_iterator<true, true>>); // const iterator to const view
+static_assert(std::input_iterator<viewport_iterator<true, false>>); // const iterator to mutable view
+static_assert(std::input_iterator<viewport_iterator<false, true>>); // mutable iterator to const view
+static_assert(std::input_iterator<viewport_iterator<false, false>>); // mutable iterator to mutable view
+static_assert(std::indirectly_writable<viewport_iterator<false, true>, rgba>);  // mutable iterator to const view
+static_assert(not std::indirectly_writable<viewport_iterator<true, true>, rgba>);  // const iterator to const view
+static_assert(std::indirectly_writable<viewport_iterator<false, false>, rgba>);  // mutable iterator to mutable view
+static_assert(not std::indirectly_writable<viewport_iterator<true, false>, rgba>);  // const iterator to mutable view
+static_assert(std::weakly_incrementable<viewport_iterator<true, false>>);  // const iterator to mutable view
+static_assert(std::weakly_incrementable<viewport_iterator<false, false>>);  // mutable iterator to mutable view
+static_assert(std::weakly_incrementable<viewport_iterator<true, true>>);  // const iterator to const view
+static_assert(std::weakly_incrementable<viewport_iterator<false, true>>);  // mutable iterator to const view
+
 } // namespace spl::graphics
 
 #endif /* _VIEWPORT_HPP */

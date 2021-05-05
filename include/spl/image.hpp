@@ -33,11 +33,11 @@ public:
     using const_reference    = value_type; // const &
     using iterator           = std::vector<value_type>::iterator;
     using const_iterator     = std::vector<value_type>::const_iterator;
-    using row_view           = spl::graphics::row_col_range<true, false>;
-    using const_row_view     = spl::graphics::row_col_range<true, true>;
-    using column_view        = spl::graphics::row_col_range<false, false>;
-    using const_column_view  = spl::graphics::row_col_range<false, true>;
-    using row_range          = spl::graphics::image_range<true, false>;     // FIXME currently not a range
+	using row_view           = spl::graphics::row_col_range<true, false>;
+	using const_row_view     = spl::graphics::row_col_range<true, true>;
+	using column_view        = spl::graphics::row_col_range<false, false>;
+	using const_column_view  = spl::graphics::row_col_range<false, true>;
+	using row_range          = spl::graphics::image_range<true, false>;     // FIXME currently not a range
     using column_range       = spl::graphics::image_range<false, false>;
     using const_row_range    = spl::graphics::image_range<true, true>;
     using const_column_range = spl::graphics::image_range<false, true>;
@@ -46,6 +46,7 @@ public:
     image() noexcept : _width{0}, _height{0} {};
     image(size_t w, size_t h, rgba fill = {0, 0, 0, 255}) noexcept : _pixels{w * h, fill}, _width{w}, _height{h} {}
     image(construct_uninitialized_t, size_t w, size_t h) noexcept : _pixels{w * h}, _width{w}, _height{h} {}
+    template <bool Const2> image(basic_viewport<Const2> v) : _pixels(v.begin(), v.end()), _width{v.width()}, _height{v.height()} {}
 
     // direct element access
     auto pixel(size_t const x, size_t const y)       -> reference;
