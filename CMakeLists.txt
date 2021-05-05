@@ -6,7 +6,7 @@
 
 cmake_minimum_required(VERSION 3.16.2)
 
-project(spl VERSION 0.2 LANGUAGES CXX)
+project(spl VERSION 0.4.1 LANGUAGES CXX)
 include(cmake/general.cmake)
 include(cmake/export_target.cmake)
 include(cmake/functions.cmake)
