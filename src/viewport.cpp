@@ -94,7 +94,7 @@ auto basic_viewport<Const>::columns() const -> const_column_range
 template <>
 auto basic_viewport<false>::fill(rgba const c) & noexcept -> basic_viewport &
 {
-    for (auto i : std::views::iota(height())) {
+    for (auto i : std::views::iota(0, sheight())) {
         std::ranges::fill(row(i), c);
     }
     return *this;
@@ -103,7 +103,7 @@ auto basic_viewport<false>::fill(rgba const c) & noexcept -> basic_viewport &
 template <>
 auto basic_viewport<false>::fill(rgba const c) && noexcept -> basic_viewport
 {
-    for (auto i : std::views::iota(height())) {
+    for (auto i : std::views::iota(0, sheight())) {
         std::ranges::fill(row(i), c);
     }
     return *this;

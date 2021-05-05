@@ -104,6 +104,9 @@ public:
     auto swidth()      const noexcept { return static_cast<ptrdiff_t>(_width); }
     auto sheight()     const noexcept { return static_cast<ptrdiff_t>(_height); }
     auto sdimensions() const noexcept { return std::pair{ width(), height() }; }
+
+    auto offset() 	   const noexcept { return std::pair{_x, _y}; }
+
     // bool empty()       const noexcept { return _pixels.empty(); }
 
     auto fill(rgba const c) &  noexcept -> basic_viewport & requires (not Const);
@@ -118,6 +121,9 @@ public:
         }
         return *this;
     }
+
+    auto base() -> image_t & { return *_base; }
+    auto base() const -> image_t const & { return *_base; }
 
     auto begin() requires (not Const) { return iterator{*this}; }
 	auto end() requires (not Const) { return iterator{*this, 0, sheight()};	}

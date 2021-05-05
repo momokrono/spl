@@ -42,63 +42,79 @@ spl::graphics::image greyscale(image && img)
 	return res;
 }
 
+inline
 void triangular_blur(std::in_place_t, spl::graphics::viewport original, int16_t radius)
 {
-	auto compute_blur = [&](int64_t x0, int64_t y0, spl::graphics::viewport const & img, int16_t radius) noexcept
-    -> spl::graphics::rgba
-{
-    radius = std::min({x0, y0, img.swidth() - x0, img.sheight() - y0, radius + 0l});
-    if (radius == 0) { radius = 1; }
-    auto triangular_filter = [=](int64_t dx, int64_t dy) -> double {
-        if (dx + dy < radius) {
-            return (1 - (dx + dy) * 1. / radius);
-        } else {
-            return 0;
-        }
-    };
+	auto effective_coordinates = [original](auto x, auto y) {
+		auto const [x0, y0] = original.offset();
+		auto effective = [](auto z, auto z0, auto max_z) {
+			if (z0 + z >= max_z) {
+				return 2 * (max_z - z0) - z - 1;
+			}
+			if (z0 + z >= 0) {
+				return z;
+			}
+			return - (z0 + z);
+		};
+		auto effective_x = effective(x, x0, original.base().swidth());
+		auto effective_y = effective(y, y0, original.base().sheight());
 
-    auto total_contribution = 0.;
+		return std::pair{effective_x, effective_y};
+	};
 
-    double r = 0;
-    double g = 0;
-    double b = 0;
-    auto const max_x = std::min(img.swidth(), x0 + radius);
-    auto const max_y = std::min(img.sheight(), y0 + radius);
-    for (auto y = std::max(0l, y0 - radius); y < max_y; ++y) {
-        auto partial_r = 0.;
-        auto partial_g = 0.;
-        auto partial_b = 0.;
-        for (auto x = std::max(0l, x0 - radius); x < max_x; ++x) {
-            auto weight = triangular_filter(std::abs(x - x0), std::abs(y - y0));
-            auto color  = img.pixel(x, y);
+	auto compute_blur = [&, radius](int64_t x0, int64_t y0, spl::graphics::viewport const & img) noexcept
+    	-> spl::graphics::rgba
+	{
+		auto triangular_filter = [=](int64_t dx, int64_t dy) -> double {
+			if (dx + dy < radius) {
+				return (1 - (dx + dy) * 1. / radius);
+			} else {
+				return 0;
+			}
+		};
 
-            partial_r += weight * color.r * color.r;
-            partial_g += weight * color.g * color.g;
-            partial_b += weight * color.b * color.b;
-            total_contribution += weight;
-        }
+		auto total_contribution = 0.;
 
-        r += partial_r;
-        g += partial_g;
-        b += partial_b;
-    }
+		double r = 0;
+		double g = 0;
+		double b = 0;
 
-    auto const norm_factor = 1. / total_contribution;
-    r *= norm_factor;
-    g *= norm_factor;
-    b *= norm_factor;
+		for (auto y = y0 - radius; y < y0 + radius; ++y) {
+			auto partial_r = 0.;
+			auto partial_g = 0.;
+			auto partial_b = 0.;
+			for (auto x = x0 - radius; x < x0 + radius; ++x) {
+				auto weight = triangular_filter(std::abs(x - x0), std::abs(y - y0));
+				auto [effective_x, effective_y] = effective_coordinates(x, y);
+				auto color = img.pixel(effective_x, effective_y);
 
-    return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
-};
+				partial_r += weight * color.r * color.r;
+				partial_g += weight * color.g * color.g;
+				partial_b += weight * color.b * color.b;
+				total_contribution += weight;
+			}
+
+			r += partial_r;
+			g += partial_g;
+			b += partial_b;
+		}
+
+		auto const norm_factor = 1. / total_contribution;
+		r *= norm_factor;
+		g *= norm_factor;
+		b *= norm_factor;
+
+		return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
+	};
 	auto buffer = original;
 	for (auto x = 0; x < original.swidth(); ++x) {
 		for (auto y = 0; y < original.sheight(); ++y) {
-			original.pixel(x, y) = compute_blur(x, y, buffer, radius);
+			original.pixel(x, y) = compute_blur(x, y, buffer);
 		}
 	}
 }
 
-[[nodiscard]]
+[[nodiscard]] inline
 spl::graphics::image triangular_blur(spl::graphics::viewport v, int16_t r)
 {
 	auto img = spl::graphics::image{v};
@@ -106,8 +122,8 @@ spl::graphics::image triangular_blur(spl::graphics::viewport v, int16_t r)
 	return img;
 }
 
-[[nodiscard]]
-spl::graphics::image triangular_blur(viewport && img, int16_t r)
+[[nodiscard]] inline
+spl::graphics::image triangular_blur(spl::graphics::image && img, int16_t r)
 {
 	auto res = std::move(img);
 	triangular_blur(std::in_place, res, r);
