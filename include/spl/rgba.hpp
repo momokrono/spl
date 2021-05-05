@@ -37,6 +37,8 @@ struct rgba
         return rgba{r, g, b, static_cast<uint8_t>(a2)};
     }
 
+
+
     constexpr inline
     auto to_rgb() const noexcept
     {
@@ -75,6 +77,16 @@ auto over_no_gamma(rgba const foreground, rgba const background)
     };
 }
 
+constexpr inline
+auto grayscale(rgba p)
+{
+	constexpr auto red_coeff = 0.299;
+	constexpr auto green_coeff = 0.587;
+	constexpr auto blue_coeff = 0.114;
+	auto rgb = static_cast<uint8_t>(p.r*red_coeff + p.g*green_coeff + p.b*blue_coeff);
+	return rgba{rgb,rgb,rgb,p.a};
+}
+
 #ifdef SPL_DISABLE_GAMMA_CORRECTION
 constexpr
 auto over(rgba const foreground, rgba const background)
@@ -93,7 +105,6 @@ auto over(rgba const foreground, rgba const background)
     auto const k2 = (1.f - k1) * a2 / 255.f;
 
     auto const over_impl = [k1, k2](uint8_t c1, uint8_t c2) noexcept {
-        // return static_cast<uint8_t>((c1 * k1 + c2 * k2) / (k1 + k2));
         return static_cast<uint8_t>(std::sqrt((c1 * c1 * k1 + c2 * c2 * k2) / (k1 + k2)));
     };
 

@@ -47,7 +47,7 @@ set_project_warnings(project_warnings)
 #                                  SPL                                   #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_library(spl)
-target_sources(spl PRIVATE src/image.cpp src/primitive.cpp src/viewport.cpp)
+target_sources(spl PRIVATE src/image.cpp src/primitive.cpp src/viewport.cpp src/effects.cpp)
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE RELEASE)
 target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb)
@@ -150,4 +150,18 @@ if (build_examples_viewport)
     target_sources(viewport PRIVATE example/viewport.cpp)
     target_link_libraries(viewport PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
     target_include_directories(viewport PUBLIC ./include/)
+endif()
+
+# examples/viewport
+option(build_examples_effects "Build the effects example" TRUE)
+if (build_examples_effects)
+    add_executable(effects)
+
+    target_compile_features(effects PUBLIC cxx_std_20)
+    target_compile_options(effects PRIVATE -fconcepts-diagnostics-depth=2)
+    target_link_options(effects PRIVATE)
+
+    target_sources(effects PRIVATE example/effects.cpp)
+    target_link_libraries(effects PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
+    target_include_directories(effects PUBLIC ./include/)
 endif()

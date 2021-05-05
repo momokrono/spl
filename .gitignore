@@ -1,4 +1,6 @@
 build/
+build-debug/
 .idea/
 .cache
 .ccls_cache
+.gitignore
