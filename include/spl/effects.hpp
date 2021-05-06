@@ -9,6 +9,8 @@
 #define EFFECTS_HPP
 
 #include <algorithm>
+#include <execution>
+#include <thread>
 #include <ranges>
 
 #include "spl/viewport.hpp"
@@ -107,11 +109,60 @@ void triangular_blur(std::in_place_t, spl::graphics::viewport original, int16_t 
 		return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
 	};
 	auto buffer = original;
-	for (auto x = 0; x < original.swidth(); ++x) {
+	/*for (auto x = 0; x < original.swidth(); ++x) {
 		for (auto y = 0; y < original.sheight(); ++y) {
 			original.pixel(x, y) = compute_blur(x, y, buffer);
 		}
+	}*/
+
+	/*auto indexes = std::views::iota(0, original.swidth() * original.sheight())
+				 | std::views::transform([width = original.swidth()](auto n) { return std::pair{n % width, n / width}; })
+				 | std::views::common
+				 ;
+
+	std::transform(std::execution::par, indexes.begin(), indexes.end(), buffer.begin(), [=] (auto coord) {
+		auto [x, y] = coord;
+		return compute_blur(x, y, buffer);
+	});*/
+
+	auto const num_threads = std::thread::hardware_concurrency();
+	auto const view_height = original.height() / num_threads;
+	[[maybe_unused]] auto const remaining = original.sheight() - view_height * num_threads;
+
+	auto workers = std::vector<std::jthread>{};
+
+	auto blur_viewport = [&](spl::graphics::viewport const v) {
+		auto[x0, y0] = v.offset();
+		for (auto y = 0; y < v.sheight(); ++y) {
+			if (y + y0 >= original.sheight()) {
+				break;
+			}
+			for (auto x = 0; x < v.swidth(); ++x) {
+				if (x + x0 >= original.swidth()) {
+					break;
+				}
+				original.pixel(x + x0, y + y0) = compute_blur(x, y, v);
+			}
+		}
+	};
+
+
+	for (auto i = 0ul; i < num_threads; ++i)
+	{
+		auto v = spl::graphics::viewport{buffer, 0, static_cast<int_fast32_t>(view_height * i), buffer.width() - 1, view_height - 1};
+		workers.emplace_back(blur_viewport, v);
 	}
+
+//    auto job_for_thread = original.sheight()*original.swidth()/num_threads;
+//
+//    auto pixels_to_compute = [&](int index)
+//		-> void
+//	{
+//    	for (auto i = job_for_thread*index; i < job_for_thread*(index+1); ++i)
+//
+//    };
+
+
 }
 
 [[nodiscard]] inline
