@@ -33,11 +33,11 @@ public:
     using const_reference    = value_type; // const &
     using iterator           = std::vector<value_type>::iterator;
     using const_iterator     = std::vector<value_type>::const_iterator;
-	using row_view           = spl::graphics::row_col_range<true, false>;
-	using const_row_view     = spl::graphics::row_col_range<true, true>;
-	using column_view        = spl::graphics::row_col_range<false, false>;
-	using const_column_view  = spl::graphics::row_col_range<false, true>;
-	using row_range          = spl::graphics::image_range<true, false>;     // FIXME currently not a range
+    using row_view           = spl::graphics::row_col_range<true, false>;
+    using const_row_view     = spl::graphics::row_col_range<true, true>;
+    using column_view        = spl::graphics::row_col_range<false, false>;
+    using const_column_view  = spl::graphics::row_col_range<false, true>;
+    using row_range          = spl::graphics::image_range<true, false>;     // FIXME currently not a range
     using column_range       = spl::graphics::image_range<false, false>;
     using const_row_range    = spl::graphics::image_range<true, true>;
     using const_column_range = spl::graphics::image_range<false, true>;
@@ -82,7 +82,7 @@ public:
     auto dimensions()  const noexcept { return std::pair{ width(), height() }; }
     auto swidth()      const noexcept { return static_cast<ptrdiff_t>(_width); }
     auto sheight()     const noexcept { return static_cast<ptrdiff_t>(_height); }
-    auto sdimensions() const noexcept { return std::pair{ width(), height() }; }
+    auto sdimensions() const noexcept { return std::pair{ swidth(), sheight() }; }
     bool empty()       const noexcept { return _pixels.empty(); }
 
     // drawing
