@@ -152,7 +152,7 @@ if (build_examples_viewport)
     target_include_directories(viewport PUBLIC ./include/)
 endif()
 
-# examples/viewport
+# examples/effects
 option(build_examples_effects "Build the effects example" TRUE)
 if (build_examples_effects)
     add_executable(effects)
@@ -164,4 +164,6 @@ if (build_examples_effects)
     target_sources(effects PRIVATE example/effects.cpp)
     target_link_libraries(effects PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
     target_include_directories(effects PUBLIC ./include/)
+
+    enable_sanitizers(effects)
 endif()
