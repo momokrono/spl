@@ -19,7 +19,7 @@ int main()
         mario_copy.save_to_file("mario_bw_quadrants.png");
     }
 
-    auto mario_blurred = spl::graphics::effects::triangular_blur(mario, 5);
+    auto mario_blurred = spl::graphics::effects::triangular_blur(mario, 5, 0);
     mario_blurred.save_to_file("mario_tri_blurred.png");
 
     {
@@ -33,8 +33,8 @@ int main()
         quadrant_2.fill(spl::graphics::color::yellow);
         auto quadrant_4 = spl::graphics::viewport{blue_yellow, mario.swidth() / 2, mario.sheight() / 2, width , height};
         quadrant_4.fill(spl::graphics::color::yellow);
-        spl::graphics::effects::triangular_blur(std::in_place, quadrant_2, 35);
-        spl::graphics::effects::triangular_blur(std::in_place, quadrant_4, 15);
+        spl::graphics::effects::triangular_blur(std::in_place, quadrant_2, 35, 0);
+        spl::graphics::effects::triangular_blur(std::in_place, quadrant_4, 15, 0);
         blue_yellow.save_to_file("mario_triblur_quadrants.png");
     }
 }
