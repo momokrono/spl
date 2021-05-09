@@ -5,8 +5,8 @@
  * @license     : MIT
  * */
 
-#ifndef _VIEWPORT_HPP
-#define _VIEWPORT_HPP
+#ifndef VIEWPORT_HPP
+#define VIEWPORT_HPP
 
 #include "image.hpp"
 
@@ -19,12 +19,13 @@ template <bool Const>
 class basic_viewport
 {
     using image_t = std::conditional_t<Const, image const, image>;
+    friend class basic_viewport<not Const>;
 
 public:
-    using value_type         = image_t::value_type;
+    using value_type         = typename image_t::value_type;
     using reference          = std::conditional_t<Const, value_type, value_type &>;
-    using const_reference    = image_t::const_reference;
-    using iterator           = viewport_iterator<false, Const>;
+    using const_reference    = typename image_t::const_reference;
+    using iterator           = viewport_iterator<Const, Const>;
     using const_iterator     = viewport_iterator<true, Const>;
     using row_view           = row_col_range<true,  Const>;
     using const_row_view     = row_col_range<true,  true>;
@@ -81,6 +82,12 @@ public:
     // TODO: want to disable rvalues for img, how to do it?
     constexpr basic_viewport(image_t & img) : basic_viewport{img, 0, 0, img.width(), img.height()} {}
 
+    constexpr basic_viewport(basic_viewport<false> const & v) requires (Const) :
+        _base{v._base},
+        _x{v._x}, _y{v._y},
+        _width{v._width}, _height{v._height}
+    {}
+
     auto pixel(int_fast32_t const x, int_fast32_t const y)       -> reference;
     auto pixel(int_fast32_t const x, int_fast32_t const y) const -> const_reference;
     auto pixel_noexcept(int_fast32_t const x, int_fast32_t const y)       noexcept -> reference;
@@ -125,9 +132,10 @@ public:
     auto base() -> image_t & { return *_base; }
     auto base() const -> image_t const & { return *_base; }
 
-    auto begin() requires (not Const) { return iterator{*this}; }
-	auto end() requires (not Const) { return iterator{*this, 0, sheight()};	}
+    auto begin() { return iterator{*this}; }
+	auto end() { return iterator{*this, 0, sheight()};	}
 
+	// TODO
 	/*auto begin() requires (not Const) { return iterator{*this}; }
 	auto end() requires (not Const) { return iterator{*this, 0, sheight()};	}*/
 };
@@ -141,7 +149,7 @@ struct viewport_iterator
 	using iterator_category = std::input_iterator_tag;
 	using difference_type   = std::ptrdiff_t;
 	using value_type = std::conditional_t<not Const, rgba, rgba const>;
-	using reference = value_type &;
+	using reference = std::conditional_t<Const or BasicConst, value_type, value_type &>;
 	using const_reference = value_type const &;
 
 	using basic_viewport_t = basic_viewport<BasicConst>;
@@ -184,7 +192,7 @@ static_assert(std::input_iterator<viewport_iterator<true, true>>); // const iter
 static_assert(std::input_iterator<viewport_iterator<true, false>>); // const iterator to mutable view
 static_assert(std::input_iterator<viewport_iterator<false, true>>); // mutable iterator to const view
 static_assert(std::input_iterator<viewport_iterator<false, false>>); // mutable iterator to mutable view
-static_assert(std::indirectly_writable<viewport_iterator<false, true>, rgba>);  // mutable iterator to const view
+static_assert(not std::indirectly_writable<viewport_iterator<false, true>, rgba>);  // mutable iterator to const view
 static_assert(not std::indirectly_writable<viewport_iterator<true, true>, rgba>);  // const iterator to const view
 static_assert(std::indirectly_writable<viewport_iterator<false, false>, rgba>);  // mutable iterator to mutable view
 static_assert(not std::indirectly_writable<viewport_iterator<true, false>, rgba>);  // const iterator to mutable view
@@ -195,5 +203,5 @@ static_assert(std::weakly_incrementable<viewport_iterator<false, true>>);  // mu
 
 } // namespace spl::graphics
 
-#endif /* _VIEWPORT_HPP */
+#endif /* VIEWPORT_HPP */
 

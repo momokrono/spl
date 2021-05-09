@@ -1,5 +1,5 @@
-#ifndef _IMAGE_HPP_
-#define _IMAGE_HPP_
+#ifndef IMAGE_HPP
+#define IMAGE_HPP
 
 #include <vector>
 #include <cstdint>
@@ -30,7 +30,7 @@ class image
 public:
     using value_type         = rgba;
     using reference          = value_type &;
-    using const_reference    = value_type; // const &
+    using const_reference    = value_type const &;
     using iterator           = std::vector<value_type>::iterator;
     using const_iterator     = std::vector<value_type>::const_iterator;
     using row_view           = spl::graphics::row_col_range<true, false>;
@@ -116,4 +116,4 @@ private:
 
 } // namespace spl::graphics
 
-#endif
+#endif /* IMAGE_HPP */

@@ -86,7 +86,7 @@ auto image::column(size_t const x) const -> spl::graphics::row_col_range<false, 
 }
 
 auto image::pixel(size_t const x, size_t const y) const
-    -> rgba
+    -> const_reference
 {
     if (x >= width() or y >= height()) {
         throw spl::out_of_range{x, y, _width, _height};
@@ -95,7 +95,7 @@ auto image::pixel(size_t const x, size_t const y) const
 }
 
 auto image::pixel(size_t const x, size_t const y)
-    -> rgba &
+    -> reference
 {
     if (x >= width() or y >= height()) {
         throw spl::out_of_range{x, y, _width, _height};
@@ -104,7 +104,7 @@ auto image::pixel(size_t const x, size_t const y)
 }
 
 auto image::pixel_noexcept(size_t const x, size_t const y) const noexcept
-    -> rgba
+    -> const_reference
 {
     if (x >= width() or y >= height()) {
         // fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO - logger
@@ -114,7 +114,7 @@ auto image::pixel_noexcept(size_t const x, size_t const y) const noexcept
 }
 
 auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
-    -> rgba &
+    -> reference
 {
     if (x >= width() or y >= height()) {
         // fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO - logger

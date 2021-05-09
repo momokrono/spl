@@ -1,5 +1,5 @@
-#ifndef _RGBA_HPP_
-#define _RGBA_HPP_
+#ifndef RGBA_HPP
+#define RGBA_HPP
 
 #include <cstdint>
 #include <concepts>
@@ -18,7 +18,7 @@ struct rgba
     uint8_t a;
 
     // std::same_as<uint8_t>
-    constexpr inline
+    [[nodiscard]] constexpr inline
     auto blend(uint8_t a2) const noexcept
     {
         a2 = static_cast<uint8_t>((a2 / 255.f) * a);
@@ -39,7 +39,7 @@ struct rgba
 
 
 
-    constexpr inline
+    [[nodiscard]] constexpr inline
     auto to_rgb() const noexcept
     {
         auto const alpha = a / 255.f;
@@ -117,7 +117,6 @@ auto over(rgba const foreground, rgba const background)
 }
 #endif
 
-
 namespace color
 {
     constexpr const rgba red     {255,   0,      0,      255};
@@ -135,6 +134,6 @@ namespace color
 
     constexpr const rgba nothing {0,     0,      0,      0};
 } // namespace color
-} //namespace spl::graphics
+} // namespace spl::graphics
 
-#endif
+#endif /* RGBA_HPP */

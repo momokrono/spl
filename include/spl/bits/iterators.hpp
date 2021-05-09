@@ -1,5 +1,5 @@
-#ifndef _ITERATORS_HPP_
-#define _ITERATORS_HPP_
+#ifndef ITERATORS_HPP
+#define ITERATORS_HPP
 
 #include <compare>
 #include <vector>
@@ -324,4 +324,4 @@ template <bool is_row, bool is_const>
 inline constexpr bool enable_borrowed_range<spl::graphics::image_range<is_row, is_const>> = true;
 } // namespace std::ranges
 
-#endif
+#endif /* ITERATORS_HPP */
