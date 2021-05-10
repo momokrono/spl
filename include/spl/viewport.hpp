@@ -54,10 +54,13 @@ public:
         _height = std::exchange(other._height, 0);
     }
 
-    constexpr basic_viewport(basic_viewport img, int_fast32_t x_off, int_fast32_t y_off, size_t w, size_t h) :
+    template <std::integral Int1, std::integral Int2>
+    constexpr basic_viewport(
+        basic_viewport img, int_fast32_t x_off, int_fast32_t y_off, Int1 w, Int2 h
+    ) :
         _base{img._base},
         _x{img._x + x_off}, _y{img._y + y_off},
-        _width{img._width + w}, _height{img._height + h}
+        _width{static_cast<size_t>(img._width + w)}, _height{static_cast<size_t>(img._height + h)}
     {}
 
     constexpr basic_viewport(basic_viewport img, int_fast32_t x_off, int_fast32_t y_off) :
@@ -67,9 +70,12 @@ public:
     {}
 
     // TODO: want to disable rvalues for img, how to do it?
+    template <std::integral Int1, std::integral Int2>
     explicit
-    constexpr basic_viewport(image_t & img, int_fast32_t x_off, int_fast32_t y_off, size_t w, size_t h) :
-        _base{std::addressof(img)}, _x{x_off}, _y{y_off}, _width{w}, _height{h}
+    constexpr basic_viewport(image_t & img, int_fast32_t x_off, int_fast32_t y_off, Int1 w, Int2 h) :
+        _base{std::addressof(img)},
+        _x{x_off}, _y{y_off},
+        _width{static_cast<size_t>(w)}, _height{static_cast<size_t>(h)}
     {}
 
     explicit

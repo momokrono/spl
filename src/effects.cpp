@@ -148,14 +148,7 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
         auto apply_effect = [&](spl::graphics::image_view const view) {
             auto const [x1, y1] = view.offset();
             for (auto y = 0; y < view.sheight(); ++y) {
-                if (y + y1 >= base_img.sheight()) {
-                    fmt::print(stderr, "Y IS {} ({}/{})\n", y, y + y1, base_img.sheight());
-                    break;
-                }
                 for (auto x = 0; x < view.swidth(); ++x) {
-                    if (x + x1 >= base_img.swidth()) {
-                        break;
-                    }
                     auto & pixel = result.pixel(x + x1 - x0, y + y1 - y0);
                     pixel = effect_impl(x, y, radius, view, base_img);
                 }

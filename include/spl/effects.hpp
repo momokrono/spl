@@ -43,7 +43,6 @@ spl::graphics::image greyscale(image && img)
     return res;
 }
 
-// TODO: order of arguments
 void blur(std::in_place_t, effects effect, viewport original, int16_t radius, int16_t threads = 1);
 
 [[nodiscard]] inline
