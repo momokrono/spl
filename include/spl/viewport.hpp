@@ -112,7 +112,7 @@ public:
     auto sheight()     const noexcept { return static_cast<ptrdiff_t>(_height); }
     auto sdimensions() const noexcept { return std::pair{ width(), height() }; }
 
-    auto offset() 	   const noexcept { return std::pair{_x, _y}; }
+    auto offset()      const noexcept { return std::pair{_x, _y}; }
 
     // bool empty()       const noexcept { return _pixels.empty(); }
 
@@ -129,15 +129,17 @@ public:
         return *this;
     }
 
-    auto base() -> image_t & { return *_base; }
-    auto base() const -> image_t const & { return *_base; }
+    auto base() noexcept -> image_t & { return *_base; }
+    auto base() const noexcept -> image_t const & { return *_base; }
 
-    auto begin() { return iterator{*this}; }
-	auto end() { return iterator{*this, 0, sheight()};	}
+    auto begin() noexcept { return iterator{*this}; }
+    auto end() noexcept { return iterator{*this, 0, sheight()}; }
 
-	// TODO
-	/*auto begin() requires (not Const) { return iterator{*this}; }
-	auto end() requires (not Const) { return iterator{*this, 0, sheight()};	}*/
+    auto begin() const noexcept { return const_iterator{*this}; }
+    auto end() const noexcept { return const_iterator{*this, 0, sheight()}; }
+
+    auto cbegin() const noexcept { return const_iterator{*this}; }
+    auto cend() const noexcept { return const_iterator{*this, 0, sheight()}; }
 };
 
 using viewport = basic_viewport<false>;
@@ -146,46 +148,50 @@ using image_view = basic_viewport<true>;
 template <bool Const, bool BasicConst>
 struct viewport_iterator
 {
-	using iterator_category = std::input_iterator_tag;
-	using difference_type   = std::ptrdiff_t;
-	using value_type = std::conditional_t<not Const, rgba, rgba const>;
-	using reference = std::conditional_t<Const or BasicConst, value_type, value_type &>;
-	using const_reference = value_type const &;
+    using iterator_category = std::input_iterator_tag;
+    using difference_type   = std::ptrdiff_t;
+    using value_type = std::conditional_t<not Const, rgba, rgba const>;
+    using reference = std::conditional_t<Const or BasicConst, value_type, value_type &>;
+    using const_reference = value_type const &;
 
-	using basic_viewport_t = basic_viewport<BasicConst>;
-	using viewport_t = std::conditional_t<not Const, basic_viewport_t, basic_viewport_t const>;
+    using basic_viewport_t = basic_viewport<BasicConst>;
+    using viewport_t = std::conditional_t<not Const, basic_viewport_t, basic_viewport_t const>;
 
-	using pointer = rgba *;
+private:
+    viewport_t * _base = nullptr;
+    std::ptrdiff_t _x = 0;
+    std::ptrdiff_t _y = 0;
 
-	viewport_t * _base = nullptr;
-	std::ptrdiff_t _x = 0, _y = 0;
+public:
+    viewport_iterator() = default;
+    viewport_iterator(viewport_t & v, std::ptrdiff_t x, std::ptrdiff_t y) noexcept
+        : _base{std::addressof(v)}, _x{x}, _y{y}
+    {}
 
-	viewport_iterator() = default;
-	viewport_iterator(viewport_t & v, std::ptrdiff_t x, std::ptrdiff_t y) : _base{std::addressof(v)}, _x{x}, _y{y} {}
-	viewport_iterator(viewport_t & v) : viewport_iterator{v, 0, 0} {}
-	auto operator*()       -> reference { return _base->pixel(_x, _y); }
-	auto operator*() const -> reference { return _base->pixel(_x, _y); }
+    viewport_iterator(viewport_t & v) noexcept : viewport_iterator{v, 0, 0} {}
+    auto operator*()       -> reference { return _base->pixel(_x, _y); }
+    auto operator*() const -> reference { return _base->pixel(_x, _y); }
 
-	auto operator++()
-		-> viewport_iterator &
-	{
-		++_x;
-		if (_x == _base->swidth()) {
-			_x = 0;
-			_y = std::min(_y + 1, _base->sheight());
-		}
-		return *this;
-	}
+    auto operator++() noexcept
+        -> viewport_iterator &
+    {
+        ++_x;
+        if (_x == _base->swidth()) {
+            _x = 0;
+            _y = std::min(_y + 1, _base->sheight());
+        }
+        return *this;
+    }
 
-	auto operator++(int) const
-		-> viewport_iterator
-	{
-		auto copy = *this;
-		++*this;
-		return copy;
-	}
+    auto operator++(int) const noexcept
+        -> viewport_iterator
+    {
+        auto copy = *this;
+        ++*this;
+        return copy;
+    }
 
-	bool operator==(viewport_iterator const &) const = default;
+    bool operator==(viewport_iterator const &) const noexcept = default;
 };
 
 static_assert(std::input_iterator<viewport_iterator<true, true>>); // const iterator to const view
