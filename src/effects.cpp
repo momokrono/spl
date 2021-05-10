@@ -12,6 +12,13 @@
 namespace spl::graphics
 {
 
+/// Calculates the effective coordinate of the point to select, reflecting them if
+/// they exceedes the border
+/// \param x x coordinate relative to the image_view
+/// \param y y coordinate relative to the image_view
+/// \param original the image_view on which the blur is working
+///
+/// \return the pair with the effective coordinates relative to the base image
 auto _effective_coordinates(auto x, auto y, auto const & original)
 {
     auto effective = [](auto z, auto z0, auto max_z) {
@@ -31,7 +38,7 @@ auto _effective_coordinates(auto x, auto y, auto const & original)
     return std::pair{effective_x, effective_y};
 }
 
-auto _triangular_blur(int64_t x_p, int64_t y_p, int16_t radius, image_view original, image const & base_img) noexcept
+auto _triangular_blur(int64_t x_p, int64_t y_p, int16_t radius, image_view view, image const & base_img) noexcept
     -> spl::graphics::rgba
 {
     auto triangular_filter = [=](int64_t dx, int64_t dy) -> double {
@@ -51,7 +58,7 @@ auto _triangular_blur(int64_t x_p, int64_t y_p, int16_t radius, image_view origi
         auto partial_b = 0.;
         for (auto x = x_p - radius; x < x_p + radius; ++x) {
             auto weight = triangular_filter(std::abs(x - x_p), std::abs(y - y_p));
-            auto [effective_x, effective_y] = _effective_coordinates(x, y, original);
+            auto [effective_x, effective_y] = _effective_coordinates(x, y, view);
             auto color = base_img.pixel(effective_x, effective_y);
 
             partial_r += weight * color.r * color.r;
@@ -128,6 +135,9 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
         if (threads <= 0) {
             threads = std::thread::hardware_concurrency();
         }
+
+        auto const [x0, y0] = result.offset();
+
         auto const num_threads = std::min<uint16_t>(threads, std::thread::hardware_concurrency());
         auto const view_height = result.height() / num_threads;
         auto const remaining = result.height() % num_threads;
@@ -135,28 +145,30 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
         auto workers = std::vector<std::jthread>{};
         workers.reserve(num_threads);
 
-        auto apply_effect = [&](spl::graphics::image_view const original) {
-            auto const [x0, y0] = original.offset();
-            for (auto y = 0; y < original.sheight(); ++y) {
-                if (y + y0 >= result.sheight()) {
+        auto apply_effect = [&](spl::graphics::image_view const view) {
+            auto const [x1, y1] = view.offset();
+            for (auto y = 0; y < view.sheight(); ++y) {
+                if (y + y1 >= base_img.sheight()) {
+                    fmt::print(stderr, "Y IS {} ({}/{})\n", y, y + y1, base_img.sheight());
                     break;
                 }
-                for (auto x = 0; x < original.swidth(); ++x) {
-                    if (x + x0 >= result.swidth()) {
+                for (auto x = 0; x < view.swidth(); ++x) {
+                    if (x + x1 >= base_img.swidth()) {
                         break;
                     }
-                    result.pixel(x + x0, y + y0) = effect_impl(x, y, radius, original, base_img);
+                    auto & pixel = result.pixel(x + x1 - x0, y + y1 - y0);
+                    pixel = effect_impl(x, y, radius, view, base_img);
                 }
             }
         };
 
         for (auto i = 0ul; i < num_threads; ++i) {
-            auto const start_px = static_cast<int_fast32_t>(view_height * i);
-            auto const v = spl::graphics::image_view{base_img, 0, start_px, base_img.width(), view_height};
+            auto const start_px = y0 + static_cast<int_fast32_t>(view_height * i);
+            auto const v = spl::graphics::image_view{base_img, x0, start_px, result.width(), view_height};
             workers.emplace_back(apply_effect, v);
         }
         apply_effect(spl::graphics::image_view{
-            base_img, 0, static_cast<int_fast32_t>(view_height * num_threads), base_img.width(), remaining
+            base_img, x0, y0 + static_cast<int_fast32_t>(view_height * num_threads), result.width(), remaining
         });
     }
 }

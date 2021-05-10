@@ -28,7 +28,7 @@ void greyscale(std::in_place_t, spl::graphics::viewport v)
 }
 
 [[nodiscard]] inline
-spl::graphics::image greyscale(spl::graphics::viewport v)
+spl::graphics::image greyscale(spl::graphics::image_view v)
 {
     auto img = spl::graphics::image{v};
     greyscale(std::in_place, img);
