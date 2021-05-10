@@ -60,6 +60,12 @@ spl::graphics::image blur(effects effect, spl::graphics::image && img, int16_t r
     blur(std::in_place, effect, res, radius, threads);
     return res;
 }
+void _box_blur_v2(int16_t radius, viewport output, image_view original);
+inline auto blur_v2(spl::graphics::image_view original, int16_t radius) {
+    auto img = spl::graphics::image{original};
+    _box_blur_v2(radius, img, original);
+    return img;
+}
 
 } // namespace spl::graphics
 

@@ -107,6 +107,109 @@ auto _box_blur(int64_t x0, int64_t y0, int16_t radius, image_view original, imag
     return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
 }
 
+void _box_blur_v2(int16_t radius, viewport output, image_view original)
+{
+/*    // prepara il colore per [0,0] -> color
+    // foreach y:
+    //   color -> color'
+    //   foreach x:
+    //     output[x][y] = color
+//           rimuove da color' la colonna più a sinistra
+//           aggiungere a color' la colonna più a destra
+
+        preapra viewport 3*3 -> window
+ *      prepara variabile media = 0
+ *
+ *      loop y:
+ *          media' = media
+ *          loop x:
+ *              centri il vieport in (x,y)
+ *              media' += ultima colonna
+ *              output.pixel(x,y) = media'
+ *              media' -= prima colonna
+ *           media -= prima riga
+ */
+    auto const n = 1. / (2 * radius + 1);
+//    auto [x0, y0] = output.offset();
+    //auto window = image_view{output.base(), x0 - radius, y0 - radius, 2 * radius + 1, 2 * radius + 1};
+
+    auto sum_sq_column = [radius, &original](int_fast32_t col, int_fast32_t y) -> std::array<int, 3> {
+        auto [r, g, b] = std::array{0, 0, 0};
+        for (int_fast32_t t = y - radius; t <= y + radius; ++t) {
+            auto [effective_x, effective_y] = _effective_coordinates(col, t, original);
+            auto [r_, g_, b_, _] = original.base().pixel(effective_x, effective_y);
+            r += r_ * r_;
+            g += g_ * g_;
+            b += b_ * b_;
+        }
+        return std::array{r, g, b};
+    };  // in the output frame of reference
+
+    auto sum_sq_row = [radius, &original](int_fast32_t x, int_fast32_t row) -> std::array<int, 3>
+    {
+        auto [r, g, b] = std::array{0, 0, 0};
+        for (int_fast32_t t = x - radius; t <= x + radius; ++t) {
+            auto [effective_x, effective_y] = _effective_coordinates(t, row, original);
+            auto [r_, g_, b_, _] = original.base().pixel(effective_x, effective_y);
+            r += r_ * r_;
+            g += g_ * g_;
+            b += b_ * b_;
+        }
+        return std::array{r, g, b};
+    };
+
+
+    // First avg computation
+    auto [r, g, b] = std::array{0, 0, 0}; // y_avg;
+    for (int t = -radius; t <= radius; ++t) {
+        auto const [a_, b_, c_] = sum_sq_column(t, 0);
+        r += a_;
+        g += b_;
+        b += c_;
+    }
+
+    auto y = 0;
+    while (true) {
+        auto x_r = r;
+        auto x_g = g;
+        auto x_b = b;
+
+        auto x = 0;
+        while (true) {
+            output.pixel(x, y) = rgba{
+                static_cast<uint8_t>(std::sqrt(x_r) * n),
+                static_cast<uint8_t>(std::sqrt(x_g) * n),
+                static_cast<uint8_t>(std::sqrt(x_b) * n)};
+                //static_cast<uint8_t>(x_r / n),
+                //static_cast<uint8_t>
+            ++x;
+            if (x >= output.swidth()) {
+                break;
+            }
+            auto const [a_, b_, c_] = sum_sq_column(x - radius - 1, y);
+            x_r -= a_;
+            x_g -= b_;
+            x_b -= c_;
+            auto const [a__, b__, c__] = sum_sq_column(x + radius, y);
+            x_r += a__;
+            x_g += b__;
+            x_b += c__;
+        }
+        ++y;
+        if (y >= output.sheight()) {
+            break;
+        }
+        auto const [a_, b_, c_] = sum_sq_row(0, y - radius - 1);
+        r -= a_;
+        g -= b_;
+        b -= c_;
+        auto const [a__, b__, c__] = sum_sq_row(0, y + radius);
+        r += a__;
+        g += b__;
+        b += c__;
+    }
+}
+
 void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int16_t threads)
 {
    auto const effect_impl = [effect] {
@@ -145,7 +248,7 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
         auto workers = std::vector<std::jthread>{};
         workers.reserve(num_threads);
 
-        auto apply_effect = [&](spl::graphics::image_view const view) {
+        auto apply_effect = [&, x0, y0](spl::graphics::image_view const view) {
             auto const [x1, y1] = view.offset();
             for (auto y = 0; y < view.sheight(); ++y) {
                 for (auto x = 0; x < view.swidth(); ++x) {

@@ -1,6 +1,6 @@
 /**
- * @author      : Riccardo Brugo (brugo.riccardo@gmail.com)
- * @file        : convolution
+ * @author      : rbrugo, momokrono
+ * @file        : blur.cpp
  * @created     : Thursday Aug 27, 2020 21:43:48 CEST
  * @license     : MIT
  */
