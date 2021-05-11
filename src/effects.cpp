@@ -107,65 +107,49 @@ auto _box_blur(int64_t x0, int64_t y0, int16_t radius, image_view original, imag
     return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
 }
 
+
 void _box_blur_v2(int16_t radius, viewport output, image_view original)
 {
-/*    // prepara il colore per [0,0] -> color
-    // foreach y:
-    //   color -> color'
-    //   foreach x:
-    //     output[x][y] = color
-//           rimuove da color' la colonna più a sinistra
-//           aggiungere a color' la colonna più a destra
+    auto const sqrt_norm_factor = 1. / (2 * radius + 1);
+    auto [x0, y0] = output.offset();
 
-        preapra viewport 3*3 -> window
- *      prepara variabile media = 0
- *
- *      loop y:
- *          media' = media
- *          loop x:
- *              centri il vieport in (x,y)
- *              media' += ultima colonna
- *              output.pixel(x,y) = media'
- *              media' -= prima colonna
- *           media -= prima riga
- */
-    auto const n = 1. / (2 * radius + 1);
-//    auto [x0, y0] = output.offset();
-    //auto window = image_view{output.base(), x0 - radius, y0 - radius, 2 * radius + 1, 2 * radius + 1};
-
-    auto sum_sq_column = [radius, &original](int_fast32_t col, int_fast32_t y) -> std::array<int, 3> {
-        auto [r, g, b] = std::array{0, 0, 0};
+    auto sum_sq_column = [radius, &original](int_fast32_t col, int_fast32_t y)
+    {
+        auto [r, g, b, a] = std::array{0, 0, 0, 0};
         for (int_fast32_t t = y - radius; t <= y + radius; ++t) {
             auto [effective_x, effective_y] = _effective_coordinates(col, t, original);
-            auto [r_, g_, b_, _] = original.base().pixel(effective_x, effective_y);
+            auto [r_, g_, b_, a_] = original.base().pixel(effective_x, effective_y);
             r += r_ * r_;
             g += g_ * g_;
             b += b_ * b_;
+            a += a_;
         }
-        return std::array{r, g, b};
+        return std::array<int_fast32_t, 4>{r, g, b, a};
     };  // in the output frame of reference
 
-    auto sum_sq_row = [radius, &original](int_fast32_t x, int_fast32_t row) -> std::array<int, 3>
+    auto sum_sq_row = [radius, &original](int_fast32_t x, int_fast32_t row)
     {
-        auto [r, g, b] = std::array{0, 0, 0};
+        auto [r, g, b, a] = std::array{0, 0, 0, 0};
         for (int_fast32_t t = x - radius; t <= x + radius; ++t) {
             auto [effective_x, effective_y] = _effective_coordinates(t, row, original);
-            auto [r_, g_, b_, _] = original.base().pixel(effective_x, effective_y);
+            auto [r_, g_, b_, _a] = original.base().pixel(effective_x, effective_y);
             r += r_ * r_;
             g += g_ * g_;
             b += b_ * b_;
+            a += _a;
         }
-        return std::array{r, g, b};
-    };
+        return std::array<int_fast32_t, 4>{r, g, b, a};
+    };  // in the output frame of reference
 
 
     // First avg computation
-    auto [r, g, b] = std::array{0, 0, 0}; // y_avg;
+    auto [r, g, b, a] = std::array{0, 0, 0, 0}; // y_avg;
     for (int t = -radius; t <= radius; ++t) {
-        auto const [a_, b_, c_] = sum_sq_column(t, 0);
-        r += a_;
-        g += b_;
-        b += c_;
+        auto const [r_, g_, b_, a_] = sum_sq_column(x0 + t, y0);
+        r += r_;
+        g += g_;
+        b += b_;
+        a += a_;
     }
 
     auto y = 0;
@@ -173,40 +157,37 @@ void _box_blur_v2(int16_t radius, viewport output, image_view original)
         auto x_r = r;
         auto x_g = g;
         auto x_b = b;
+        auto x_a = a;
 
         auto x = 0;
         while (true) {
             output.pixel(x, y) = rgba{
-                static_cast<uint8_t>(std::sqrt(x_r) * n),
-                static_cast<uint8_t>(std::sqrt(x_g) * n),
-                static_cast<uint8_t>(std::sqrt(x_b) * n)};
-                //static_cast<uint8_t>(x_r / n),
-                //static_cast<uint8_t>
+                static_cast<uint8_t>(std::sqrt(x_r) * sqrt_norm_factor),
+                static_cast<uint8_t>(std::sqrt(x_g) * sqrt_norm_factor),
+                static_cast<uint8_t>(std::sqrt(x_b) * sqrt_norm_factor),
+                static_cast<uint8_t>(a * sqrt_norm_factor * sqrt_norm_factor)
+            };
             ++x;
             if (x >= output.swidth()) {
                 break;
             }
-            auto const [a_, b_, c_] = sum_sq_column(x - radius - 1, y);
-            x_r -= a_;
-            x_g -= b_;
-            x_b -= c_;
-            auto const [a__, b__, c__] = sum_sq_column(x + radius, y);
-            x_r += a__;
-            x_g += b__;
-            x_b += c__;
+            auto const [prev_r, prev_g, prev_b, prev_a] = sum_sq_column(x + x0 - radius - 1, y + y0);
+            auto const [next_r, next_g, next_b, next_a] = sum_sq_column(x + x0 + radius, y + y0);
+            x_r += next_r - prev_r;
+            x_g += next_g - prev_g;
+            x_b += next_b - prev_b;
+            x_a += next_a - prev_a;
         }
         ++y;
         if (y >= output.sheight()) {
             break;
         }
-        auto const [a_, b_, c_] = sum_sq_row(0, y - radius - 1);
-        r -= a_;
-        g -= b_;
-        b -= c_;
-        auto const [a__, b__, c__] = sum_sq_row(0, y + radius);
-        r += a__;
-        g += b__;
-        b += c__;
+        auto const [prev_r, prev_g, prev_b, prev_a] = sum_sq_row(x0, y + y0 - radius - 1);
+        auto const [next_r, next_g, next_b, next_a] = sum_sq_row(x0, y + y0 + radius);
+        r += next_r - prev_r;
+        g += next_g - prev_g;
+        b += next_b - prev_b;
+        a += next_a - prev_a;
     }
 }
 

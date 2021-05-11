@@ -66,6 +66,11 @@ inline auto blur_v2(spl::graphics::image_view original, int16_t radius) {
     _box_blur_v2(radius, img, original);
     return img;
 }
+inline void blur_v2(std::in_place_t, spl::graphics::viewport original, int16_t radius) {
+    auto img = original.base();
+    _box_blur_v2(radius, original, img);
+    // return img;
+}
 
 } // namespace spl::graphics
 

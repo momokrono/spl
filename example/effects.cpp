@@ -86,8 +86,10 @@ auto blur_v2_q()
     auto quadrant_4 = spl::graphics::viewport{image, image.swidth() / 2, image.sheight() / 2, width , height};
     quadrant_4.fill(spl::graphics::color::green);
 
-    auto image_blurred = spl::graphics::blur_v2(image, 8);
-    image_blurred.save_to_file(result_name);
+    spl::graphics::blur_v2(std::in_place, quadrant_2, 8);
+    spl::graphics::blur_v2(std::in_place, quadrant_4, 15);
+
+    image.save_to_file(result_name);
 }
 
 
