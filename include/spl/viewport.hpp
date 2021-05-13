@@ -60,7 +60,7 @@ public:
     ) :
         _base{img._base},
         _x{img._x + x_off}, _y{img._y + y_off},
-        _width{static_cast<size_t>(img._width + w)}, _height{static_cast<size_t>(img._height + h)}
+        _width{static_cast<size_t>(w)}, _height{static_cast<size_t>(h)}
     {}
 
     constexpr basic_viewport(basic_viewport img, int_fast32_t x_off, int_fast32_t y_off) :
