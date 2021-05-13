@@ -19,7 +19,7 @@ namespace spl::graphics
 /// \param original the image_view on which the blur is working
 ///
 /// \return the pair with the effective coordinates relative to the base image
-auto _effective_coordinates(auto x, auto y, auto const & original)
+auto _effective_coordinates(auto x, auto y, image_view const & original)
 {
     auto effective = [](auto z, auto z0, auto max_z) {
         if (z0 + z >= max_z) {
@@ -38,7 +38,16 @@ auto _effective_coordinates(auto x, auto y, auto const & original)
     return std::pair{effective_x, effective_y};
 }
 
-auto _triangular_blur(int64_t x_p, int64_t y_p, int16_t radius, image_view view, image const & base_img) noexcept
+/// Calculates the color of a pixel using a triangular blur
+/// \param x_p x coordinate of the point, relative to the view
+/// \param y_p y coordinate of the point, relative to the view
+/// \param radius radius of the area of influence for the blur
+/// \param view view on the area being blurred
+/// \param base_img the base image
+/// \return the color of the pixel in `(x_p, y_p)` computed as an average of the colors in a square
+///         of side `2 * radius + 1` centered in the pixel, with weight inversely proportional to
+///         the distance
+auto _triangular_blur_impl(int64_t x_p, int64_t y_p, int16_t radius, image_view view, image const & base_img) noexcept
     -> spl::graphics::rgba
 {
     auto triangular_filter = [=](int64_t dx, int64_t dy) -> double {
@@ -82,34 +91,22 @@ auto _triangular_blur(int64_t x_p, int64_t y_p, int16_t radius, image_view view,
     };
 }
 
-auto _box_blur(int64_t x0, int64_t y0, int16_t radius, image_view original, image const & base_img) noexcept
+void _triangular_blur(int16_t radius, viewport output, image_view original)
 {
-    double r = 0;
-    double g = 0;
-    double b = 0;
-    auto const norm_factor = 1. / ((2 * radius + 1) * (2 * radius + 1));
-    for (auto y = y0 - radius; y < y0 + radius; ++y) {
-        auto partial_r = 0.;
-        auto partial_g = 0.;
-        auto partial_b = 0.;
-        for (auto x = x0 - radius; x < x0 + radius; ++x) {
-            auto [effective_x, effective_y] = _effective_coordinates(x, y, original);
-            auto color = base_img.pixel(effective_x, effective_y);
-
-            partial_r += color.r * color.r;
-            partial_g += color.g * color.g;
-            partial_b += color.b * color.b;
+    auto const & base_img = original.base();
+    for (auto y = 0; y < output.sheight(); ++y) {
+        for (auto x = 0; x < output.swidth(); ++x) {
+            auto & pixel = output.pixel(x, y);
+            pixel = _triangular_blur_impl(x, y, radius, output, base_img);
         }
-        r += partial_r * norm_factor;
-        g += partial_g * norm_factor;
-        b += partial_b * norm_factor;
     }
-    return spl::graphics::rgba(std::sqrt(r), std::sqrt(g), std::sqrt(b));
 }
 
-
-void _box_blur_v2(int16_t radius, viewport output, image_view original)
+void _box_blur(int16_t radius, viewport output, image_view original)
 {
+    if (output.height() == 0 or output.width() == 0) {
+        return;
+    }
     auto const sqrt_norm_factor = 1. / (2 * radius + 1);
     auto [x0, y0] = output.offset();
 
@@ -199,7 +196,7 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
            return _triangular_blur;
        case effects::box_blur:
            return _box_blur;
-           // case effects::kawase_blur: return _kawase_blur
+       // case effects::kawase_blur: return _kawase_blur
        default:
            fmt::print("Unrecognized blur type, exiting.\n");
            std::exit(1); // TODO: exit numbers
@@ -210,17 +207,11 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
    auto const base_img = result.base();
 
     if (threads == 1) {
-        for (auto x = 0; x < result.swidth(); ++x) {
-            for (auto y = 0; y < result.sheight(); ++y) {
-                result.pixel(x, y) = effect_impl(x, y, radius, result, base_img);
-            }
-        }
+        effect_impl(radius, result, base_img);
     } else {
         if (threads <= 0) {
             threads = std::thread::hardware_concurrency();
         }
-
-        auto const [x0, y0] = result.offset();
 
         auto const num_threads = std::min<uint16_t>(threads, std::thread::hardware_concurrency());
         auto const view_height = result.height() / num_threads;
@@ -229,24 +220,14 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
         auto workers = std::vector<std::jthread>{};
         workers.reserve(num_threads);
 
-        auto apply_effect = [&, x0, y0](spl::graphics::image_view const view) {
-            auto const [x1, y1] = view.offset();
-            for (auto y = 0; y < view.sheight(); ++y) {
-                for (auto x = 0; x < view.swidth(); ++x) {
-                    auto & pixel = result.pixel(x + x1 - x0, y + y1 - y0);
-                    pixel = effect_impl(x, y, radius, view, base_img);
-                }
-            }
-        };
-
         for (auto i = 0ul; i < num_threads; ++i) {
-            auto const start_px = y0 + static_cast<int_fast32_t>(view_height * i);
-            auto const v = spl::graphics::image_view{base_img, x0, start_px, result.width(), view_height};
-            workers.emplace_back(apply_effect, v);
+            auto const start_px = static_cast<int_fast32_t>(view_height * i);
+            auto output = spl::graphics::viewport{result, 0, start_px, result.width(), view_height};
+            workers.emplace_back(effect_impl, radius, output, image_view{base_img});
         }
-        apply_effect(spl::graphics::image_view{
-            base_img, x0, y0 + static_cast<int_fast32_t>(view_height * num_threads), result.width(), remaining
-        });
+        effect_impl(radius, viewport{
+            result, 0, static_cast<int_fast32_t>(view_height * num_threads), result.width(), remaining
+        }, base_img);
     }
 }
 
