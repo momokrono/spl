@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "spl/drawable.hpp"
+#include "spl/any_drawable.hpp"
 #include "spl/viewport.hpp"
 #include "spl/primitives/vertex.hpp"
 
@@ -19,9 +19,7 @@ namespace spl::graphics
 
 class group
 {
-    struct object_t;
-
-    std::vector<object_t> _buffer;
+    std::vector<any_drawable> _buffer;
     vertex _origin{0, 0};
 
 public:
@@ -33,40 +31,6 @@ public:
     auto position()       noexcept -> vertex & { return _origin; }
     auto position() const noexcept -> vertex   { return _origin; }
     auto & translate(int_fast32_t x, int_fast32_t y) { _origin += {x, y}; return *this; }
-};
-
-struct group::object_t
-{
-    template <drawable T>
-    explicit object_t(T obj) : _self{std::make_shared<model<T>>(std::move(obj))} {}
-
-    struct concept_t
-    {
-        virtual ~concept_t() = default;
-        virtual void render_on(graphics::viewport) const noexcept = 0;
-    };
-
-    template <drawable T>
-    struct model final : concept_t
-    {
-        explicit model(T obj) : _data{std::move(obj)} {}
-        void render_on(graphics::viewport img) const noexcept final
-        {
-            if constexpr (spl::detail::has_render_on_member_function<T>) {
-                _data.render_on(img);
-            } else {
-                _data(img);
-            }
-        }
-        T _data;
-    };
-
-    void render_on(graphics::viewport img) const noexcept
-    {
-        _self->render_on(img);
-    }
-
-    std::shared_ptr<concept_t> _self;
 };
 
 inline
