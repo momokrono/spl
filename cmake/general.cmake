@@ -17,7 +17,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
 
 # ccache
-option(ENABLE_CACHE "Enable ccache if available" ON)
+option(ENABLE_CACHE "Enable ccache if available" OFF)
 if (ENABLE_CACHE)
     find_program(CACHE_BINARY "ccache")
     if (CACHE_BINARY)
@@ -94,7 +94,7 @@ function(enable_lto target_name)
 endfunction()
 
 # force colors in compiler output
-option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." FALSE)
+option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." TRUE)
 mark_as_advanced(FORCE_COLORED_OUTPUT)
 if (${FORCE_COLORED_OUTPUT})
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

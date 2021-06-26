@@ -27,7 +27,7 @@ auto triangular_blur(auto const & image)
 {
     constexpr auto result_name = "example_effects_triangular_blur.png";
     fmt::print("Triangular blur ({})...\n", result_name);
-    auto image_blurred = spl::graphics::blur(spl::graphics::effects::triangular_blur, image, 8, 0);
+    auto image_blurred = spl::graphics::blur(spl::graphics::effects::triangular{8}, image, 0);
     image_blurred.save_to_file(result_name);
 }
 
@@ -35,7 +35,7 @@ auto box_blur(auto const & image)
 {
     constexpr auto result_name = "example_effects_box_blur.png";
     fmt::print("Box blur ({})...\n", result_name);
-    auto image_blurred = spl::graphics::blur(spl::graphics::effects::box_blur, image, 8, 0);
+    auto image_blurred = spl::graphics::blur(spl::graphics::effects::box{8}, image, 0);
     image_blurred.save_to_file(result_name);
 }
 
@@ -48,8 +48,8 @@ auto blur_quadrants(auto image)
 
     auto quadrant_2 = spl::graphics::viewport{image, 0, 0, width, height};
     auto quadrant_4 = spl::graphics::viewport{image, image.swidth() / 2, image.sheight() / 2, width , height};
-    spl::graphics::blur(std::in_place, spl::graphics::effects::box_blur, quadrant_2, 8, 0);
-    spl::graphics::blur(std::in_place, spl::graphics::effects::triangular_blur, quadrant_4, 15, 0);
+    spl::graphics::blur(std::in_place, spl::graphics::effects::box{8}, quadrant_2, int16_t{0});
+    spl::graphics::blur(std::in_place, spl::graphics::effects::triangular{15}, quadrant_4, 0);
 
     image.save_to_file(result_name);
 }
@@ -66,8 +66,8 @@ auto blur_colored_quadrants()
     quadrant_2.fill(spl::graphics::color::yellow);
     auto quadrant_4 = spl::graphics::viewport{image, image.swidth() / 2, image.sheight() / 2, width , height};
     quadrant_4.fill(spl::graphics::color::green);
-    spl::graphics::blur(std::in_place, spl::graphics::effects::box_blur, quadrant_2, 8, 0);
-    spl::graphics::blur(std::in_place, spl::graphics::effects::triangular_blur, quadrant_4, 15, 0);
+    spl::graphics::blur(std::in_place, spl::graphics::effects::box{ .radius = 8}, quadrant_2, 0);
+    spl::graphics::blur(std::in_place, spl::graphics::effects::triangular{ 15 }, quadrant_4, 0);
     image.save_to_file(result_name);
 }
 
@@ -85,6 +85,10 @@ int main(int argc, char * argv[])
         triangular_blur(image);
         box_blur(image);
         blur_quadrants(image);
+
+        // spl::graphics::blur(std::in_place, spl::effects_::kawase{.radius=2, .boh={0, 1, 2, 2, 3}}, image);
+        spl::graphics::blur(std::in_place, spl::graphics::effects::triangular{10}, image);
+        image.save_to_file("test_policy.png");
     } else {
         fmt::print("No image passed as argument - only colored quadrants will be generated\n");
     }

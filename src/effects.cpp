@@ -188,23 +188,12 @@ void _box_blur(int16_t radius, viewport output, image_view original)
     }
 }
 
-void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int16_t threads)
+template <typename Effect, typename EffectImpl>
+void _blur_w_policy_monoarg_impl(Effect params, EffectImpl effect_impl, viewport result, int16_t threads)
 {
-   auto const effect_impl = [effect] {
-       switch (effect) {
-       case effects::triangular_blur:
-           return _triangular_blur;
-       case effects::box_blur:
-           return _box_blur;
-       // case effects::kawase_blur: return _kawase_blur
-       default:
-           fmt::print("Unrecognized blur type, exiting.\n");
-           std::exit(1); // TODO: exit numbers
-           // TODO: exception? boh
-       }
-   }();
+    auto const [radius] = params;
 
-   auto const base_img = result.base();
+    auto const base_img = result.base();
 
     if (threads == 1) {
         effect_impl(radius, result, base_img);
@@ -229,6 +218,16 @@ void blur(std::in_place_t, effects effect, viewport result, int16_t radius, int1
             result, 0, static_cast<int_fast32_t>(view_height * num_threads), result.width(), remaining
         }, base_img);
     }
+}
+
+void blur(std::in_place_t, effects::triangular params, viewport result, int16_t threads)
+{
+    _blur_w_policy_monoarg_impl(params, _triangular_blur, result, threads);
+}
+
+void blur(std::in_place_t, effects::box params, viewport result, int16_t threads)
+{
+    _blur_w_policy_monoarg_impl(params, _box_blur, result, threads);
 }
 
 } // namespace spl::graphics
