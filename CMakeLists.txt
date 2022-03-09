@@ -19,7 +19,7 @@ set(CMAKE_CXX_EXTENSIONS NO)
 #                                 Conan                                  #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 include(cmake/conan.cmake)
-conan_cmake_configure(REQUIRES fmt/7.1.2 BASIC_SETUP CMAKE_TARGETS)
+conan_cmake_configure(REQUIRES fmt/8.1.1 BASIC_SETUP CMAKE_TARGETS)
 conan_cmake_autodetect(settings)
 conan_cmake_install(
     PATH_OR_REFERENCE ${CMAKE_BINARY_DIR}
