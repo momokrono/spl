@@ -501,14 +501,17 @@ void rectangle::render_on(viewport img) const noexcept
     auto const y1 = _origin.y;
     static_assert(std::is_signed_v<decltype(x1)>);
 
-    auto const x2 = static_cast<int_fast32_t>(std::round(_sides.first * cos) + x1);
-    auto const y2 = static_cast<int_fast32_t>(std::round(_sides.first * sin) + y1);
+    auto const w = _sides.first - 1;
+    auto const h = _sides.second - 1;
 
-    auto const x3 = static_cast<int_fast32_t>(std::round(_sides.first * cos - _sides.second * sin) + x1);
-    auto const y3 = static_cast<int_fast32_t>(std::round(_sides.first * sin + _sides.second * cos) + y1);
+    auto const x2 = static_cast<int_fast32_t>(std::round(w * cos) + x1);
+    auto const y2 = static_cast<int_fast32_t>(std::round(w * sin) + y1);
 
-    auto const x4 = static_cast<int_fast32_t>(- std::round(_sides.second * sin) + x1);
-    auto const y4 = static_cast<int_fast32_t>(std::round(_sides.second * cos) + y1);
+    auto const x3 = static_cast<int_fast32_t>(std::round(w * cos - h * sin) + x1);
+    auto const y3 = static_cast<int_fast32_t>(std::round(w * sin + h * cos) + y1);
+
+    auto const x4 = static_cast<int_fast32_t>(- std::round(h * sin) + x1);
+    auto const y4 = static_cast<int_fast32_t>(std::round(h * cos) + y1);
 
     if (_fill_color.a != 0) {
         detail::draw_filled(img, {

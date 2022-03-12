@@ -216,4 +216,3 @@ static_assert(std::weakly_incrementable<viewport_iterator<false, true>>);  // mu
 } // namespace spl::graphics
 
 #endif /* VIEWPORT_HPP */
-
