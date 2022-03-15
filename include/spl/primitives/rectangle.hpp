@@ -34,6 +34,16 @@ public:
     {}
 
     constexpr
+    rectangle(
+        vertex const upper_left, vertex const lower_right, double rotation = 0., bool antialiasing = false
+    ) noexcept :
+        _origin{upper_left},
+        _sides{upper_left.x - lower_right.x + 1, upper_left.y - lower_right.y + 1},
+        _rotation(rotation),
+        _anti_aliasing{antialiasing}
+    {}
+
+    constexpr
     auto border_color(spl::graphics::rgba const fill) noexcept
         -> rectangle &
     { _border_color = fill; return *this; }
