@@ -66,6 +66,27 @@ struct line
     ) : line{from, to, 1, color, anti_aliasing}
     {}
 
+    constexpr line(
+        vertex from, double length, double inclination,
+        int16_t thickness,
+        spl::graphics::rgba color = spl::graphics::color::black,
+        bool anti_aliasing = true
+    ) : line{
+        from,
+        vertex(
+            std::round(from.x + length * std::sin(inclination)),
+            std::round(from.y + length * std::cos(inclination))
+        ),
+        thickness, color, anti_aliasing
+    } {}
+
+    constexpr line(
+        vertex from, double length, double inclination,
+        spl::graphics::rgba color = spl::graphics::color::black,
+        bool anti_aliasing = true
+    ) : line{from, length, inclination, 1, color, anti_aliasing}
+    {}
+
     void render_on(viewport img) const noexcept;
 
     void draw_antialiased_parametric(viewport img) const noexcept;
