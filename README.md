@@ -13,7 +13,6 @@ If you find yourself having issues with it, feel free to report it.**
 - Ease of use: the library must be easy to install and easy to use. We're achieving the former using the [conan package manager](https://conan.io/) for the dependencies and [cmake](https://cmake.org/) as build system, and the latter by taking inspiration from [matplotlib](https://matplotlib.org/), since we recognize in it the simplicity wewant our library to transmit while using it
 - Being as up-to-date with the standard as possible: C++ is evolving, and there's no reason for us to avoid all the goodies that C++11, 14, 17 and 20 have brought us. Also, that's a good exercise to learn all the new stuff that comes out from every new standard
 - Being as standard as possible (minimal external dependencies): we want `spl` to be as standalone as possible. As for now, we have the following dependencies:
-    - [range-v3](https://github.com/ericniebler/range-v3), waiting for the C++20 ranges library
     - [fmtlib](https://github.com/fmtlib/fmt) in the absence of the C++20 formatting library
     - [stb](https://github.com/nothings/stb) for saving and loading various image types
 
