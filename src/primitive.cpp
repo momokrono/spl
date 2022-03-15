@@ -104,11 +104,11 @@ namespace detail
                 auto end = points[i+1];
 
                 auto end_vertex = _quadratic(start, control, end, t);
-                auto l = spl::graphics::line(start_vertex, end_vertex, color);
+                auto l = spl::graphics::line(start_vertex, end_vertex, color, aliased);
                 start_vertex = end_vertex;
                 buffer.push(l);
             }
-            auto line = spl::graphics::line(start_vertex, points[i+1], color);
+            auto line = spl::graphics::line(start_vertex, points[i+1], color, aliased);
             buffer.push(line);
         }
         buffer.render_on(img);
