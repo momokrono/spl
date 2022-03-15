@@ -11,7 +11,7 @@
 
 #include <fstream>
 #include <fmt/core.h>
-#include <fmt/ostream.h>
+#include <fmt/os.h>
 
 #ifdef SPL_FILL_MULTITHREAD
 #include <thread>
@@ -155,19 +155,14 @@ bool image::save_to_file(std::string_view const filename) const
         return stbi_write_jpg(filename.data(), swidth(), sheight(), 4, raw_data(), 90) == 1;
     }
     if (filename.ends_with(".ppm")) {
-        auto sink = std::ofstream{filename.data()};
-        if (not sink) {
-            return false;
-        }
-
-        fmt::print(sink, "P3\n{} {}\n255\n", width(), height());
-
+        auto sink = fmt::output_file(filename.data());
+        sink.print("P3\n{} {}\n255\n", width(), height());
         for (size_t j = 0; j < height(); ++j) {
             for (size_t i = 0; i < width(); ++i) {
                 auto const [r, g, b, a] = pixel(i, j);
-                fmt::print(sink, "{} {} {}\n", a * r / 255, a * g / 255, a * b / 255);
+                sink.print("{} {} {}\n", a * r / 255, a * g / 255, a * b / 255);
             }
-            fmt::print(sink, "\n");
+            sink.print("\n");
         }
 
         return true;
