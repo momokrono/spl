@@ -23,7 +23,7 @@
 namespace spl::graphics
 {
 
-auto image::get_pixel_iterator(size_t const x, size_t const y)
+auto image::get_pixel_iterator(index_type const x, index_type const y)
     -> image::iterator
 {
     if (x > _width - 1 or y > _height - 1) {
@@ -32,7 +32,7 @@ auto image::get_pixel_iterator(size_t const x, size_t const y)
     return _pixels.begin() + static_cast<ptrdiff_t>(x + y * _width);
 }
 
-auto image::get_pixel_iterator(size_t const x, size_t const y) const
+auto image::get_pixel_iterator(index_type const x, index_type const y) const
     -> image::const_iterator
 {
     if (x > _width - 1 or y > _height - 1) {
@@ -85,7 +85,7 @@ auto image::column(size_t const x) const -> spl::graphics::row_col_range<false, 
     return {{it, _width}, _height};
 }
 
-auto image::pixel(size_t const x, size_t const y) const
+auto image::pixel(index_type const x, index_type const y) const
     -> const_reference
 {
     if (x >= width() or y >= height()) {
@@ -94,7 +94,7 @@ auto image::pixel(size_t const x, size_t const y) const
     return _pixels.at(x+y*_width);
 }
 
-auto image::pixel(size_t const x, size_t const y)
+auto image::pixel(index_type const x, index_type const y)
     -> reference
 {
     if (x >= width() or y >= height()) {
@@ -103,21 +103,19 @@ auto image::pixel(size_t const x, size_t const y)
     return _pixels.at(x + y * _width);
 }
 
-auto image::pixel_noexcept(size_t const x, size_t const y) const noexcept
+auto image::pixel_noexcept(index_type const x, index_type const y) const noexcept
     -> const_reference
 {
     if (x >= width() or y >= height()) {
-        // fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO - logger
         return image::_garbage_pixel;
     }
     return _pixels.at(x + y * _width);
 }
 
-auto image::pixel_noexcept(size_t const x, size_t const y) noexcept
+auto image::pixel_noexcept(index_type const x, index_type const y) noexcept
     -> reference
 {
     if (x >= width() or y >= height()) {
-        // fmt::print(stderr, ">>> invalid pixel {}, {}\n", x, y); // TODO - logger
         return image::_garbage_pixel;
     }
     return _pixels.at(x + y * _width);
@@ -148,13 +146,13 @@ auto image::fill(rgba const c) & noexcept
 bool image::save_to_file(std::string_view const filename) const
 {
     if (filename.ends_with(".bmp")) {
-        return stbi_write_bmp(filename.data(), static_cast<int>(width()), static_cast<int>(height()), 4, raw_data()) == 1;
+        return stbi_write_bmp(filename.data(), swidth(), sheight(), 4, raw_data()) == 1;
     }
     if (filename.ends_with(".png")) {
-        return stbi_write_png(filename.data(), static_cast<int>(width()), static_cast<int>(height()), 4, raw_data(), 0) == 1;
+        return stbi_write_png(filename.data(), swidth(), sheight(), 4, raw_data(), 0) == 1;
     }
     if (filename.ends_with(".jpg")) {
-        return stbi_write_jpg(filename.data(), static_cast<int>(width()), static_cast<int>(height()), 4, raw_data(), 90) == 1;
+        return stbi_write_jpg(filename.data(), swidth(), sheight(), 4, raw_data(), 90) == 1;
     }
     if (filename.ends_with(".ppm")) {
         auto sink = std::ofstream{filename.data()};
@@ -212,7 +210,9 @@ auto image::load_from_file(std::filesystem::path const & filename)
     auto width = 0;
     auto height = 0;
     auto channels = 0;
-    auto ptr = std::unique_ptr<uint8_t, stb_clear>{stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha)};
+    auto ptr = std::unique_ptr<uint8_t, stb_clear>{
+        stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha)
+    };
 
     if (not ptr) {
         return load_status::failure;

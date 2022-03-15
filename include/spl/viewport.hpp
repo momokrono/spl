@@ -35,10 +35,11 @@ public:
     using const_row_range    = image_range<true,  true>;
     using column_range       = image_range<false, Const>;
     using const_column_range = image_range<false, true>;
+    using index_type         = vertex::value_type;
 
 private:
     image_t * _base = nullptr;
-    int_fast32_t _x = 0, _y = 0;
+    index_type _x = 0, _y = 0;
     size_t _width = 0, _height = 0;
     // float rotation = 0.f;
 
@@ -56,14 +57,14 @@ public:
 
     template <std::integral Int1, std::integral Int2>
     constexpr basic_viewport(
-        basic_viewport img, int_fast32_t x_off, int_fast32_t y_off, Int1 w, Int2 h
+        basic_viewport img, index_type x_off, index_type y_off, Int1 w, Int2 h
     ) :
         _base{img._base},
         _x{img._x + x_off}, _y{img._y + y_off},
         _width{static_cast<size_t>(w)}, _height{static_cast<size_t>(h)}
     {}
 
-    constexpr basic_viewport(basic_viewport img, int_fast32_t x_off, int_fast32_t y_off) :
+    constexpr basic_viewport(basic_viewport img, index_type x_off, index_type y_off) :
         _base{img._base},
         _x{img._x + x_off}, _y{img._y + y_off},
         _width{img.width()}, _height{img.height()}
@@ -72,14 +73,14 @@ public:
     // TODO: want to disable rvalues for img, how to do it?
     template <std::integral Int1, std::integral Int2>
     explicit
-    constexpr basic_viewport(image_t & img, int_fast32_t x_off, int_fast32_t y_off, Int1 w, Int2 h) :
+    constexpr basic_viewport(image_t & img, index_type x_off, index_type y_off, Int1 w, Int2 h) :
         _base{std::addressof(img)},
         _x{x_off}, _y{y_off},
         _width{static_cast<size_t>(w)}, _height{static_cast<size_t>(h)}
     {}
 
     explicit
-    constexpr basic_viewport(image_t & img, int_fast32_t x_off, int_fast32_t y_off) :
+    constexpr basic_viewport(image_t & img, index_type x_off, index_type y_off) :
         _base{std::addressof(img)},
         _x{x_off}, _y{y_off},
         _width{img.width() - x_off}, _height{img.height() - y_off}
@@ -94,10 +95,10 @@ public:
         _width{v._width}, _height{v._height}
     {}
 
-    auto pixel(int_fast32_t const x, int_fast32_t const y)       -> reference;
-    auto pixel(int_fast32_t const x, int_fast32_t const y) const -> const_reference;
-    auto pixel_noexcept(int_fast32_t const x, int_fast32_t const y)       noexcept -> reference;
-    auto pixel_noexcept(int_fast32_t const x, int_fast32_t const y) const noexcept -> const_reference;
+    auto pixel(index_type const x, index_type const y)       -> reference;
+    auto pixel(index_type const x, index_type const y) const -> const_reference;
+    auto pixel_noexcept(index_type const x, index_type const y)       noexcept -> reference;
+    auto pixel_noexcept(index_type const x, index_type const y) const noexcept -> const_reference;
 
     auto pixel(vertex const pt)       -> reference       { return pixel(pt.x, pt.y); }
     auto pixel(vertex const pt) const -> const_reference { return pixel(pt.x, pt.y); }

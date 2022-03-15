@@ -11,28 +11,28 @@ namespace spl::graphics
 {
 
 template <bool Const>
-auto basic_viewport<Const>::pixel(int_fast32_t const x, int_fast32_t const y)
+auto basic_viewport<Const>::pixel(index_type const x, index_type const y)
     -> reference
 {
     return _base->pixel(_x + x, _y + y);
 }
 
 template <bool Const>
-auto basic_viewport<Const>::pixel(int_fast32_t const x, int_fast32_t const y) const
+auto basic_viewport<Const>::pixel(index_type const x, index_type const y) const
     -> const_reference
 {
     return _base->pixel(_x + x, _y + y);
 }
 
 template <bool Const>
-auto basic_viewport<Const>::pixel_noexcept(int_fast32_t const x, int_fast32_t const y) noexcept
+auto basic_viewport<Const>::pixel_noexcept(index_type const x, index_type const y) noexcept
     -> reference
 {
     return _base->pixel_noexcept(_x + x, _y + y);
 }
 
 template <bool Const>
-auto basic_viewport<Const>::pixel_noexcept(int_fast32_t const x, int_fast32_t const y) const noexcept
+auto basic_viewport<Const>::pixel_noexcept(index_type const x, index_type const y) const noexcept
     -> const_reference
 {
     return _base->pixel_noexcept(_x + x, _y + y);

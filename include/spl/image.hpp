@@ -42,18 +42,22 @@ public:
     using column_range       = spl::graphics::image_range<false, false>;
     using const_row_range    = spl::graphics::image_range<true, true>;
     using const_column_range = spl::graphics::image_range<false, true>;
+    using index_type         = std::size_t;
 
     // constructors
     image() noexcept : _width{0}, _height{0} {};
-    image(size_t w, size_t h, rgba fill = {0, 0, 0, 255}) noexcept : _pixels{w * h, fill}, _width{w}, _height{h} {}
-    image(construct_uninitialized_t, size_t w, size_t h) noexcept : _pixels{w * h}, _width{w}, _height{h} {}
-    template <bool Const2> image(basic_viewport<Const2> v) : _pixels(v.begin(), v.end()), _width{v.width()}, _height{v.height()} {}
+    image(index_type w, index_type h, rgba fill = {0, 0, 0, 255}) noexcept
+        : _pixels{w * h, fill}, _width{w}, _height{h} {}
+    image(construct_uninitialized_t, index_type w, index_type h) noexcept
+        : _pixels{w * h}, _width{w}, _height{h} {}
+    template <bool Const2> image(basic_viewport<Const2> v)
+        : _pixels(v.begin(), v.end()), _width{v.width()}, _height{v.height()} {}
 
     // direct element access
-    auto pixel(size_t const x, size_t const y)       -> reference;
-    auto pixel(size_t const x, size_t const y) const -> const_reference;
-    auto pixel_noexcept(size_t const x, size_t const y)       noexcept -> reference;
-    auto pixel_noexcept(size_t const x, size_t const y) const noexcept -> const_reference;
+    auto pixel(index_type const x, index_type const y)       -> reference;
+    auto pixel(index_type const x, index_type const y) const -> const_reference;
+    auto pixel_noexcept(index_type const x, index_type const y)       noexcept -> reference;
+    auto pixel_noexcept(index_type const x, index_type const y) const noexcept -> const_reference;
 
     auto pixel(vertex const pt)       -> reference       { return pixel(pt.x, pt.y); }
     auto pixel(vertex const pt) const -> const_reference { return pixel(pt.x, pt.y); }
@@ -61,11 +65,11 @@ public:
     auto pixel_noexcept(vertex const pt) const noexcept -> const_reference { return pixel_noexcept(pt.x, pt.y); }
 
     // iteration
-    auto row(size_t const y)            -> row_view;
-    auto row(size_t const y) const      -> const_row_view;
+    auto row(index_type const y)            -> row_view;
+    auto row(index_type const y) const      -> const_row_view;
 
-    auto column(size_t const x)         -> column_view;
-    auto column(size_t const x) const   -> const_column_view;
+    auto column(index_type const x)         -> column_view;
+    auto column(index_type const x) const   -> const_column_view;
 
     auto rows()                         -> row_range;
     auto rows() const                   -> const_row_range;
@@ -80,8 +84,8 @@ public:
     auto end()    const -> const_iterator { return _pixels.end(); }
     auto cend()   const -> const_iterator { return _pixels.cend(); }
 
-    auto get_pixel_iterator(size_t const x, size_t const y)       -> iterator;
-    auto get_pixel_iterator(size_t const x, size_t const y) const -> const_iterator;
+    auto get_pixel_iterator(index_type const x, index_type const y)       -> iterator;
+    auto get_pixel_iterator(index_type const x, index_type const y) const -> const_iterator;
 
     auto width()       const noexcept { return _width; }
     auto height()      const noexcept { return _height; }
@@ -117,7 +121,7 @@ private:
     auto load_ppm(std::filesystem::path const & filename) -> load_status;
 
     std::vector<rgba> _pixels;
-    size_t _width, _height;
+    index_type _width, _height;
 };
 
 } // namespace spl::graphics
