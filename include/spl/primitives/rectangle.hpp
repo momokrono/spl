@@ -20,7 +20,7 @@ namespace spl::graphics
 class rectangle
 {
     vertex _origin;
-    std::pair<uint_fast32_t, uint_fast32_t> _sides;
+    std::pair<int_fast32_t, int_fast32_t> _sides;
     float _rotation = 0.;
     rgba _border_color = spl::graphics::color::black;
     rgba _fill_color   = spl::graphics::color::nothing;
@@ -28,10 +28,9 @@ class rectangle
     // border_thickness
 
 public:
-    using uint_pair = std::pair<uint_fast32_t, uint_fast32_t>;
     constexpr
-    rectangle(vertex const origin, uint_pair const sides, double rotation = 0., bool antialiasing = false) noexcept :
-        _origin{origin}, _sides{sides}, _rotation(rotation), _anti_aliasing{antialiasing}
+    rectangle(vertex const origin, int_fast32_t width, int_fast32_t height, double rotation = 0., bool antialiasing = false) noexcept :
+        _origin{origin}, _sides{width, height}, _rotation(rotation), _anti_aliasing{antialiasing}
     {}
 
     constexpr

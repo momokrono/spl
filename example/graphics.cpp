@@ -20,11 +20,11 @@ int main() try
 
     for (float i = 0; i < 3.1415926535 * 4; i += 3.1415296535 / 20) {
         auto const offset = int_fast32_t(i * 50);
-        image.draw(spl::graphics::rectangle{{150 + offset, 150 - 15}, {90, 30},  i, true}.fill_color(spl::graphics::color::green));
-        image.draw(spl::graphics::rectangle{{150 - offset, 150 - 15}, {90, 30}, -i, true}.fill_color(spl::graphics::color::blue));
+        image.draw(spl::graphics::rectangle{{150 + offset, 150 - 15}, 90, 30,  i, true}.fill_color(spl::graphics::color::green));
+        image.draw(spl::graphics::rectangle{{150 - offset, 150 - 15}, 90, 30, -i, true}.fill_color(spl::graphics::color::blue));
 
-        image.draw(spl::graphics::rectangle{{150 + 15, 150 + offset}, {90, 30},  i, true}.fill_color(spl::graphics::color::red));
-        image.draw(spl::graphics::rectangle{{150 - 15, 150 - offset}, {90, 30}, -i, true}.fill_color(spl::graphics::color::yellow));
+        image.draw(spl::graphics::rectangle{{150 + 15, 150 + offset}, 90, 30,  i, true}.fill_color(spl::graphics::color::red));
+        image.draw(spl::graphics::rectangle{{150 - 15, 150 - offset}, 90, 30, -i, true}.fill_color(spl::graphics::color::yellow));
     }
 
     image.draw(spl::graphics::regular_polygon{{600, 400}, 50, 8, 3.141592653589793 / 5});

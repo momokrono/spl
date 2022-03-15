@@ -289,7 +289,7 @@ void line::_draw_thick(viewport img) const noexcept
 
         auto const rect = rectangle(
             {int_fast32_t(x1 + thickness * sin / 2), int_fast32_t(y1 - thickness * cos / 2)},
-            {length, thickness - 1}, inclination, false
+            length, thickness - 1, inclination, false
         ).fill_color(color).border_color(color);
 
         rect.render_on(img);
@@ -578,7 +578,7 @@ void regular_polygon::_draw_filled(viewport img) const noexcept
 
     detail::draw_filled(img, segments, _fill_color);
 
-    for (auto const [v1, v2] : segments) {
+    for (auto const & [v1, v2] : segments) {
         img.draw(spl::graphics::line{v1, v2, _border_color, _anti_aliasing });
     }
 }
