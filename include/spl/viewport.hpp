@@ -99,6 +99,11 @@ public:
     auto pixel_noexcept(int_fast32_t const x, int_fast32_t const y)       noexcept -> reference;
     auto pixel_noexcept(int_fast32_t const x, int_fast32_t const y) const noexcept -> const_reference;
 
+    auto pixel(vertex const pt)       -> reference       { return pixel(pt.x, pt.y); }
+    auto pixel(vertex const pt) const -> const_reference { return pixel(pt.x, pt.y); }
+    auto pixel_noexcept(vertex const pt)       noexcept -> reference       { return pixel_noexcept(pt.x, pt.y); }
+    auto pixel_noexcept(vertex const pt) const noexcept -> const_reference { return pixel_noexcept(pt.x, pt.y); }
+
     auto row(size_t const y)            -> row_view;
     auto row(size_t const y) const      -> const_row_view;
 

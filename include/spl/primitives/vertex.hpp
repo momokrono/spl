@@ -15,8 +15,10 @@ namespace spl::graphics
 
 struct vertex
 {
-    int_fast32_t x;
-    int_fast32_t y;
+    using value_type = int_fast32_t;
+
+    value_type x;
+    value_type y;
 
     friend constexpr vertex & operator+=(vertex & self, vertex v) noexcept {
         self.x += v.x;

@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 
+#include "spl/primitives/vertex.hpp"
 #include "spl/detail/iterators.hpp"
 #include "drawable.hpp"
 #include "rgba.hpp"
@@ -53,6 +54,11 @@ public:
     auto pixel(size_t const x, size_t const y) const -> const_reference;
     auto pixel_noexcept(size_t const x, size_t const y)       noexcept -> reference;
     auto pixel_noexcept(size_t const x, size_t const y) const noexcept -> const_reference;
+
+    auto pixel(vertex const pt)       -> reference       { return pixel(pt.x, pt.y); }
+    auto pixel(vertex const pt) const -> const_reference { return pixel(pt.x, pt.y); }
+    auto pixel_noexcept(vertex const pt)       noexcept -> reference       { return pixel_noexcept(pt.x, pt.y); }
+    auto pixel_noexcept(vertex const pt) const noexcept -> const_reference { return pixel_noexcept(pt.x, pt.y); }
 
     // iteration
     auto row(size_t const y)            -> row_view;
