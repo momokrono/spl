@@ -15,6 +15,7 @@
 #include "spl/image.hpp"
 #include "spl/primitives/vertex.hpp"
 #include "spl/primitives/line.hpp"
+#include "spl/group.hpp"
 
 namespace spl::graphics
 {
@@ -22,14 +23,20 @@ namespace spl::graphics
 namespace detail
 {
     constexpr
-    void _bezier_render_aliased(image & img, std::span<vertex> const, spl::graphics::rgba const color) noexcept;
+    auto _lerp(vertex & start, vertex & end, float t) -> vertex;
+
+    constexpr
+    auto _quadratic(vertex & v1, vertex & v2, vertex & v3, float t) -> vertex;
+
+    void _bezier_render(image & img, std::vector<vertex> const points, spl::graphics::rgba const color, bool const aliased) noexcept;
+
+
 } // namespace detail
 
 // FIXME
-template <typename Alloc = std::allocator<vertex>>
 class bezier
 {
-    std::vector<vertex, Alloc> _vertexes;
+    std::vector<vertex> _vertexes;
     rgba _color;
     bool _anti_aliasing = true;
 
@@ -40,38 +47,39 @@ public:
     bezier(Rng && rng, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
         _vertexes(rng.begin(), rng.end()), _color{color}, _anti_aliasing{anti_aliasing} {}
 
-    constexpr
-    bezier(std::vector<vertex, Alloc> && v, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
-        _vertexes{std::move(v)}, _color{color}, _anti_aliasing{anti_aliasing} {}
+
+    bezier(std::vector<vertex> & v, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
+        _vertexes{v}, _color{color}, _anti_aliasing{anti_aliasing} {}
 
     constexpr
     auto color(spl::graphics::rgba const color) noexcept
         -> bezier &
     { _color = color; return *this; }
 
-    constexpr
+
     auto render_on(image & img) const noexcept
     {
         if (_vertexes.size() < 2 or _color == spl::graphics::color::nothing) {
             return;
         }
-        if (_anti_aliasing) {
-
-        } else {
-            detail::_bezier_render_aliased(img, std::span{_vertexes}, _color);
+        else {
+            detail::_bezier_render(img, _vertexes, _color, _anti_aliasing);
         }
     }
-    
+    /*
     constexpr
     auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
         start += vertex{x, y};
         end += vertex{x, y};
         return *this;
     }
+    */
 /* private: */
     /* constexpr */
     /* static void _render_on_impl(image & img, std::span<vertex> const) noexcept; */
 };
+
+
 
 } // namespace spl::graphics
 

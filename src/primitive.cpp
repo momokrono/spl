@@ -72,6 +72,48 @@ namespace detail
             --y;
         }
     }
+
+    constexpr
+    auto _lerp(vertex & start, vertex & end, float t) -> vertex
+    {
+        auto x = start.x + (end.x - start.x) * t;
+        auto y = start.y + (end.y - start.y) * t;
+        return {static_cast<int_fast32_t>(x), static_cast<int_fast32_t>(y)};
+    }
+
+    constexpr
+    auto _quadratic(vertex & v1, vertex & v2, vertex & v3, float t) -> vertex
+    {
+        auto p1 = _lerp(v1, v2, t);
+        auto p2 = _lerp(v2, v3, t);
+        return _lerp(p1, p2, t);
+    }
+
+    void _bezier_render(image & img, std::vector<vertex> const points, spl::graphics::rgba const color, bool const aliased) noexcept
+    {
+        auto buffer = spl::graphics::group{};
+
+        auto len = points.size();
+        for (auto i = 1u; i < (len-1); i+=2)
+        {
+            auto start_vertex = points[i-1];
+            for (auto t = 0.f; t <= 1; t+=0.01f)
+            {
+                auto start = points[i-1];
+                auto control= points[i];
+                auto end = points[i+1];
+
+                auto end_vertex = _quadratic(start, control, end, t);
+                auto l = spl::graphics::line(start_vertex, end_vertex, color);
+                start_vertex = end_vertex;
+                buffer.push(l);
+            }
+            auto line = spl::graphics::line(start_vertex, points[i+1], color);
+            buffer.push(line);
+        }
+        buffer.render_on(img);
+    }
+
 } // namespace detail
 
 void line::render_on(viewport img) const noexcept
@@ -383,6 +425,7 @@ void line::_draw_thick(viewport img) const noexcept
     }
 }
 
+
 #ifdef PRIMITIVES_BEZIER_HPP
 template <typename Alloc>
 void detail::_bezier_render_aliased(viewport img, std::span<vertex> const v, spl::graphics::rgba const color)
@@ -492,6 +535,7 @@ void detail::_bezier_render_aliased(viewport img, std::span<vertex> const v, spl
 }
 #endif // PRIMITIVES_BEZIER_HPP
 
+
 void rectangle::render_on(viewport img) const noexcept
 {
     auto const sin = std::sin(_rotation);
@@ -578,7 +622,7 @@ void regular_polygon::_draw_filled(viewport img) const noexcept
 
     detail::draw_filled(img, segments, _fill_color);
 
-    for (auto const [v1, v2] : segments) {
+    for (auto const &[v1, v2] : segments) {
         img.draw(spl::graphics::line{v1, v2, _border_color, _anti_aliasing });
     }
 }
@@ -649,6 +693,8 @@ void circle::_draw_filled(viewport img) const noexcept
         _draw_sym_points(img, old_y, old_x);
     }
 }
+
+
 
 } // namespace spl::graphics
 

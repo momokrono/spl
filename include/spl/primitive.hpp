@@ -19,6 +19,7 @@
 #include "primitives/rectangle.hpp"
 #include "primitives/regular_polygon.hpp"
 #include "primitives/circle.hpp"
+#include "primitives/bezier.hpp"
 // #include "primitives/vertex_array.hpp"
 
 #endif /* PRIMITIVE_HPP */
