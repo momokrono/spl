@@ -1,6 +1,6 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?maxAge=3600)](./LICENSE.md)
 
-# `spl` - A Simple Plotting Library for C++
+# `spl` - A Simple ~~Plotting~~ Drawing Library for C++
 
 **The library is under heavy development, some parts are broken, others may not work from time to time.
 If you find yourself having issues with it, feel free to report it.**
@@ -43,7 +43,7 @@ int main()
     image.draw(line);
     image.draw(spl::graphics::line{{100, 100}, {50, 550}, color::orange});
 
-    auto rect = spl::graphics::rectangle{{150, 150}, {90, 30}};
+    auto rect = spl::graphics::rectangle{{150, 150}, 90, 30};
     rect.fill_color(color::green);
         auto rotated_rect = spl::graphics::rectangle{{20, 30}, {100, 40}, std::numbers::pi / 4, /*antialiasing=*/true}
                       .fill_color(color::red);
