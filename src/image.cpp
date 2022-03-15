@@ -7,7 +7,7 @@
 
 #include "spl/image.hpp"
 #include "spl/viewport.hpp"
-#include "spl/bits/exceptions.hpp"
+#include "spl/detail/exceptions.hpp"
 
 #include <fstream>
 #include <fmt/core.h>

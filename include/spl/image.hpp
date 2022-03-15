@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 
-#include "spl/bits/iterators.hpp"
+#include "spl/detail/iterators.hpp"
 #include "drawable.hpp"
 #include "rgba.hpp"
 

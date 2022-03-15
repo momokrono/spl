@@ -5,7 +5,7 @@
 #include <vector>
 #include <ranges>
 
-#include "spl/bits/exceptions.hpp"
+#include "spl/detail/exceptions.hpp"
 #include "spl/rgba.hpp"
 
 namespace spl::graphics

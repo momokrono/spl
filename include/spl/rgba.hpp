@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <concepts>
 
-#include "spl/bits/exceptions.hpp"
+#include "spl/detail/exceptions.hpp"
 
 namespace spl::graphics
 {
