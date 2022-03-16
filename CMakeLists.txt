@@ -8,7 +8,6 @@ cmake_minimum_required(VERSION 3.16.2)
 
 project(spl VERSION 0.4.1 LANGUAGES CXX)
 include(cmake/general.cmake)
-include(cmake/export_target.cmake)
 include(cmake/functions.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -53,10 +52,12 @@ add_library(spl)
 target_sources(spl PRIVATE src/image.cpp src/primitive.cpp src/viewport.cpp src/effects.cpp)
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE RELEASE)
-target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb)
 target_link_libraries(spl PRIVATE project_warnings fmt::fmt stb)
 target_include_directories(spl
-    PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/>
+        $<INSTALL_INTERFACE:include/>
+)
 enable_sanitizers(spl)
 enable_lto(spl)
 
@@ -81,12 +82,6 @@ if (SPL_DISABLE_GAMMA_CORRECTION)
     target_compile_definitions(spl PUBLIC -DSPL_DISABLE_GAMMA_CORRECTION)
 endif()
 add_library(spl::spl ALIAS spl)
-export_target(
-    PACKAGE_NAME spl
-    TARGETS spl project_warnings stb
-    NAMESPACE spl
-    INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"
-)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                            build examples                            #
@@ -94,3 +89,38 @@ export_target(
 if (build_examples)
     add_subdirectory(examples)
 endif()
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#                              packaging                               #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    PATH_VARS CMAKE_INSTALL_LIBDIR)
+
+write_basic_package_version_file(
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    COMPATIBILITY SameMajorVersion
+)
+
+install(TARGETS spl project_warnings stb ${build_targets_list} EXPORT ${PROJECT_NAME}-targets)
+
+install(EXPORT ${PROJECT_NAME}-targets
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    NAMESPACE spl::
+    FILE "${PROJECT_NAME}-targets.cmake"
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(FILES
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+)
