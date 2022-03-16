@@ -19,7 +19,11 @@ set(CMAKE_CXX_EXTENSIONS NO)
 #                                 Conan                                  #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 include(cmake/conan.cmake)
-conan_cmake_configure(REQUIRES fmt/8.1.1 BASIC_SETUP CMAKE_TARGETS)
+conan_cmake_configure(
+    BASIC_SETUP
+    CMAKE_TARGETS
+    REQUIRES fmt/8.1.1
+    GENERATORS cmake_find_package)
 conan_cmake_autodetect(settings)
 conan_cmake_install(
     PATH_OR_REFERENCE ${CMAKE_BINARY_DIR}
@@ -27,8 +31,7 @@ conan_cmake_install(
     GENERATOR cmake
     SETTINGS ${settings}
 )
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS) # enables the import of single libraries
+find_package(fmt REQUIRED)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                              Threads, stb                              #
@@ -51,19 +54,28 @@ target_sources(spl PRIVATE src/image.cpp src/primitive.cpp src/viewport.cpp src/
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE RELEASE)
 target_link_libraries(spl PRIVATE project_warnings CONAN_PKG::fmt stb)
+target_link_libraries(spl PRIVATE project_warnings fmt::fmt stb)
 target_include_directories(spl
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 enable_sanitizers(spl)
 enable_lto(spl)
+
 option(SPL_FILL_MULTITHREAD "image::fill uses threads to fill faster" OFF)
+option(SPL_DISABLE_GAMMA_CORRECTION
+    "color-composing algorithms like `over` will not use gamma correction" OFF
+)
+option(build_examples_bench "Build the bench test (not a real benchmark, used as sandbox)" TRUE)
+option(build_examples_graphics "Build the graphics example" TRUE)
+option(build_examples_blur "Build the blur example" TRUE)
+option(build_examples_collection "Build the collection example" TRUE)
+option(build_examples_viewport "Build the viewport example" TRUE)
+option(build_examples_effects "Build the effects example" TRUE)
+
 if (SPL_FILL_MULTITHREAD)
     message(STATUS "FILL_MULTITHREADED option enabled")
     target_compile_definitions(spl PUBLIC -DSPL_FILL_MULTITHREAD)
     target_link_libraries(spl PRIVATE Threads::Threads)
 endif()
-option(SPL_DISABLE_GAMMA_CORRECTION
-    "color-composing algorithms like `over` will not use gamma correction" OFF
-)
 if (SPL_DISABLE_GAMMA_CORRECTION)
     message(STATUS "gamma correction option enabled")
     target_compile_definitions(spl PUBLIC -DSPL_DISABLE_GAMMA_CORRECTION)
@@ -76,94 +88,9 @@ export_target(
     INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-# TODO: move in a subdirectory
-
-# examples/bench
-option(
-    build_examples_bench
-    "Build the bench test (not a real benchmark, used during development)"
-    TRUE
-)
-if (build_examples_bench)
-    add_executable(bench)
-
-    target_compile_features(bench PUBLIC cxx_std_20)
-    target_compile_options(bench PRIVATE -Wall -Wextra -Wpedantic)
-    target_link_options(bench PRIVATE -pthread)
-
-    target_sources(bench PRIVATE example/bench.cpp)
-    target_link_libraries(bench PRIVATE spl CONAN_PKG::fmt)
-    target_include_directories(bench PUBLIC ./include/ ./include/3rd_party/)
-endif()
-
-# examples/graphics
-option(build_examples_graphics "Build the graphics example" TRUE)
-if (build_examples_graphics)
-    add_executable(graphics)
-
-    target_compile_features(graphics PUBLIC cxx_std_20)
-    target_compile_options(graphics PRIVATE -Wall -Wextra -Wpedantic)
-    target_link_options(graphics PRIVATE)
-
-    target_sources(graphics PRIVATE example/graphics.cpp)
-    target_link_libraries(graphics PRIVATE spl CONAN_PKG::fmt Threads::Threads)
-    target_include_directories(graphics PUBLIC ./include/ ./include/3rd_party/)
-endif()
-
-# examples/blur
-option(build_examples_blur "Build the blur example" TRUE)
-if (build_examples_blur)
-    add_executable(blur)
-
-    target_compile_features(blur PUBLIC cxx_std_20)
-    target_compile_options(blur PRIVATE)
-    target_link_options(blur PRIVATE)
-
-    target_sources(blur PRIVATE example/blur.cpp)
-    target_link_libraries(blur PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
-    target_include_directories(blur PUBLIC ./include/ ./include/3rd_party/)
-endif()
-
-# examples/collection
-option(build_examples_collection "Build the collection example" TRUE)
-if (build_examples_collection)
-    add_executable(collection)
-
-    target_compile_features(collection PUBLIC cxx_std_20)
-    target_compile_options(collection PRIVATE -fconcepts-diagnostics-depth=2)
-    target_link_options(collection PRIVATE)
-
-    target_sources(collection PRIVATE example/collection.cpp)
-    target_link_libraries(collection PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
-    target_include_directories(collection PUBLIC ./include/ ./include/3rd_party/)
-endif()
-
-# examples/viewport
-option(build_examples_viewport "Build the viewport example" TRUE)
-if (build_examples_viewport)
-    add_executable(viewport)
-
-    target_compile_features(viewport PUBLIC cxx_std_20)
-    target_compile_options(viewport PRIVATE -fconcepts-diagnostics-depth=2)
-    target_link_options(viewport PRIVATE)
-
-    target_sources(viewport PRIVATE example/viewport.cpp)
-    target_link_libraries(viewport PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
-    target_include_directories(viewport PUBLIC ./include/)
-endif()
-
-# examples/effects
-option(build_examples_effects "Build the effects example" TRUE)
-if (build_examples_effects)
-    add_executable(effects)
-
-    target_compile_features(effects PUBLIC cxx_std_20)
-    target_compile_options(effects PRIVATE -fconcepts-diagnostics-depth=2)
-    target_link_options(effects PRIVATE)
-
-    target_sources(effects PRIVATE example/effects.cpp)
-    target_link_libraries(effects PRIVATE spl Threads::Threads CONAN_PKG::fmt project_warnings)
-    target_include_directories(effects PUBLIC ./include/)
-
-    enable_sanitizers(effects)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#                            build examples                            #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+if (build_examples)
+    add_subdirectory(examples)
 endif()
