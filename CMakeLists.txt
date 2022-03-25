@@ -86,9 +86,7 @@ add_library(spl::spl ALIAS spl)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                            build examples                            #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-if (build_examples)
-    add_subdirectory(examples)
-endif()
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/example/")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                              packaging                               #
