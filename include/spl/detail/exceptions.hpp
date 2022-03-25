@@ -42,6 +42,23 @@ struct invalid_argument : std::exception
     { return message.c_str(); }
 };
 
+struct font_error : std::exception
+{
+    std::string _message;
+    font_error(std::string message) : _message{std::move(message)} {}
+
+    auto what() const noexcept -> char const * override
+    { return _message.c_str(); }
+};
+
+struct utf8_error : std::exception
+{
+    std::string _message;
+    utf8_error(std::string message) : _message{std::move(message)} {}
+
+    auto what() const noexcept -> char const * override
+    { return _message.c_str(); }
+};
 
 } // namespace spl
 

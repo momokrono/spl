@@ -49,7 +49,14 @@ set_project_warnings(project_warnings)
 #                                  SPL                                   #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 add_library(spl)
-target_sources(spl PRIVATE src/image.cpp src/primitive.cpp src/viewport.cpp src/effects.cpp)
+target_sources(spl
+    PRIVATE
+        src/image.cpp
+        src/viewport.cpp
+        src/primitive.cpp
+        src/text.cpp
+        src/effects.cpp
+)
 target_compile_features(spl PUBLIC cxx_std_20)
 target_link_options(spl PRIVATE RELEASE)
 target_link_libraries(spl PRIVATE project_warnings fmt::fmt stb)
@@ -71,6 +78,7 @@ option(build_examples_blur "Build the blur example" TRUE)
 option(build_examples_collection "Build the collection example" TRUE)
 option(build_examples_viewport "Build the viewport example" TRUE)
 option(build_examples_effects "Build the effects example" TRUE)
+option(build_examples_text "Build the text example" TRUE)
 
 if (SPL_FILL_MULTITHREAD)
     message(STATUS "FILL_MULTITHREADED option enabled")

@@ -83,3 +83,18 @@ if (build_examples_effects)
 
     enable_sanitizers(effects)
 endif()
+
+# examples/text
+if (build_examples_text)
+    add_executable(text)
+
+    target_compile_features(text PUBLIC cxx_std_20)
+    target_compile_options(text PRIVATE -fconcepts-diagnostics-depth=2)
+    target_link_options(text PRIVATE)
+
+    target_sources(text PRIVATE text.cpp)
+    target_link_libraries(text PRIVATE spl Threads::Threads fmt::fmt project_warnings)
+    target_include_directories(text PUBLIC ./include/)
+
+    enable_sanitizers(text)
+endif()
