@@ -8,6 +8,7 @@
 #ifndef SPL_TEXT_HPP
 #define SPL_TEXT_HPP
 
+#include <map>
 #include <string>
 #include <memory>
 #include <filesystem>
@@ -47,9 +48,18 @@ public:
 
 class font
 {
+    struct preallocated_codepoint
+    {
+        preallocated_codepoint(int w, int h, int x, int y, std::shared_ptr<uint8_t []> && d) :
+            width(w), height(h), x_off(x), y_off(y), data(std::move(d))
+        {}
+        int width, height, x_off, y_off;
+        std::shared_ptr<uint8_t []> data;
+    };
+
     font_face _face;
     float _height;
-    // std::vector<uint8_t> _buffer;
+    mutable std::map<int32_t, preallocated_codepoint> _buffer;
 
     friend class text;
 
@@ -69,7 +79,7 @@ class text
 {
     vertex _origin;
     std::string _text;
-    font _font;
+    mutable font _font;
     rgba _color;
 
 public:

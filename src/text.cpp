@@ -123,35 +123,27 @@ void text::render_on(viewport img) const noexcept
     auto const codepoints = detail::parse_codepoints(_text);
     auto const end = codepoints.end();
     auto const color = _color;
+    auto const scale = stbtt_ScaleForPixelHeight(_font.face_info(), _font._height);
+    // auto const not_found =  _font._buffer.end();
     for (auto cp_it = codepoints.begin(); cp_it != end; ++cp_it) {
         auto codepoint = static_cast<int32_t>(*cp_it);
         auto const x_shift = x_pos - std::floor(x_pos);
         stbtt_GetCodepointHMetrics(_font.face_info(), codepoint, &advance, &lsb);
-#if defined SPL_TODO_SHOULD_USE_THIS_TO_AVOID_LOTS_OF_REALLOCATIONS
-        stbtt_GetCodepointBitmapBoxSubpixel(
-            _font._face_info(), *ch, scale, scale, x_shift, 0, &x0, &y0, &x1, &y1
-        );
-        // TODO: pre-allocate an output buffer in the font class, eventually
-        stbtt_MakeCodepointBitmapSubpixel/*Prefilter*/(
-            _font._face_info(),  // info
-            &out,                // output
-            x1 - x0, y1 - y0,    // out width, height
-            99,                  // out stride (?)
-            scale, scale,        // scale x, y
-            x_shift, 0,          // shift x, y
-            codepoint            // codepoint
-        );
-#else
-        auto scale = stbtt_ScaleForPixelHeight(_font.face_info(), _font._height);
-        auto [width, height, x_off, y_off] = std::array{0, 0, 0, 0};
-        auto data = std::unique_ptr<unsigned char [], detail::stb_deleter>(stbtt_GetCodepointBitmapSubpixel(
-            _font.face_info(),  // info
-            scale, scale,       // scale x, y
-            x_shift, 0,         // shift x, y
-            codepoint,          // codepoint (int)
-            &width, &height,    // width, height (out params)
-            &x_off, &y_off      // offset from the top-left corner (out params)
-        ));
+        auto data_it = _font._buffer.find(codepoint);
+        if (data_it == _font._buffer.end()) {
+            auto [width, height, x_off, y_off] = std::array{0, 0, 0, 0};
+            auto data = std::shared_ptr<uint8_t []>(stbtt_GetCodepointBitmapSubpixel(
+                _font.face_info(),  // info
+                scale, scale,       // scale x, y
+                x_shift, 0,         // shift x, y
+                codepoint,          // codepoint (int)
+                &width, &height,    // width, height (out params)
+                &x_off, &y_off      // offset from the top-left corner (out params)
+            ), detail::stb_deleter{});
+            auto [new_it, done] = _font._buffer.try_emplace(codepoint + 0, width, height, x_off, y_off, std::move(data));
+            data_it = new_it;
+        }
+        auto const & [width, height, x_off, y_off, data] = data_it->second;
 
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
@@ -162,7 +154,6 @@ void text::render_on(viewport img) const noexcept
                 pixel = spl::graphics::over(color.blend(data[x + width * y]), pixel);
             }
         }
-#endif
         x_pos += advance * scale;
         if (cp_it + 1 != end) {
             auto next_codepoint = static_cast<uint32_t>(*(cp_it + 1));
