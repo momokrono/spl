@@ -23,6 +23,10 @@ class group
     vertex _origin{0, 0};
 
 public:
+    template <typename ...Ts>
+    group(Ts &&... args) {
+        (push(args), ...);
+    }
     void render_on(graphics::viewport img) const noexcept;
     template <drawable T>
     group & push(T obj) noexcept;

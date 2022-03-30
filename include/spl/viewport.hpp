@@ -130,14 +130,19 @@ public:
 
     auto fill(rgba const c) &  noexcept -> basic_viewport & requires (not Const);
     auto fill(rgba const c) && noexcept -> basic_viewport   requires (not Const);
-    template <drawable D>
-    auto draw(D && obj) & noexcept -> basic_viewport & requires (not Const)
+
+    template <drawable ...Ds>
+        requires(sizeof...(Ds) >= 1)
+    auto draw(Ds &&... objs) & noexcept -> basic_viewport & requires (not Const)
     {
-        if constexpr (spl::detail::has_render_on_member_function<D>) {
-            std::forward<D>(obj).render_on(*this);
-        } else {
-            std::forward<D>(obj)(*this);
-        }
+        auto draw_impl = [this]<drawable D>(D && obj) {
+            if constexpr (spl::detail::has_render_on_member_function<D>) {
+                std::forward<D>(obj).render_on(*this);
+            } else {
+                std::forward<D>(obj)(*this);
+            }
+        };
+        (draw_impl(std::forward<Ds>(objs)), ...);
         return *this;
     }
 

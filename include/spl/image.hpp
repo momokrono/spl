@@ -97,14 +97,19 @@ public:
 
     // drawing
     auto fill(rgba const c) & noexcept -> image &;
-    template <drawable D>
-    auto draw(D && obj) & -> image &
+
+    template <drawable ...Ds>
+        requires(sizeof...(Ds) >= 1)
+    auto draw(Ds &&... objs) & noexcept -> image &
     {
-        if constexpr (spl::detail::has_render_on_member_function<D>) {
-            std::forward<D>(obj).render_on(*this);
-        } else {
-            std::forward<D>(obj)(*this);
-        }
+        auto draw_impl = [this]<drawable D>(D && obj) {
+            if constexpr (spl::detail::has_render_on_member_function<D>) {
+                std::forward<D>(obj).render_on(*this);
+            } else {
+                std::forward<D>(obj)(*this);
+            }
+        };
+        (draw_impl(std::forward<Ds>(objs)), ...);
         return *this;
     }
 

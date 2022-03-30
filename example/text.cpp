@@ -7,6 +7,7 @@
 
 #include <spl/text.hpp>
 #include <spl/image.hpp>
+#include <spl/group.hpp>
 
 constexpr auto lorem_ipsum = std::array{
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit,",
@@ -37,7 +38,7 @@ int main(int argc, char * argv[])
     auto text3 = spl::graphics::text{{25, 270 + 60}, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", font2};
     auto text4 = spl::graphics::text{{75, 270 + 120}, "0123456789", font2};
 
-    img.draw(text1).draw(text2).draw(text3).draw(text4);
+    img.draw(text1).draw(text2, text3, text4);
 
     for (auto i = 0; i < lorem_ipsum.size(); ++i) {
         auto text = spl::graphics::text{{20, 20 + i * 20}, lorem_ipsum[i], font2};
