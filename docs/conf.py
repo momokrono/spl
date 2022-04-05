@@ -56,6 +56,6 @@ html_static_path = ['_static']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 default_role = 'cpp:any'
-# pygments_style = 'sphinx'
-# highlight_language = 'c++'
-# primary_domain = 'cpp'
+pygments_style = 'sphinx'
+highlight_language = 'c++'
+primary_domain = 'cpp'
