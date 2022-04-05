@@ -155,17 +155,7 @@ bool image::save_to_file(std::string_view const filename) const
         return stbi_write_jpg(filename.data(), swidth(), sheight(), 4, raw_data(), 90) == 1;
     }
     if (filename.ends_with(".ppm")) {
-        auto sink = fmt::output_file(filename.data());
-        sink.print("P3\n{} {}\n255\n", width(), height());
-        for (size_t j = 0; j < height(); ++j) {
-            for (size_t i = 0; i < width(); ++i) {
-                auto const [r, g, b, a] = pixel(i, j);
-                sink.print("{} {} {}\n", a * r / 255, a * g / 255, a * b / 255);
-            }
-            sink.print("\n");
-        }
-
-        return true;
+        return save_to_ppm(filename);
     }
 #if 0
     if (filename.ends_with(".pam")) {
@@ -188,6 +178,58 @@ bool image::save_to_file(std::string_view const filename) const
 #endif
     return false;
 }
+
+bool image::save_to_ppm(std::string_view const filename) const
+{
+    auto sink = fmt::output_file(filename.data());
+    sink.print("P3\n{} {}\n255\n", width(), height());
+    for (size_t j = 0; j < height(); ++j) {
+        for (size_t i = 0; i < width(); ++i) {
+            auto const [r, g, b, a] = pixel(i, j);
+            sink.print("{} {} {}\n", a * r / 255, a * g / 255, a * b / 255);
+        }
+        sink.print("\n");
+    }
+
+    return true;
+}
+
+bool image::save_to_qoi(std::string_view const filename) const
+{
+    auto sink = fmt::output_file(filename.data());
+    /* Quite Ok Image format,
+     * for references: https://qoiformat.org/
+     */
+    constexpr int channels = 4;
+    auto indexes = std::array<spl::graphics::rgba, 64>{};
+    spl::graphics::rgba current_px{}, next_px{};
+
+    constexpr uint32_t qoi_magic = static_cast<uint32_t>('q') << 24 | \
+                                   static_cast<uint32_t>('o') << 16 | \
+                                   static_cast<uint32_t>('i') << 8  | \
+                                   static_cast<uint32_t>('f');
+    constexpr auto qoi_padding = std::array<uint8_t,  8>{0,0,0,0,0,0,0,1};
+
+
+    constexpr auto QOI_OP_INDEX = 0x00;
+    constexpr auto QOI_OP_DIFF  = 0x40;
+    constexpr auto QOI_OP_LUMA  = 0x80;
+    constexpr auto QOI_OP_RUN   = 0xc0;
+    constexpr auto QOI_OP_RGBA  = 0xff;
+
+    constexpr auto pixel_hash = [](spl::graphics::rgba const p){
+        return (p.r * 3 + p.g * 5 + p.b * 7 + p.a * 11) % 64;
+    };
+
+    auto encoded_data = std::vector<uint8_t>{};
+
+
+    // constexpr auto qoi_header =
+
+    // encoded_data.reserve(_pixels.size()*4+8+)
+
+    return true;
+};
 
 auto image::load_from_file(std::filesystem::path const & filename)
     -> load_status

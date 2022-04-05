@@ -124,6 +124,9 @@ public:
 
 private:
     auto load_ppm(std::filesystem::path const & filename) -> load_status;
+    auto load_qoi(std::filesystem::path const & filename) -> load_status;
+    bool save_to_ppm(std::string_view const filename) const;
+    bool save_to_qoi(std::string_view const filename) const;
 
     std::vector<rgba> _pixels;
     index_type _width, _height;
