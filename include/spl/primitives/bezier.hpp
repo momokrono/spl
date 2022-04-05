@@ -22,15 +22,7 @@ namespace spl::graphics
 
 namespace detail
 {
-    constexpr
-    auto _lerp(vertex & start, vertex & end, float t) -> vertex;
-
-    constexpr
-    auto _quadratic(vertex & v1, vertex & v2, vertex & v3, float t) -> vertex;
-
     void _bezier_render(image & img, std::vector<vertex> const points, spl::graphics::rgba const color, bool const aliased) noexcept;
-
-
 } // namespace detail
 
 // FIXME

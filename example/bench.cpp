@@ -42,9 +42,11 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
     auto end = spl::graphics::vertex{350, 200};
     auto points = std::vector<spl::graphics::vertex>{start, c1, c2, c3, c4, c5, end};
     auto bezier = spl::graphics::bezier{points, spl::graphics::color::red};
-    bezier.render_on(image);
     auto line = spl::graphics::line(start, end, spl::graphics::color::blue);
-    line.render_on(image);
+    auto l = spl::graphics::line(start, {100, 0}, spl::graphics::color::green);
+    // line.render_on(image);
+    bezier.render_on(image);
+    // l.render_on(image);
     if (not image.save_to_file("bench.png")) { fmt::print("NON VA\n"); }
 } catch (std::exception & e)
 {

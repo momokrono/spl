@@ -6,6 +6,7 @@
  */
 
 #include "spl/primitive.hpp"
+#include <numeric>
 #include <numbers>
 
 namespace spl::graphics
@@ -73,31 +74,71 @@ namespace detail
         }
     }
 
-    constexpr
-    auto _lerp(vertex & start, vertex & end, float t) -> vertex
-    {
-        auto x = start.x + (end.x - start.x) * t;
-        auto y = start.y + (end.y - start.y) * t;
-        return {static_cast<int_fast32_t>(x), static_cast<int_fast32_t>(y)};
-    }
+    struct point {
+        constexpr point(vertex v) : x{v.x}, y{v.y} {}
+        constexpr point(float x, float y) : x{x}, y{y} {}
+        constexpr point(point const &) = default;
+        constexpr point() = default;
+        float x;
+        float y;
+    };
 
     constexpr
+    auto _lerp(point const & start, point const & end, float t) -> point
+    {
+        auto x = std::lerp(static_cast<float>(start.x), static_cast<float>(end.x), t);
+        auto y = std::lerp(static_cast<float>(start.y), static_cast<float>(end.y), t);
+        return {x, y};
+    }
+
+    /*
+     * constexpr
     auto _quadratic(vertex & v1, vertex & v2, vertex & v3, float t) -> vertex
     {
         auto p1 = _lerp(v1, v2, t);
         auto p2 = _lerp(v2, v3, t);
         return _lerp(p1, p2, t);
     }
+     */
 
+#if 1
+    void _bezier_render(image & img, std::vector<vertex> const points, spl::graphics::rgba const color, [[maybe_unused]] bool const aliased) noexcept
+    {
+        auto tmp = std::vector<point>(points.size());
+        auto const end = tmp.end();
+        for (auto t = 0.f; t <= 1; t += 0.001) {
+            // tmp = points;
+            std::ranges::copy(points, tmp.begin());
+            auto begin = tmp.begin();
+            while (end != begin + 1) {
+                std::adjacent_difference(begin, end, begin, [t](auto a, auto b) {
+                    return _lerp(a, b, t);
+                });
+                ++begin;
+                //   1            2            3          4         X
+                //   1          (1-2)        (2-3)      (3-4)       X
+                //   1          (1-2)     (1-2 - 2-3) (2-3 - 3-4)   X
+            }
+
+            // 1 - la decenza
+            // 2 - conteggio dinamico dei pixel
+//                 range sasso = adajacndet difference(pounti, [](auto a, auto b) { return a.x + a.y - b.x - b.y }
+//                    accumulate(sasso.beg, sasso.end, 0)
+            // 3 - aliasing
+            img.pixel_noexcept(begin->x, begin->y) = color;
+        }
+    }
+
+#else
     void _bezier_render(image & img, std::vector<vertex> const points, spl::graphics::rgba const color, bool const aliased) noexcept
     {
         auto buffer = spl::graphics::group{};
 
         auto len = points.size();
-        for (auto i = 1u; i < (len-1); i+=2)
-        {
+        for (auto i = 1u; i < (len-1); i += 2)
+        { // A -> D (B, C)
             auto start_vertex = points[i-1];
-            for (auto t = 0.f; t <= 1; t+=0.01f)
+            for (auto t = 0.f; t <= 1; t += 0.01f)
             {
                 auto start = points[i-1];
                 auto control= points[i];
@@ -113,6 +154,7 @@ namespace detail
         }
         buffer.render_on(img);
     }
+#endif
 
 } // namespace detail
 
