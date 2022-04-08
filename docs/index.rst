@@ -35,6 +35,24 @@ Public interface
     :members:
 
 
+Viewport
+--------
+An `spl::graphics::basic_viewport` aims to be a view over a section of an existing `image`.
+You can use it just as if it were an `image`.
+There are two types of `basic_viewport`. The main one is the ``spl::graphics::basic_viewport<false>``
+which represent a view able to modify the underlying image's pixels. The library provides an alias
+for it: `spl::graphics::viewport`.
+The second kind of basic_viewport is the ``spl::graphics::basic_viewport<true>``, aliased as
+`spl::graphics::image_view`, which represent a view unable to modify the underlying image's pixel,
+as if it was read-only.
+
+Public interface
+^^^^^^^^^^^^^^^^
+.. doxygenclass:: spl::graphics::basic_viewport
+    :members:
+
+
+
 Indices and tables
 ==================
 
