@@ -52,6 +52,11 @@ Public interface
     :members:
 
 
+Drawable
+--------
+
+.. doxygenconcept:: spl::drawable
+
 
 Indices and tables
 ==================
