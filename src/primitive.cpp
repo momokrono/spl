@@ -651,5 +651,3 @@ void circle::_draw_filled(viewport img) const noexcept
 }
 
 } // namespace spl::graphics
-
-

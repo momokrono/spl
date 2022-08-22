@@ -31,6 +31,7 @@ conan_cmake_install(
     SETTINGS ${settings}
 )
 find_package(fmt REQUIRED)
+set(SPL_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                              Threads, stb                              #

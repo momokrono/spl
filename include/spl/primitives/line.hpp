@@ -8,8 +8,6 @@
 #ifndef PRIMITIVES_LINE_HPP
 #define PRIMITIVES_LINE_HPP
 
-// #include <ranges>
-
 #include <algorithm>
 
 #include "spl/rgba.hpp"
@@ -44,6 +42,9 @@ namespace detail
     };
 } // namespace detail
 
+/**
+  Represents a `line` to be drawed on an `image`.
+ * */
 struct line
 {
     vertex start;
@@ -52,6 +53,17 @@ struct line
     bool anti_aliasing;
     int16_t thickness = 1;
 
+    /// @name Constructors
+    /// @{
+    /**
+      Constructs a `line` (complete configuration)
+
+      @param from the vertex where the line begins
+      @param to the vertex where the line ends
+      @param thickness the line thickness
+      @param color the color that will be applied to the line
+      @param anti_aliasing enable the anti-aliasing when drawing the line
+     * */
     constexpr line(
         vertex from, vertex to, int16_t thickness,
         spl::graphics::rgba color = spl::graphics::color::black,
@@ -59,6 +71,16 @@ struct line
     ) : start{from}, end{to}, color{color}, anti_aliasing{anti_aliasing}, thickness{thickness}
     {}
 
+    /**
+      Constructs a `line`
+
+      Same as the previous, but the thickness is defaulted to 1
+
+      @param from the vertex where the line begins
+      @param to the vertex where the line ends
+      @param color the color that will be applied to the line
+      @param anti_aliasing enable the anti-aliasing when drawing the line
+     * */
     constexpr line(
         vertex from, vertex to,
         spl::graphics::rgba color = spl::graphics::color::black,
@@ -66,6 +88,16 @@ struct line
     ) : line{from, to, 1, color, anti_aliasing}
     {}
 
+    /**
+      Constructs a `line` (complete configuration, using length and inclination)
+
+      @param from the vertex where the line begins
+      @param length the line length
+      @param inclination the angle between the line and the x axis, in radians
+      @param thickness the line thickness
+      @param color the color that will be applied to the line
+      @param anti_aliasing enable the anti-aliasing when drawing the line
+     * */
     constexpr line(
         vertex from, double length, double inclination,
         int16_t thickness,
@@ -80,19 +112,42 @@ struct line
         thickness, color, anti_aliasing
     } {}
 
+    /**
+      Constructs a `line`
+
+      Same as the previous, but the thickness is defaulted to 1
+
+      @param from the vertex where the line begins
+      @param length the line length
+      @param inclination the angle between the line and the x axis, in radians
+      @param color the color that will be applied to the line
+      @param anti_aliasing enable the anti-aliasing when drawing the line
+     * */
     constexpr line(
         vertex from, double length, double inclination,
         spl::graphics::rgba color = spl::graphics::color::black,
         bool anti_aliasing = true
     ) : line{from, length, inclination, 1, color, anti_aliasing}
     {}
+    /// @}
 
+    /// @name Drawing
+    /// @{
+    /// Draw the line on a given viewport
     void render_on(viewport img) const noexcept;
 
     void draw_antialiased_parametric(viewport img) const noexcept;
     void draw_aliased(viewport img) const noexcept;
     void draw_antialiased(viewport img) const noexcept;
+    /// @}
 
+    /**
+      Translate the line
+
+      @param x how much the line must be translated along the x axis
+      @param y how much the line must be translated along the y axis
+      @returns `*this`
+     * */
     constexpr
     auto translate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
         start += {x, y};

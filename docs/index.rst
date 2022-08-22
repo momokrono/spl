@@ -58,6 +58,18 @@ Drawable
 .. doxygenconcept:: spl::drawable
 
 
+Primitives
+----------
+This library comes with some prebuilt utility objects you can use to draw figures on your image.
+You can import them by including the header ``"primitive.hpp"``.
+
+.. doxygenstruct:: spl::graphics::vertex
+.. doxygenstruct:: spl::graphics::line
+.. doxygenclass:: spl::graphics::rectangle
+.. doxygenclass:: spl::graphics::circle
+.. doxygenstruct:: spl::graphics::regular_polygon
+
+
 Indices and tables
 ==================
 

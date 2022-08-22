@@ -12,10 +12,10 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 find_package(Doxygen REQUIRED)
 
-get_target_property(SPL_PUBLIC_HEADER_DIR spl INTERFACE_INCLUDE_DIRECTORIES)
-file(GLOB_RECURSE SPL_PUBLIC_HEADERS ${SPL_PUBLIC_HEADER_DIR}/*.hpp)
+set(SPL_INCLUDE_DIR "${SPL_ROOT_DIR}/include/spl")
+file(GLOB_RECURSE SPL_PUBLIC_HEADERS ${SPL_INCLUDE_DIR}/*.hpp)
 
-set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/include/spl)
+set(DOXYGEN_INPUT_DIR "\"${SPL_INCLUDE_DIR}/\" \"${SPL_INCLUDE_DIR}/primitives/\"")
 set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/doxygen)
 set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)
 set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)

@@ -13,6 +13,15 @@
 namespace spl::graphics
 {
 
+/**
+  A `vertex` is a pair of integers representing a point on an `image`
+
+  The `vertex` class supports a bunch of mathematical operations such as
+  - `operator+=` and `operator+` to sum two vertexes (as in a point-vector sum)
+  - `operator-=` and `operator-` to subtract two vertexes (as in a point-point difference)
+  - unary `operator-`
+  - `operator*=`, `operator/=`, `operator*`, `operator/` for multiplication and division by a scalar
+ * */
 struct vertex
 {
     using value_type = int_fast32_t;
