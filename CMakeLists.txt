@@ -21,7 +21,7 @@ include(cmake/conan.cmake)
 conan_cmake_configure(
     BASIC_SETUP
     CMAKE_TARGETS
-    REQUIRES fmt/8.1.1
+    REQUIRES fmt/9.0.0
     GENERATORS cmake_find_package)
 conan_cmake_autodetect(settings)
 conan_cmake_install(
