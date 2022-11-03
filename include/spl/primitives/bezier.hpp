@@ -47,8 +47,7 @@ public:
     { _color = color; return *this; }
 
 
-    // FIXME
-    auto render_on(image & img) const noexcept
+    void render_on(viewport img) const noexcept
     {
         auto t = 0.;
         auto increment = 1. / static_cast<double>(_num_of_points);
@@ -62,7 +61,9 @@ public:
             auto b = 3 * step2 * t;
             auto c = 3 * step * t * t;
             auto d = t * t * t;
-            end_point = a * _anchor_1 + b * _control_1 + c * _control_2 + d * _anchor_2;
+            auto end_point_x = a * _anchor_1.x + b * _control_1.x + c * _control_2.x + d * _anchor_2.x;
+            auto end_point_y = a * _anchor_1.y + b * _control_1.y + c * _control_2.y + d * _anchor_2.y;
+            end_point = {static_cast<long>(std::round(end_point_x)), static_cast<long>(std::round(end_point_y))};
             img.draw(spl::graphics::line(start_point, end_point, _thickness, _color, _anti_aliasing));
 //            img.draw(spl::graphics::circle(start_point, 2).fill_color(spl::graphics::color::red));
             start_point = end_point;

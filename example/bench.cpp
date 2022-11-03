@@ -33,18 +33,21 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
 //            line4.draw_antialiased(image);
 //        }
 //    }
-    auto c1 = spl::graphics::vertex{100, 100};
-    auto c2 = spl::graphics::vertex{200, 100};
-    auto c3 = spl::graphics::vertex{400, 100};
-    auto c4 = spl::graphics::vertex{500, 100};
-    auto bezier = spl::graphics::bezier{c1, c2, c3, c4};
-    auto line = spl::graphics::line(c1, c4, spl::graphics::color::cyan);
-    line.render_on(image);
-    image.draw(spl::graphics::circle(c1, 2).fill_color(spl::graphics::color::blue));
-    image.draw(spl::graphics::circle(c2, 2).fill_color(spl::graphics::color::blue));
-    image.draw(spl::graphics::circle(c3, 2).fill_color(spl::graphics::color::blue));
-    image.draw(spl::graphics::circle(c4, 2).fill_color(spl::graphics::color::blue));
-    bezier.render_on(image);
+    auto c1 = spl::graphics::vertex{100, 200};
+    auto c2 = spl::graphics::vertex{200, 50};
+    auto c3 = spl::graphics::vertex{400, 300};
+    auto c4 = spl::graphics::vertex{500, 200};
+    auto bezier = spl::graphics::bezier{c1, c2, c3, c4, 5, 40, spl::graphics::color::red};
+    auto line1 = spl::graphics::line(c1, c2, spl::graphics::color::cyan);
+    auto line2 = spl::graphics::line(c3, c4, spl::graphics::color::cyan);
+    line1.render_on(image);
+    line2.render_on(image);
+    image.draw(spl::graphics::circle(c1, 4).fill_color(spl::graphics::color::blue));
+    image.draw(spl::graphics::circle(c2, 4).fill_color(spl::graphics::color::blue));
+    image.draw(spl::graphics::circle(c3, 4).fill_color(spl::graphics::color::blue));
+    image.draw(spl::graphics::circle(c4, 4).fill_color(spl::graphics::color::blue));
+//    bezier.render_on(image);
+    image.draw(bezier);
     // l.render_on(image);
     if (not image.save_to_file("bench.png")) { fmt::print("NON VA\n"); }
 } catch (std::exception & e)
