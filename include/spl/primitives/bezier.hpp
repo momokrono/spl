@@ -20,28 +20,26 @@
 namespace spl::graphics
 {
 
-namespace detail
-{
-    void _bezier_render(image & img, std::vector<vertex> const points, spl::graphics::rgba const color, bool const aliased) noexcept;
-} // namespace detail
-
-// FIXME
 class bezier
 {
-    std::vector<vertex> _vertexes;
+    vertex _anchor_1, _control_1, _control_2, _anchor_2;
+    int16_t _thickness;
+    int _num_of_points;
     rgba _color;
     bool _anti_aliasing = true;
 
 public:
-    template <std::ranges::range Rng = std::initializer_list<vertex>>
-        requires std::same_as<std::ranges::range_value_t<Rng>, vertex>
-    constexpr
-    bezier(Rng && rng, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
-        _vertexes(rng.begin(), rng.end()), _color{color}, _anti_aliasing{anti_aliasing} {}
+//    template <std::ranges::range Rng = std::initializer_list<vertex>>
+//        requires std::same_as<std::ranges::range_value_t<Rng>, vertex>
+//    constexpr
+//    bezier(Rng && rng, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
+//        _vertexes(rng.begin(), rng.end()), _color{color}, _anti_aliasing{anti_aliasing} {}
 
 
-    bezier(std::vector<vertex> & v, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
-        _vertexes{v}, _color{color}, _anti_aliasing{anti_aliasing} {}
+    bezier(vertex const p0, vertex const p1, vertex const p2, vertex const p3,
+           int16_t thickness = 1, int points = 40, rgba color = graphics::color::black, bool anti_aliasing = true) noexcept :
+        _anchor_1{p0}, _control_1{p1}, _control_2{p2}, _anchor_2{p3},
+        _thickness{thickness}, _num_of_points{points}, _color{color}, _anti_aliasing{anti_aliasing} {}
 
     constexpr
     auto color(spl::graphics::rgba const color) noexcept
@@ -49,26 +47,29 @@ public:
     { _color = color; return *this; }
 
 
+    // FIXME
     auto render_on(image & img) const noexcept
     {
-        if (_vertexes.size() < 2 or _color == spl::graphics::color::nothing) {
-            return;
+        auto t = 0.;
+        auto increment = 1. / static_cast<double>(_num_of_points);
+        auto start_point = _anchor_1;
+        auto end_point = _anchor_1;
+        while (t <= 1.0001) {
+            auto step = 1. - t;
+            auto step2 = step * step;
+            auto step3 = step2 * step;
+            auto a = step3;
+            auto b = 3 * step2 * t;
+            auto c = 3 * step * t * t;
+            auto d = t * t * t;
+            end_point = a * _anchor_1 + b * _control_1 + c * _control_2 + d * _anchor_2;
+            img.draw(spl::graphics::line(start_point, end_point, _thickness, _color, _anti_aliasing));
+//            img.draw(spl::graphics::circle(start_point, 2).fill_color(spl::graphics::color::red));
+            start_point = end_point;
+            t += increment;
         }
-        else {
-            detail::_bezier_render(img, _vertexes, _color, _anti_aliasing);
-        }
+//        img.draw(spl::graphics::circle(start_point, 2).fill_color(spl::graphics::color::red));
     }
-    /*
-    constexpr
-    auto traslate(int_fast32_t x, int_fast32_t y) noexcept -> line & {
-        start += vertex{x, y};
-        end += vertex{x, y};
-        return *this;
-    }
-    */
-/* private: */
-    /* constexpr */
-    /* static void _render_on_impl(image & img, std::span<vertex> const) noexcept; */
 };
 
 

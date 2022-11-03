@@ -14,7 +14,7 @@
 int main(int argc, [[maybe_unused]] char * argv[]) try
 {
     auto image = spl::graphics::image(600,400);
-
+    image.fill(spl::graphics::color::white);
     fmt::print(stdout, "{}", argc == 1 ? "new\n" : "old\n");
 //    for (int j = 0; j <= 66; ++j) {
 //        auto line1 = spl::graphics::line{{0,   200}, {599, 200 + j * 3 }, spl::graphics::color::green};
@@ -33,18 +33,17 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
 //            line4.draw_antialiased(image);
 //        }
 //    }
-    auto start = spl::graphics::vertex{100, 200};
-    auto c1 = spl::graphics::vertex{150, 100};
+    auto c1 = spl::graphics::vertex{100, 100};
     auto c2 = spl::graphics::vertex{200, 100};
-    auto c3 = spl::graphics::vertex{250, 100};
-    auto c4 = spl::graphics::vertex{270, 150};
-    auto c5 = spl::graphics::vertex{290, 200};
-    auto end = spl::graphics::vertex{350, 200};
-    auto points = std::vector<spl::graphics::vertex>{start, c1, c2, c3, c4, c5, end};
-    auto bezier = spl::graphics::bezier{points, spl::graphics::color::red};
-    auto line = spl::graphics::line(start, end, spl::graphics::color::blue);
-    auto l = spl::graphics::line(start, {100, 0}, spl::graphics::color::green);
-    // line.render_on(image);
+    auto c3 = spl::graphics::vertex{400, 100};
+    auto c4 = spl::graphics::vertex{500, 100};
+    auto bezier = spl::graphics::bezier{c1, c2, c3, c4};
+    auto line = spl::graphics::line(c1, c4, spl::graphics::color::cyan);
+    line.render_on(image);
+    image.draw(spl::graphics::circle(c1, 2).fill_color(spl::graphics::color::blue));
+    image.draw(spl::graphics::circle(c2, 2).fill_color(spl::graphics::color::blue));
+    image.draw(spl::graphics::circle(c3, 2).fill_color(spl::graphics::color::blue));
+    image.draw(spl::graphics::circle(c4, 2).fill_color(spl::graphics::color::blue));
     bezier.render_on(image);
     // l.render_on(image);
     if (not image.save_to_file("bench.png")) { fmt::print("NON VA\n"); }
