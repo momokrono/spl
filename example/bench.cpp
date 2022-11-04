@@ -34,6 +34,7 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
         }
     }
     if (not image.save_to_file("bench.png")) { fmt::print("NON VA\n"); }
+    if (not image.save_to_file("bench.qoi")) { fmt::print("rip qoi\n"); }
 } catch (std::exception & e)
 {
     fmt::print(stderr, "exception caught: {}\n", e.what());

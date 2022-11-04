@@ -157,6 +157,9 @@ bool image::save_to_file(std::string_view const filename) const
     if (filename.ends_with(".ppm")) {
         return save_to_ppm(filename);
     }
+    if (filename.ends_with(".qoi")) {
+        return save_to_qoi(filename);
+    }
 #if 0
     if (filename.ends_with(".pam")) {
         auto sink = std::ofstream{filename.data()};
@@ -196,20 +199,7 @@ bool image::save_to_ppm(std::string_view const filename) const
 
 bool image::save_to_qoi(std::string_view const filename) const
 {
-    auto sink = fmt::output_file(filename.data());
-    /* Quite Ok Image format,
-     * for references: https://qoiformat.org/
-     */
-    constexpr int channels = 4;
-    auto indexes = std::array<spl::graphics::rgba, 64>{};
-    spl::graphics::rgba current_px{}, next_px{};
-
-    constexpr uint32_t qoi_magic = static_cast<uint32_t>('q') << 24 | \
-                                   static_cast<uint32_t>('o') << 16 | \
-                                   static_cast<uint32_t>('i') << 8  | \
-                                   static_cast<uint32_t>('f');
-    constexpr auto qoi_padding = std::array<uint8_t,  8>{0,0,0,0,0,0,0,1};
-
+    auto sink = std::ofstream(filename.data(), std::ios::out | std::ios::binary);
 
     constexpr auto QOI_OP_INDEX = 0x00;
     constexpr auto QOI_OP_DIFF  = 0x40;
@@ -222,14 +212,92 @@ bool image::save_to_qoi(std::string_view const filename) const
     };
 
     auto encoded_data = std::vector<uint8_t>{};
+    encoded_data.reserve(14 + _width * _height * 5 + 8);
 
+    encoded_data.push_back('q');
+    encoded_data.push_back('o');
+    encoded_data.push_back('i');
+    encoded_data.push_back('f');
 
-    // constexpr auto qoi_header =
+    encoded_data.push_back(( _width & 0xFF000000) >> 24);
+    encoded_data.push_back(( _width & 0x00FF0000) >> 16);
+    encoded_data.push_back(( _width & 0x0000FF00) >>  8);
+    encoded_data.push_back(( _width & 0x000000FF) >>  0);
+    encoded_data.push_back((_height & 0xFF000000) >> 24);
+    encoded_data.push_back((_height & 0x00FF0000) >> 16);
+    encoded_data.push_back((_height & 0x0000FF00) >>  8);
+    encoded_data.push_back((_height & 0x000000FF) >>  0);
 
-    // encoded_data.reserve(_pixels.size()*4+8+)
+    encoded_data.push_back(4);
+    encoded_data.push_back(1);
+
+    auto indexes = std::array<spl::graphics::rgba, 64>{{{0, 0, 0, 0}}};
+    auto prev_pixel = spl::graphics::rgba(0, 0, 0, 255);
+    uint8_t run = 0;
+    for (auto & p : _pixels) {
+        if (p == prev_pixel) {
+            run++;
+            if (run == 62 || &p == &_pixels.back()) {
+                encoded_data.push_back(QOI_OP_RUN | (run - 1));;
+                run = 0;
+            }
+            continue;
+        }
+        if (run > 0) {
+            encoded_data.push_back(QOI_OP_RUN | (run - 1));;
+            run = 0;
+        }
+        auto idx = pixel_hash(p);
+        if (p == indexes[idx]) {
+            encoded_data.push_back(QOI_OP_INDEX | idx);
+            prev_pixel = p;
+            continue;
+        }
+        indexes[idx] = p;
+        if (p.a == prev_pixel.a) {
+            auto dr = p.r - prev_pixel.r;
+            auto dg = p.g - prev_pixel.g;
+            auto db = p.b - prev_pixel.b;
+            auto dr_g = dr - dg;
+            auto db_g = db - dg;
+            if (
+                dr > -3 && dr < 2 &&
+                db > -3 && db < 2 &&
+                dg > -3 && dg < 2
+               ) {
+                encoded_data.push_back(QOI_OP_DIFF | (dr + 2) << 4 | (dg + 2) << 2 | (db + 2));
+            }
+            else if (
+                     dr_g >  -9 && dr_g < 8  &&
+                     dg   > -33 && dg   < 32 &&
+                     db_g >  -9 && db_g < 8
+                    ) {
+                encoded_data.push_back(QOI_OP_LUMA | (dg + 32));
+                encoded_data.push_back((dr_g + 8) << 4 | (db_g + 8));
+            }
+            else {
+                encoded_data.push_back(QOI_OP_RGBA);
+                encoded_data.push_back(p.r);
+                encoded_data.push_back(p.g);
+                encoded_data.push_back(p.b);
+                encoded_data.push_back(p.a);
+            }
+        }
+        prev_pixel = p;
+    }
+
+    auto padding = std::array<uint8_t, 8>{0,0,0,0,0,0,0,1};
+    for (auto & p : padding) {
+        encoded_data.push_back(p);
+    }
+
+    if ( not sink.write(reinterpret_cast<const char*>(encoded_data.data()),
+                        static_cast<std::streamsize>(encoded_data.size()))) {
+        fmt::print("error saving file \n");
+    }
 
     return true;
-};
+}
 
 auto image::load_from_file(std::filesystem::path const & filename)
     -> load_status
