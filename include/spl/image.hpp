@@ -114,7 +114,8 @@ public:
     }
 
     // utils
-    auto raw_data()   const noexcept { return _pixels.data(); }
+    auto raw_data()       & noexcept { return _pixels.data(); }
+    auto raw_data() const & noexcept { return _pixels.data(); }
     bool save_to_file(std::string_view const filename) const;
     auto load_from_file(std::filesystem::path const & filename) -> load_status;
 
