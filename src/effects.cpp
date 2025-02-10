@@ -6,7 +6,6 @@
  */
 
 #include "spl/effects.hpp"
-#include "fmt/core.h"
 #include <thread>
 
 namespace spl::graphics

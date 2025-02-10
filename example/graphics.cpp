@@ -1,4 +1,4 @@
-#include <fmt/format.h>
+#include <print>
 #include <iostream>
 #include <ranges>
 #include <algorithm>
@@ -57,7 +57,7 @@ int main() try
 
     // image.draw(spl::graphics::rectangle{{450, 300}, {50, 20}, 45 * 3.141592 / 180}.fill_color(spl::graphics::color::orange).border_color(spl::graphics::color::blue));
 
-    if (not image.save_to_file("example_graphics.png")) { fmt::print(stderr, "Error - can't save the image to a file\n"); };
+    if (not image.save_to_file("example_graphics.png")) { std::print(stderr, "Error - can't save the image to a file\n"); };
 
     auto status = image.load_from_file("example_graphics.png");
     if (status != spl::graphics::load_status::success) {
@@ -65,5 +65,5 @@ int main() try
     }
     image.save_to_file("example_graphics_clone.jpg");
 } catch (std::exception & e) {
-    fmt::print(stderr, "exception caught: {}\n", e.what());
+    std::print(stderr, "exception caught: {}\n", e.what());
 }

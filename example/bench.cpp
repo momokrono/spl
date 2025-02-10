@@ -5,7 +5,7 @@
  * @license     : MIT
  */
 
-#include <fmt/format.h>
+#include <print>
 #include <ranges>
 
 #include "spl/image.hpp"
@@ -15,7 +15,7 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
 {
     auto image = spl::graphics::image(600,400);
 
-    fmt::print(stdout, "{}", argc == 1 ? "new\n" : "old\n");
+    std::print(stdout, "{}", argc == 1 ? "new\n" : "old\n");
     for (int j = 0; j <= 66; ++j) {
         auto line1 = spl::graphics::line{{0,   200}, {599, 200 + j * 3 }, spl::graphics::color::green};
         auto line2 = spl::graphics::line{{599, 200}, {  0, 200 + j * 3 }, spl::graphics::color::blue};
@@ -33,10 +33,10 @@ int main(int argc, [[maybe_unused]] char * argv[]) try
             line4.draw_antialiased(image);
         }
     }
-    if (not image.save_to_file("bench.png")) { fmt::print("NON VA\n"); }
+    if (not image.save_to_file("bench.png")) { std::print("NON VA\n"); }
 } catch (std::exception & e)
 {
-    fmt::print(stderr, "exception caught: {}\n", e.what());
+    std::print(stderr, "exception caught: {}\n", e.what());
 }
 
 

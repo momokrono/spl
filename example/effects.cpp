@@ -1,11 +1,11 @@
 #include "spl/effects.hpp"
 #include "spl/image.hpp"
-#include "fmt/core.h"
+#include <print>
 
 auto black_and_white(auto const & image)
 {
     constexpr auto result_name = "example_effects_bw.png";
-    fmt::print("Black and white ({})...\n", result_name);
+    std::print("Black and white ({})...\n", result_name);
     auto image_bw = spl::graphics::greyscale(image);
     image_bw.save_to_file("example_effects_bw.png");
 }
@@ -13,7 +13,7 @@ auto black_and_white(auto const & image)
 auto black_and_white_quadrants(auto image)
 {
     constexpr auto result_name = "example_effects_bw_quadrants.png";
-    fmt::print("Black and white quadrants ({})...\n", result_name);
+    std::print("Black and white quadrants ({})...\n", result_name);
     auto const width = image.width() / 2;
     auto const height = image.height() / 2;
     auto quadrant_2 = spl::graphics::viewport{image, 0, 0, width, height};
@@ -26,7 +26,7 @@ auto black_and_white_quadrants(auto image)
 auto triangular_blur(auto const & image)
 {
     constexpr auto result_name = "example_effects_triangular_blur.png";
-    fmt::print("Triangular blur ({})...\n", result_name);
+    std::print("Triangular blur ({})...\n", result_name);
     auto image_blurred = spl::graphics::blur(spl::graphics::effects::triangular{8}, image, 0);
     image_blurred.save_to_file(result_name);
 }
@@ -34,7 +34,7 @@ auto triangular_blur(auto const & image)
 auto box_blur(auto const & image)
 {
     constexpr auto result_name = "example_effects_box_blur.png";
-    fmt::print("Box blur ({})...\n", result_name);
+    std::print("Box blur ({})...\n", result_name);
     auto image_blurred = spl::graphics::blur(spl::graphics::effects::box{8}, image, 0);
     image_blurred.save_to_file(result_name);
 }
@@ -42,7 +42,7 @@ auto box_blur(auto const & image)
 auto blur_quadrants(auto image)
 {
     constexpr auto result_name = "example_effects_blur_quadrants.png";
-    fmt::print("Blurred quadrants ({})...\n", result_name);
+    std::print("Blurred quadrants ({})...\n", result_name);
     auto const width = image.width() / 2;
     auto const height = image.height() / 2;
 
@@ -57,7 +57,7 @@ auto blur_quadrants(auto image)
 auto blur_colored_quadrants()
 {
     constexpr auto result_name = "example_effects_blur_colored_quadrants.png";
-    fmt::print("Blur on colored quadrants ({})...\n", result_name);
+    std::print("Blur on colored quadrants ({})...\n", result_name);
     auto image = spl::graphics::image{800, 600, spl::graphics::color::blue};
     auto const width = image.width() / 2;
     auto const height = image.height() / 2;
@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
         auto image = spl::graphics::image{};
         image.load_from_file(filename);
 
-        fmt::print(stderr, "Loaded file {}\nSize: {}x{}\n", filename, image.width(), image.height());
+        std::print(stderr, "Loaded file {}\nSize: {}x{}\n", filename, image.width(), image.height());
         black_and_white(image);
         black_and_white_quadrants(image);
 
@@ -90,7 +90,7 @@ int main(int argc, char * argv[])
         spl::graphics::blur(std::in_place, spl::graphics::effects::triangular{10}, image);
         image.save_to_file("test_policy.png");
     } else {
-        fmt::print("No image passed as argument - only colored quadrants will be generated\n");
+        std::print("No image passed as argument - only colored quadrants will be generated\n");
     }
     blur_colored_quadrants();
 }

@@ -10,29 +10,9 @@ project(spl VERSION 0.4.1 LANGUAGES CXX)
 include(cmake/general.cmake)
 include(cmake/functions.cmake)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-#                                 Conan                                  #
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-include(cmake/conan.cmake)
-conan_cmake_configure(
-    BASIC_SETUP
-    CMAKE_TARGETS
-    REQUIRES fmt/9.0.0
-    GENERATORS cmake_find_package)
-conan_cmake_autodetect(settings)
-conan_cmake_install(
-    PATH_OR_REFERENCE ${CMAKE_BINARY_DIR}
-    BUILD missing
-    GENERATOR cmake
-    SETTINGS ${settings}
-)
-set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
-set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
-find_package(fmt REQUIRED)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 #                              Threads, stb                              #
@@ -59,9 +39,9 @@ target_sources(spl
         src/text.cpp
         src/effects.cpp
 )
-target_compile_features(spl PUBLIC cxx_std_20)
+target_compile_features(spl PUBLIC cxx_std_23)
 target_link_options(spl PRIVATE RELEASE)
-target_link_libraries(spl PRIVATE project_warnings fmt::fmt stb)
+target_link_libraries(spl PRIVATE project_warnings stb)
 target_include_directories(spl
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/>

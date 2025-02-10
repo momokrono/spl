@@ -5,8 +5,7 @@
  * @license     : MIT
  */
 
-#include <fmt/format.h>
-#include <fmt/chrono.h>
+#include <print>
 #include <iostream>
 #include <ranges>
 #include <algorithm>
@@ -28,7 +27,7 @@ auto time_passed(auto start)
 
 int main() try
 {
-    fmt::print("Launching the program\n");
+    std::print("Launching the program\n");
     auto start = std::chrono::steady_clock::now();
     // auto image = spl::graphics::image(600,400);
     constexpr auto width  = 10'000;
@@ -36,7 +35,7 @@ int main() try
     // auto image = spl::graphics::image(width, height, sgl::color::white);
     auto image = spl::graphics::image(sgl::construct_uninitialized, width, height);
     image.fill(sgl::color::white);
-    fmt::print("Image created: {}\n", time_passed(start));
+    std::print("Image created: {}\n", time_passed(start));
 
     constexpr auto tot_lines = 1'000;
     constexpr auto n_threads = 6;
@@ -70,7 +69,7 @@ int main() try
         return subgroup;
     };
 
-    fmt::print("Launching threads...\n");
+    std::print("Launching threads...\n");
     start = std::chrono::steady_clock::now();
 
     for (auto i = 0ul; i < n_threads; ++i) {
@@ -81,19 +80,19 @@ int main() try
     for (auto & subgroup : jobs) {
         group.push(std::move(subgroup.get()));
     }
-    fmt::print("group built: {}\n", time_passed(start));
+    std::print("group built: {}\n", time_passed(start));
     start = std::chrono::steady_clock::now();
     group.render_on(image);
-    fmt::print("Image rendered: {}\n", time_passed(start));
+    std::print("Image rendered: {}\n", time_passed(start));
     start = std::chrono::steady_clock::now();
 
     if (not image.save_to_file("example_group.jpg")) {
-        fmt::print(stderr, "Error while trying to save the generate image to file\n");
+        std::print(stderr, "Error while trying to save the generate image to file\n");
     }
-    fmt::print("Image saved: {}\n", time_passed(start));
+    std::print("Image saved: {}\n", time_passed(start));
 } catch (std::exception & e)
 {
-    fmt::print(stderr, "exception caught: {}\n", e.what());
+    std::print(stderr, "exception caught: {}\n", e.what());
 }
 
 

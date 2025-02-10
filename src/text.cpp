@@ -31,7 +31,7 @@ auto load_from_file(std::filesystem::path const & source)
     -> std::shared_ptr<font_face_impl>
 {
     if (not std::filesystem::exists(source)) {
-        throw font_error(fmt::format("font \"{}\" not found", source.native()));
+        throw font_error(std::format("font \"{}\" not found", source.native()));
     }
     auto res = std::shared_ptr<font_face_impl>(new font_face_impl);
     {
@@ -43,7 +43,7 @@ auto load_from_file(std::filesystem::path const & source)
     }
     auto ec = stbtt_InitFont(&res->_info, res->_buffer.data(), 0);
     if (ec == 0) {
-        throw font_error(fmt::format("unexpected error while reading the font \"{}\"", source.native()));
+        throw font_error(std::format("unexpected error while reading the font \"{}\"", source.native()));
     }
     return res;
 }

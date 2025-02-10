@@ -10,8 +10,7 @@
 #include "spl/detail/exceptions.hpp"
 
 #include <fstream>
-#include <fmt/core.h>
-#include <fmt/os.h>
+#include <format>
 
 #ifdef SPL_FILL_MULTITHREAD
 #include <thread>
@@ -155,14 +154,14 @@ bool image::save_to_file(std::string_view const filename) const
         return stbi_write_jpg(filename.data(), swidth(), sheight(), 4, raw_data(), 90) == 1;
     }
     if (filename.ends_with(".ppm")) {
-        auto sink = fmt::output_file(filename.data());
-        sink.print("P3\n{} {}\n255\n", width(), height());
+        auto sink = std::ofstream{filename.data()};
+        sink << std::format("P3\n{} {}\n255\n", width(), height());
         for (size_t j = 0; j < height(); ++j) {
             for (size_t i = 0; i < width(); ++i) {
                 auto const [r, g, b, a] = pixel(i, j);
-                sink.print("{} {} {}\n", a * r / 255, a * g / 255, a * b / 255);
+                sink << std::format("{} {} {}\n", a * r / 255, a * g / 255, a * b / 255);
             }
-            sink.print("\n");
+            sink << '\n';
         }
 
         return true;
@@ -174,12 +173,12 @@ bool image::save_to_file(std::string_view const filename) const
             return false;
         }
 
-        fmt::print(sink, "P7\nWIDTH {}\nHEIGHT {}\nDEPTH 4\nMAXVAL 255\nTUPLTYPE RGB_ALPHA\nENDHDR\n", width(), height());
+        std::print(sink, "P7\nWIDTH {}\nHEIGHT {}\nDEPTH 4\nMAXVAL 255\nTUPLTYPE RGB_ALPHA\nENDHDR\n", width(), height());
 
         for (size_t j = 0; j < height(); ++j) {
             for (size_t i = 0; i < width(); ++i) {
                 auto const [r, g, b, a] = pixel(i, j);
-                fmt::print(sink, "{} {} {} {}\n", r, g, b, a);
+                std::print(sink, "{} {} {} {}\n", r, g, b, a);
             }
         }
 

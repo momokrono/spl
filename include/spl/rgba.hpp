@@ -1,6 +1,7 @@
 #ifndef RGBA_HPP
 #define RGBA_HPP
 
+#include <cmath>
 #include <cstdint>
 #include <concepts>
 

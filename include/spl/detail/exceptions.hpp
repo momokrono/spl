@@ -9,7 +9,7 @@
 #define EXCEPTIONS_HPP
 
 #include <string>
-#include <fmt/format.h>
+#include <format>
 
 namespace spl
 {
@@ -19,11 +19,11 @@ struct out_of_range : std::exception
     std::string message;
     out_of_range(size_t x, size_t w)
     {
-        message = fmt::format("out of range: required element {} but size is {}", x, w);
+        message = std::format("out of range: required element {} but size is {}", x, w);
     }
     out_of_range(size_t x, size_t y, size_t w, size_t h)
     {
-        message = fmt::format("out of range: required element ({}, {}) but the valid range is [0,{})⨉[0,{})", x, y, w, h);
+        message = std::format("out of range: required element ({}, {}) but the valid range is [0,{})⨉[0,{})", x, y, w, h);
     }
 
     auto what() const noexcept -> char const * override
@@ -35,7 +35,7 @@ struct invalid_argument : std::exception
     std::string message;
     invalid_argument(std::string_view const text)
     {
-        message = fmt::format("invalid argument: {}", text);
+        message = std::format("invalid argument: {}", text);
     }
 
     auto what() const noexcept -> char const * override
@@ -63,4 +63,3 @@ struct utf8_error : std::exception
 } // namespace spl
 
 #endif /* EXCEPTIONS_HPP */
-

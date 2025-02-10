@@ -2,9 +2,10 @@
  * @author      : rbrugo, momokrono
  * @file        : text
  * @created     : Friday Mar 25, 2022 15:27:21 CET
- * @description : 
+ * @description :
  */
 
+#include <print>
 #include <spl/text.hpp>
 #include <spl/image.hpp>
 #include <spl/group.hpp>
@@ -23,7 +24,7 @@ constexpr auto lorem_ipsum = std::array{
 int main(int argc, char * argv[])
 {
     if (argc == 1) {
-        fmt::print("Usage: {} {} [{}...]\n", argv[0], "font-name", "other-font-names");
+        std::print("Usage: {} {} [{}...]\n", argv[0], "font-name", "other-font-names");
         return 0;
     }
 
@@ -40,7 +41,7 @@ int main(int argc, char * argv[])
 
     img.draw(text1).draw(text2, text3, text4);
 
-    for (auto i = 0; i < lorem_ipsum.size(); ++i) {
+    for (auto i = 0; i < std::ssize(lorem_ipsum); ++i) {
         auto text = spl::graphics::text{{20, 20 + i * 20}, lorem_ipsum[i], font2};
         img.draw(text);
     }

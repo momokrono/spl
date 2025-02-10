@@ -13,7 +13,7 @@ if (build_examples_bench)
     target_link_options(bench PRIVATE -pthread)
 
     target_sources(bench PRIVATE bench.cpp)
-    target_link_libraries(bench PRIVATE spl fmt::fmt)
+    target_link_libraries(bench PRIVATE spl)
     target_include_directories(bench PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -26,7 +26,7 @@ if (build_examples_graphics)
     target_link_options(graphics PRIVATE)
 
     target_sources(graphics PRIVATE graphics.cpp)
-    target_link_libraries(graphics PRIVATE spl fmt::fmt Threads::Threads)
+    target_link_libraries(graphics PRIVATE spl Threads::Threads)
     target_include_directories(graphics PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -39,7 +39,7 @@ if (build_examples_blur)
     target_link_options(blur PRIVATE)
 
     target_sources(blur PRIVATE blur.cpp)
-    target_link_libraries(blur PRIVATE spl Threads::Threads fmt::fmt project_warnings)
+    target_link_libraries(blur PRIVATE spl Threads::Threads project_warnings)
     target_include_directories(blur PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -52,7 +52,7 @@ if (build_examples_collection)
     target_link_options(collection PRIVATE)
 
     target_sources(collection PRIVATE collection.cpp)
-    target_link_libraries(collection PRIVATE spl Threads::Threads fmt::fmt project_warnings)
+    target_link_libraries(collection PRIVATE spl Threads::Threads project_warnings)
     target_include_directories(collection PUBLIC ./include/ ./include/3rd_party/)
 endif()
 
@@ -65,7 +65,7 @@ if (build_examples_viewport)
     target_link_options(viewport PRIVATE)
 
     target_sources(viewport PRIVATE viewport.cpp)
-    target_link_libraries(viewport PRIVATE spl Threads::Threads fmt::fmt project_warnings)
+    target_link_libraries(viewport PRIVATE spl Threads::Threads project_warnings)
     target_include_directories(viewport PUBLIC ./include/)
 endif()
 
@@ -78,7 +78,7 @@ if (build_examples_effects)
     target_link_options(effects PRIVATE)
 
     target_sources(effects PRIVATE effects.cpp)
-    target_link_libraries(effects PRIVATE spl Threads::Threads fmt::fmt project_warnings)
+    target_link_libraries(effects PRIVATE spl Threads::Threads project_warnings)
     target_include_directories(effects PUBLIC ./include/)
 
     enable_sanitizers(effects)
@@ -93,7 +93,7 @@ if (build_examples_text)
     target_link_options(text PRIVATE)
 
     target_sources(text PRIVATE text.cpp)
-    target_link_libraries(text PRIVATE spl Threads::Threads fmt::fmt project_warnings)
+    target_link_libraries(text PRIVATE spl Threads::Threads project_warnings)
     target_include_directories(text PUBLIC ./include/)
 
     enable_sanitizers(text)

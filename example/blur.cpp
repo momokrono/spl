@@ -5,9 +5,9 @@
  * @license     : MIT
  */
 
+#include <print>
 #include <spl/image.hpp>
 #include <spl/primitive.hpp>
-#include <fmt/format.h>
 
 auto triangular_blur(int64_t x0, int64_t y0, spl::graphics::image const & img, int16_t radius) noexcept
     -> spl::graphics::rgba
@@ -92,13 +92,13 @@ int main(int argc, char * argv[])
     auto original = spl::graphics::image{};
     if (argc > 1) {
         if (not std::filesystem::exists(argv[1])) {
-            fmt::print(stderr, "File not found: {}\n", argv[1]);
+            std::print(stderr, "File not found: {}\n", argv[1]);
             return 0;
         }
-        fmt::print(stderr, "Image {} loaded\n", argv[1]);
+        std::print(stderr, "Image {} loaded\n", argv[1]);
         original = spl::graphics::image{}; original.load_from_file(argv[1]);
     } else {
-        fmt::print(stderr, "Using a default image\n");
+        std::print(stderr, "Using a default image\n");
         original = spl::graphics::image{20, 20, spl::graphics::color::white};
         std::ranges::fill(original.column( 8), spl::graphics::color::black);
         std::ranges::fill(original.column( 9), spl::graphics::color::black);
@@ -118,8 +118,8 @@ int main(int argc, char * argv[])
             }
         }
 
-        blurred.save_to_file(fmt::format("{}_rad_{}.bmp", name, radius));
-        fmt::print("{} rad {} generated\n", name, radius);
+        blurred.save_to_file(std::format("{}_rad_{}.bmp", name, radius));
+        std::print("{} rad {} generated\n", name, radius);
     };
 
     auto const triangular_1 = std::jthread{blur_image, "triangular", 3,  triangular_blur};
